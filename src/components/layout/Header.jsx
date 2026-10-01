@@ -447,8 +447,8 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
         <div className="header-panel header-panel--brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src={swatiLogo} alt="Swati Logo" className="hdr-brand-logo" style={{ width: '40px', height: '40px' }} />
           <div className="hdr-brand-text" style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="hdr-brand-title" style={{ fontWeight: '800', fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: '1.2' }}>SWATI</span>
-            <span className="hdr-brand-subtitle" style={{ fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.1em' }}>POWERING A BRIGHTER TOMORROW</span>
+            <span className="hdr-brand-title" style={{ fontWeight: '800', fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: '1.2' }}>SWATI CRM</span>
+            <span className="hdr-brand-subtitle" style={{ fontSize: '0.6rem', color: '#c60016', letterSpacing: '0.1em', fontWeight: '700' }}>POWERING A BRIGHTER TOMORROW</span>
           </div>
         </div>
         <div className="header-panel header-panel--actions">

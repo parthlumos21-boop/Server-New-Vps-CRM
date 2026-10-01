@@ -92,14 +92,6 @@ export const adminModules = [
     icon: FaUserCog,
     accent: 'navy',
     defaultEligible: true
-  },
-  {
-    id: 'view-settings',
-    title: 'View Settings',
-    route: '/admin/settings',
-    icon: FaTh,
-    accent: 'cyan',
-    defaultEligible: true
   }
 ]
 

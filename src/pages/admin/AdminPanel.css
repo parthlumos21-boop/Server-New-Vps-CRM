@@ -40,15 +40,15 @@
 
 .ap-home-tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(22, 93, 255, 0.2);
+  border-color: rgba(198, 0, 22, 0.3);
   box-shadow: var(--shadow-sm);
 }
 
 .ap-home-tab--active {
-  border-color: rgba(22, 93, 255, 0.18);
-  background: linear-gradient(135deg, #113c9b 0%, #165dff 60%, #4fb2ff 100%);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 60%, #e11d2e 100%);
   color: #ffffff;
-  box-shadow: 0 20px 30px rgba(22, 93, 255, 0.22);
+  box-shadow: 0 12px 24px rgba(198, 0, 22, 0.28);
 }
 
 .ap-tabs {
@@ -95,14 +95,14 @@
 
 .ap-tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(22, 93, 255, 0.18);
+  border-color: rgba(198, 0, 22, 0.3);
 }
 
 .ap-tab--active {
-  border-color: rgba(22, 93, 255, 0.18);
-  background: linear-gradient(135deg, #113c9b 0%, #165dff 58%, #4aa6ff 100%);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 58%, #e11d2e 100%);
   color: #ffffff;
-  box-shadow: 0 20px 30px rgba(22, 93, 255, 0.18);
+  box-shadow: 0 12px 24px rgba(198, 0, 22, 0.25);
 }
 
 .ap-tab-icon {
@@ -127,13 +127,13 @@
 }
 
 .ap-tab-caret:hover {
-  border-color: rgba(22, 93, 255, 0.18);
+  border-color: rgba(198, 0, 22, 0.3);
   color: var(--text-primary);
 }
 
 .ap-tab-caret--active {
-  border-color: rgba(22, 93, 255, 0.18);
-  background: linear-gradient(135deg, #113c9b 0%, #165dff 58%, #4aa6ff 100%);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 58%, #e11d2e 100%);
   color: #ffffff;
 }
 

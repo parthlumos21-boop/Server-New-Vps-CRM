@@ -179,13 +179,31 @@ const SalesDashboard = () => {
   ), [filteredDeals])
 
   const controlSignals = useMemo(() => ([
-    { label: 'Status', value: resolveOptionLabel(STATUS_OPTIONS, filterBy) },
-    { label: 'Period', value: resolveOptionLabel(DATE_RANGE_OPTIONS, dateRange) },
     {
+      key: 'status',
+      label: 'Status',
+      value: resolveOptionLabel(STATUS_OPTIONS, filterBy),
+      icon: FaFilter,
+      badgeText: filterBy === 'all' ? 'All Active' : 'Filtered',
+      signalClass: 'sales-signal--status',
+    },
+    {
+      key: 'period',
+      label: 'Period',
+      value: resolveOptionLabel(DATE_RANGE_OPTIONS, dateRange),
+      icon: FaCalendarAlt,
+      badgeText: dateRange === 'all' ? 'Full Range' : 'Timeline',
+      signalClass: 'sales-signal--period',
+    },
+    {
+      key: 'visible-deals',
       label: 'Visible Deals',
       value: `${stats.totalDeals} ${stats.totalDeals === 1 ? 'deal' : 'deals'}`,
+      icon: FaHandshake,
+      badgeText: formatCurrency(stats.totalValue),
+      signalClass: 'sales-signal--deals',
     },
-  ]), [dateRange, filterBy, stats.totalDeals])
+  ]), [dateRange, filterBy, stats.totalDeals, stats.totalValue])
 
   const statCards = useMemo(() => ([
     {
@@ -368,12 +386,21 @@ const SalesDashboard = () => {
             </div>
 
             <div className="sales-header-signals">
-              {controlSignals.map((signal) => (
-                <div key={signal.label} className="sales-header-signal">
-                  <span className="sales-header-signal-label">{signal.label}</span>
-                  <strong className="sales-header-signal-value">{signal.value}</strong>
-                </div>
-              ))}
+              {controlSignals.map((signal) => {
+                const SignalIcon = signal.icon
+                return (
+                  <div key={signal.key} className={`sales-header-signal ${signal.signalClass}`}>
+                    <div className="sales-signal-icon-wrapper">
+                      <SignalIcon className="sales-signal-icon" />
+                    </div>
+                    <div className="sales-signal-info">
+                      <span className="sales-header-signal-label">{signal.label}</span>
+                      <strong className="sales-header-signal-value">{signal.value}</strong>
+                    </div>
+                    <span className="sales-signal-badge-chip">{signal.badgeText}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </motion.div>

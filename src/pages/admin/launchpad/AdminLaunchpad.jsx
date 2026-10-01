@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { FaHandshake, FaRocket, FaUserTie } from 'react-icons/fa'
+import { FaCheck, FaHandshake, FaRocket, FaUserTie } from 'react-icons/fa'
 import { useAuth } from '../../../context/AuthContext'
 import Header from '../../../components/layout/Header'
 import RightPanel from '../../../components/layout/RightPanel'
@@ -46,12 +46,6 @@ const getMonitoringCardLogos = (user) => {
   return { showSwati: true, showLumos: false }
 }
 
-const chunkModules = (modules, chunkSize) => (
-  Array.from({ length: Math.ceil(modules.length / chunkSize) }, (_, index) => (
-    modules.slice(index * chunkSize, index * chunkSize + chunkSize)
-  ))
-)
-
 const isKevalVShah = (user = {}) => {
   const v = String(user?.name || user?.email || '').trim().toLowerCase()
   return v === 'keval v shah'
@@ -60,14 +54,14 @@ const isKevalVShah = (user = {}) => {
 }
 
 const cardMotion = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 16 },
   visible: (index = 0) => ({
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.18,
-      delay: Math.min(index * 0.03, 0.12),
-      ease: 'easeOut',
+      duration: 0.22,
+      delay: Math.min(index * 0.03, 0.18),
+      ease: [0.25, 1, 0.5, 1],
     },
   }),
 }
@@ -105,25 +99,22 @@ const AdminLaunchpad = () => {
     launchpadModules.find((module) => module.route === defaultRoute)?.title || 'Not Set'
   ), [defaultRoute, launchpadModules])
 
-  const featuredModules = useMemo(() => (
-    launchpadModules.slice(0, 3)
-  ), [launchpadModules])
-
-  const remainingModuleRows = useMemo(() => (
-    chunkModules(launchpadModules.slice(3), 4)
-  ), [launchpadModules])
-
   return (
     <div className="lp-page">
       <Header isAdmin />
 
       <div className="lp-body">
         <main className="lp-main">
-          
           <div className="lp-content lp-content--modules-only">
             <section className="lp-modules-shell">
               <div className="lp-modules-header">
                 <div className="lp-modules-copy">
+                  {showSwati && (
+                    <img src={swatiLogo} alt="Swati Logo" className="lp-header-logo" />
+                  )}
+                  {showLumos && (
+                    <img src={lumosLogo} alt="Lumos Logo" className="lp-header-logo" />
+                  )}
                   <div className="lp-modules-text-block">
                     <span className="lp-modules-kicker">Admin Workspace</span>
                     <h1 className="lp-modules-title">LaunchPad</h1>
@@ -132,6 +123,7 @@ const AdminLaunchpad = () => {
                     </p>
                   </div>
                 </div>
+
                 <div className="lp-modules-meta">
                   <div className="lp-modules-meta-item">
                     <span className="lp-meta-label">Modules</span>
@@ -162,6 +154,7 @@ const AdminLaunchpad = () => {
                         type="button"
                         className={`lp-card-top lp-card-top--${module.accent}`}
                         onClick={() => navigate(module.route)}
+                        title={`Open ${module.title}`}
                       >
                         <span className="lp-card-icon"><Icon /></span>
                         <span className={`lp-card-title${isKeval ? ' lp-card-title--full' : ''}`}>{module.title}</span>
@@ -171,8 +164,16 @@ const AdminLaunchpad = () => {
                         type="button"
                         className={`lp-card-footer${isDefault ? ' lp-card-footer--active' : ''}`}
                         onClick={() => handleDefaultSelection(module.route)}
+                        title={isDefault ? 'Current Default Module' : `Set ${module.title} as Default`}
                       >
-                        Set As Default Module
+                        {isDefault ? (
+                          <>
+                            <FaCheck className="lp-card-footer-icon" />
+                            <span>Default Module</span>
+                          </>
+                        ) : (
+                          <span>Set As Default Module</span>
+                        )}
                       </button>
                     </motion.div>
                   )
@@ -180,8 +181,6 @@ const AdminLaunchpad = () => {
               </div>
             </section>
           </div>
-
-          {/* Expiry bar removed as requested */}
         </main>
 
         <RightPanel />

@@ -126,55 +126,81 @@
 
 .sales-dashboard .sales-header-signals {
   position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  align-self: stretch;
+  align-self: center;
 }
 
 .sales-dashboard .sales-header-signal {
-  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   box-sizing: border-box;
-  margin-inline: 0;
-  position: relative;
-  padding: 0.38rem 0.7rem 0.42rem 1.1rem;
-  text-align: left;
-  border: 1px solid #c60016 !important;
-  border-radius: 10px;
-  background: #ffffff !important;
-  box-shadow: 0 3px 8px rgba(198, 0, 22, 0.08);
-  transition:
-    transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out);
+  padding: 0.65rem 0.95rem;
+  border-radius: 14px;
+  border: 1.5px solid rgba(198, 0, 22, 0.22) !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fff7f7 100%) !important;
+  box-shadow: 0 4px 14px rgba(198, 0, 22, 0.07);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+  overflow: hidden;
 }
 
 .sales-dashboard .sales-header-signal::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 0.48rem;
+  top: 0;
+  left: 0;
   width: 4px;
-  height: 4px;
-  border-radius: 50%;
+  height: 100%;
   background: #c60016;
-  box-shadow: 0 0 0 2px rgba(198, 0, 22, 0.1);
-  transform: translateY(-50%);
+  border-radius: 4px 0 0 4px;
 }
 
 .sales-dashboard .sales-header-signal:hover {
   transform: translateY(-2px);
-  border-color: #9f0012 !important;
-  background: #fffafa !important;
-  box-shadow: 0 10px 22px rgba(198, 0, 22, 0.16);
+  border-color: #c60016 !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 22px rgba(198, 0, 22, 0.16);
+}
+
+.sales-dashboard .sales-signal-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(198, 0, 22, 0.08);
+  color: #c60016;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.sales-dashboard .sales-header-signal:hover .sales-signal-icon-wrapper {
+  background: #c60016;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.sales-dashboard .sales-signal-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .sales-dashboard .sales-header-signal-label {
   display: block;
-  margin: 0 0 0.12rem;
-  font-size: 0.6rem;
+  margin: 0 0 2px;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -184,11 +210,28 @@
 .sales-dashboard .sales-header-signal-value {
   display: block;
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 800;
   line-height: 1.25;
-  color: #111827;
-  overflow-wrap: anywhere;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sales-dashboard .sales-signal-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  border-radius: 20px;
+  background: rgba(198, 0, 22, 0.08);
+  color: #c60016;
+  border: 1px solid rgba(198, 0, 22, 0.18);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .sales-dashboard .sales-dropdown-container {

@@ -43,15 +43,15 @@
 
 .ap-home-tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(22, 93, 255, 0.2);
+  border-color: rgba(198, 0, 22, 0.3);
   box-shadow: var(--shadow-sm);
 }
 
 .ap-home-tab--active {
-  border-color: color-mix(in srgb, var(--color-danger) 34%, var(--border-subtle));
-  background: color-mix(in srgb, var(--color-danger) 10%, var(--surface-card));
-  color: var(--color-danger);
-  box-shadow: 0 14px 24px color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 60%, #e11d2e 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(198, 0, 22, 0.28);
 }
 
 .ap-tabs {
@@ -98,14 +98,14 @@
 
 .ap-tab:hover {
   transform: translateY(-1px);
-  border-color: rgba(22, 93, 255, 0.18);
+  border-color: rgba(198, 0, 22, 0.3);
 }
 
 .ap-tab--active {
-  border-color: color-mix(in srgb, var(--color-danger) 34%, var(--border-subtle));
-  background: color-mix(in srgb, var(--color-danger) 10%, var(--surface-card));
-  color: var(--color-danger);
-  box-shadow: 0 14px 24px color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 58%, #e11d2e 100%);
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(198, 0, 22, 0.25);
 }
 
 .ap-tab-icon {
@@ -130,14 +130,15 @@
 }
 
 .ap-tab-caret:hover {
-  border-color: rgba(22, 93, 255, 0.18);
+  border-color: rgba(198, 0, 22, 0.3);
   color: var(--text-primary);
 }
 
 .ap-tab-caret--active {
-  border-color: color-mix(in srgb, var(--color-danger) 34%, var(--border-subtle));
-  background: color-mix(in srgb, var(--color-danger) 10%, var(--surface-card));
-  color: var(--color-danger);
+  border-color: rgba(198, 0, 22, 0.4);
+  background: linear-gradient(135deg, #80000e 0%, #c60016 58%, #e11d2e 100%);
+  color: #ffffff;
+}
 }
 
 .ap-tab-menu {

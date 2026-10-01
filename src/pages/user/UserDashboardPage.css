@@ -93,7 +93,7 @@
   flex-shrink: 0;
 }
 
-.ud-stat-icon-wrapper--red { background: #ffe4e6; color: #dc2626; }
+.ud-stat-icon-wrapper--red { background: #ffe4e6; color: #c60016; }
 .ud-stat-icon-wrapper--blue { background: #e0f2fe; color: #0284c7; }
 .ud-stat-icon-wrapper--green { background: #dcfce7; color: #16a34a; }
 .ud-stat-icon-wrapper--orange { background: #ffedd5; color: #ea580c; }
@@ -188,7 +188,7 @@
   height: 2.6rem;
   border-radius: 12px;
   background: #fee2e2;
-  color: #dc2626;
+  color: #c60016;
   font-size: 1.25rem;
   flex-shrink: 0;
 }
@@ -207,7 +207,7 @@
 }
 
 .ud-todo-count-badge {
-  background: #dc2626;
+  background: #c60016;
   color: #ffffff;
   padding: 0.15rem 0.6rem;
   border-radius: 20px;
@@ -250,8 +250,8 @@
 
 .ud-todo-tab.active {
   background: #ffffff;
-  color: #dc2626;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  color: #c60016;
+  box-shadow: 0 2px 6px rgba(198, 0, 22, 0.12);
 }
 
 .ud-todo-list--expansive {
