@@ -1,0 +1,566 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEAM VIEW & USER GROUP - PURE BRAND COLOR IDENTITY (#c60016 & WHITE ONLY)
+   Strictly solid brand red #c60016 and white. No gradients, no other colors.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.team-view-page {
+  min-height: 100%;
+  width: 100%;
+  padding: 0.75rem 1rem 1.5rem;
+  box-sizing: border-box;
+  background: transparent !important;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+.team-view-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.team-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.team-view-header h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── Top Tabs (Team View / User Group / Attendance) ────────────────── */
+.team-view-top-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.85rem 1.25rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  overflow-x: auto;
+}
+
+.team-view-top-tabs--user {
+  max-width: 480px;
+}
+
+.team-view-top-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0 1.2rem;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.team-view-top-tab:hover {
+  color: #c60016;
+  background: var(--surface-muted);
+}
+
+.team-view-top-tab-active,
+.team-view-top-tab.team-view-top-tab-active {
+  color: #ffffff !important;
+  border-color: #c60016 !important;
+  background: #c60016 !important;
+  font-weight: 800 !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+[data-theme="dark"] .team-view-top-tab-active {
+  color: #ffffff !important;
+  background: #c60016 !important;
+  border-color: #c60016 !important;
+}
+
+/* ── Body Layout ─────────────────────────────────────────────────── */
+.team-view-body {
+  padding: 1.25rem;
+  min-height: 480px;
+  background: var(--surface-card);
+}
+
+.team-view-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Inner Tabs & Tree Hierarchy ─────────────────────────────────── */
+.team-view-inner-tabs {
+  display: inline-flex;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+  width: 100%;
+}
+
+.team-view-inner-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.team-view-inner-tab:hover {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+.team-view-inner-tab-active {
+  border-color: #c60016 !important;
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.team-view-tree-shell {
+  width: min(100%, 34rem);
+  min-height: 18rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-app);
+  padding: 1.2rem;
+  box-shadow: none;
+}
+
+.team-view-company-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  background: #c60016;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.75rem;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.team-view-tree-node {
+  margin: 0.5rem 0;
+}
+
+.team-view-tree-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.86rem;
+}
+
+.team-view-tree-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: transform 0.15s ease;
+}
+
+.team-view-tree-node-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.85rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.team-view-tree-trigger:hover .team-view-tree-node-pill {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+.team-view-tree-children {
+  margin-left: 1.25rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+}
+
+.team-view-tree-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Dropdown Select Panels ──────────────────────────────────────── */
+.team-view-select-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.team-view-select-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-app);
+}
+
+.team-view-select-row label {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  min-width: 140px;
+}
+
+.team-view-select-row select,
+.team-view-attendance-controls select {
+  min-height: 2.2rem;
+  min-width: 220px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.team-view-select-row select:focus,
+.team-view-attendance-controls select:focus {
+  border-color: #c60016;
+}
+
+/* ── Users Table & Attendance Table ──────────────────────────────── */
+.team-view-users-table,
+.team-view-attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  background: var(--surface-card);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.team-view-users-table th,
+.team-view-attendance-table th {
+  padding: 0.65rem 0.85rem;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-weight: 800;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+.team-view-users-table td,
+.team-view-attendance-table td {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.team-view-users-table tbody tr:hover,
+.team-view-attendance-table tbody tr:hover {
+  background: var(--surface-muted);
+}
+
+/* ── Attendance Panel ────────────────────────────────────────────── */
+.team-view-attendance-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.attendance-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.75rem;
+}
+
+.attendance-stat-box {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: none;
+}
+
+.attendance-stat-icon {
+  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #c60016;
+}
+
+.attendance-stat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.attendance-stat-main strong {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.attendance-stat-main span {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.team-view-attendance-report-box {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card);
+  padding: 1.1rem;
+}
+
+.team-view-attendance-report-box h2 {
+  margin: 0 0 0.85rem;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.team-view-attendance-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.team-view-attendance-view-btn,
+.team-view-attendance-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.2rem;
+  padding: 0 1rem;
+  border: 1px solid #c60016;
+  border-radius: 6px;
+  background: #c60016;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.team-view-attendance-view-btn:hover,
+.team-view-attendance-export-btn:hover {
+  opacity: 0.9;
+}
+
+.team-view-attendance-table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+/* ── User Group Dashboard & Widgets ──────────────────────────────── */
+.ug-action-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.ug-action-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.ug-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.2rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ug-btn:hover {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+.ug-btn--active {
+  border-color: #c60016 !important;
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.ug-panel {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card);
+  padding: 1rem;
+  box-shadow: none;
+}
+
+.ug-panel-titlebar,
+.ug-login-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ug-panel-title,
+.ug-login-history-title {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.ug-summary-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.55rem;
+  padding: 0.75rem 0;
+}
+
+.ug-summary-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ug-summary-item-count {
+  font-weight: 800;
+  color: #c60016;
+}
+
+.ug-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.ug-table th {
+  padding: 0.55rem 0.75rem;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-weight: 800;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ug-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* ── Universal Icon Visibility Guarantee ─────────────────────────── */
+.team-view-page svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.team-view-top-tab-active svg,
+.team-view-inner-tab-active svg,
+.ug-btn--active svg,
+.team-view-attendance-view-btn svg,
+.team-view-attendance-export-btn svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}

@@ -1,0 +1,292 @@
+/* Unified Excel export control — used by every Excel/CSV button in the app.
+ * One icon style, one button height, one set of states (idle / hover / focus /
+ * loading / success / disabled). Responsive on tablet & mobile. */
+
+.excel-export-control {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.excel-export-control--full {
+  width: 100%;
+}
+
+.excel-export-button--full {
+  width: 100%;
+}
+
+.excel-export-button,
+.excel-export-menu-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 2.5rem;
+  height: 2.5rem;
+  padding: 0 1.05rem;
+  border: 1px solid #1e663e;
+  border-radius: 0.65rem;
+  background: #217346;
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  transition: transform 0.14s ease, filter 0.14s ease, opacity 0.14s ease, background 0.14s ease, border-color 0.14s ease;
+}
+
+.excel-export-button:hover:not(:disabled),
+.excel-export-menu-item:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #1e663e;
+  box-shadow: none;
+  filter: brightness(1.04);
+}
+
+.excel-export-button:focus-visible,
+.excel-export-menu-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(33, 115, 70, 0.32);
+}
+
+.excel-export-button:active:not(:disabled),
+.excel-export-menu-item:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.97);
+}
+
+.excel-export-button:disabled,
+.excel-export-menu-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(0.15);
+}
+
+.excel-export-button--compact {
+  min-width: 2.5rem;
+  padding: 0 0.85rem;
+}
+
+.excel-export-button--menu-open {
+  box-shadow: 0 0 0 3px rgba(33, 115, 70, 0.22);
+}
+
+.excel-export-button--success,
+.excel-export-menu-item--success {
+  border-color: #176f42;
+  background: #25965a;
+}
+
+.excel-export-button--loading,
+.excel-export-menu-item--loading {
+  border-color: #28779b;
+  background: #28779b;
+  cursor: progress;
+}
+
+.excel-export-button__icon,
+.excel-export-menu-item__icon,
+.excel-export-button__chevron {
+  flex-shrink: 0;
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.excel-export-button__label,
+.excel-export-menu-item__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+
+.excel-export-button__status,
+.excel-export-menu-item__status {
+  font-weight: 700;
+}
+
+.excel-export-button__spinner,
+.excel-export-menu-item__spinner,
+.excel-export-button__icon__spinner,
+.excel-export-menu-item__icon__spinner {
+  animation: excel-export-spin 0.9s linear infinite;
+}
+
+.excel-export-button__chevron {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-left: 0.1rem;
+}
+
+.excel-export-menu {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  min-width: min(320px, calc(100vw - 1rem));
+  max-width: min(360px, calc(100vw - 1rem));
+  padding: 0.55rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.85rem;
+  background: var(--surface-card);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+  z-index: 2500;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.excel-export-menu--left {
+  left: 0;
+  right: auto;
+}
+
+.excel-export-menu-group {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.excel-export-menu-group + .excel-export-menu-group {
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.excel-export-menu-group__label {
+  padding: 0.1rem 0.2rem 0;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.excel-export-menu-item {
+  width: 100%;
+  height: auto;
+  min-height: 2.6rem;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  border-color:  var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+/* Idle dropdown items: tint the Excel icon green so it reads as Excel rather
+ * than a generic dark file glyph (which is how it renders if it inherits the
+ * dark text color). Loading/success states still use white for contrast. */
+.excel-export-menu-item .excel-export-menu-item__icon {
+  color: var(--text-primary);
+}
+
+.excel-export-menu-item:hover:not(:disabled) {
+  background: var(--surface-muted);
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.excel-export-menu-item:hover:not(:disabled) .excel-export-menu-item__icon {
+  color: var(--text-primary);
+}
+
+.excel-export-menu-item--loading,
+.excel-export-menu-item--success {
+  color: #ffffff;
+}
+
+.excel-export-menu-item--loading .excel-export-menu-item__icon,
+.excel-export-menu-item--success .excel-export-menu-item__icon {
+  color: #ffffff;
+}
+
+.excel-export-menu-item--success {
+  color: #ffffff;
+}
+
+.excel-export-menu-item__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.excel-export-menu-item__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.excel-export-menu-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+  min-height: 1.45rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.excel-export-menu-item--loading .excel-export-menu-item__badge,
+.excel-export-menu-item--success .excel-export-menu-item__badge {
+  background: var(--surface-card);
+  color: #ffffff;
+}
+
+.excel-export-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* Tablet — keep button visible and tappable without growing */
+@media (max-width: 1024px) {
+  .excel-export-button {
+    padding: 0 0.95rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .excel-export-button {
+    min-height: 2.45rem;
+    height: 2.45rem;
+    padding: 0 0.9rem;
+    font-size: 0.84rem;
+  }
+
+  .excel-export-menu {
+    min-width: min(300px, calc(100vw - 1rem));
+  }
+}
+
+/* Mobile — go full width within container so it doesn't crowd the toolbar */
+@media (max-width: 640px) {
+  .excel-export-button,
+  .excel-export-menu-item {
+    width: 100%;
+  }
+
+  .excel-export-button__label--responsive-hide {
+    display: none;
+  }
+}
+
+@keyframes excel-export-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

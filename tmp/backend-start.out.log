@@ -1,0 +1,14 @@
+
+> crm-platform@1.0.0 start:backend
+> node tools/start-stack.js backend
+
+========================================
+ CRM - Starting...
+========================================
+
+MongoDB mode: using MONGODB_URI/MONGO_URI or local mongodb://127.0.0.1:27017/crm.
+
+WARNING: Ignoring stale PID file for CRM Backend: PID 13720 now belongs to 'cmd'.
+CRM Backend started with PID 21888.
+
+Backend ready at http://127.0.0.1:5000

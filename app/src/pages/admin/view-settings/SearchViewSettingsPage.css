@@ -1,0 +1,379 @@
+/* ── Page shell ─────────────────────────────────────────── */
+.svs-page {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - var(--header-height) - 12px);
+  min-height: 0;
+  background: var(--surface-app);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ────────────────────────────────────────────── */
+.svs-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 1rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.svs-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.svs-back-btn:hover { color: var(--color-primary); }
+
+.svs-save-btn {
+  padding: 0.32rem 1.2rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.svs-save-btn:hover { background: #1f6fa0; }
+
+/* ── Body layout ────────────────────────────────────────── */
+.svs-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left sidebar context tabs ──────────────────────────── */
+.svs-sidebar {
+  width: 160px;
+  flex-shrink: 0;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.svs-ctx-btn {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: none;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s;
+}
+
+.svs-ctx-btn:hover { background: var(--surface-muted); }
+
+.svs-ctx-btn--active {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.svs-ctx-btn--active:hover { background: #2473a8; }
+
+/* ── Main content area ──────────────────────────────────── */
+.svs-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 2rem;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.svs-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* ── Row bar (Additional Filters / Order By) ────────────── */
+.svs-row-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.9rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.svs-row-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Toggle */
+.svs-toggle {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  padding: 0;
+}
+
+.svs-toggle-knob {
+  position: absolute;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface-card);
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+
+.svs-yn {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.svs-yn--yes { color: var(--color-success); }
+.svs-yn--no  { color: var(--color-warning); }
+
+/* ── Actions section ────────────────────────────────────── */
+.svs-actions-section {
+  padding: 0.55rem 0.9rem;
+  background: var(--surface-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.svs-actions-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.svs-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.3rem 0.5rem;
+}
+
+.svs-action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.svs-action-item input { cursor: pointer; }
+
+/* ── Order By section ───────────────────────────────────── */
+.svs-orderby-section {
+  margin: 0.5rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  background: var(--surface-card);
+}
+
+.svs-orderby-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.75rem;
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.svs-orderby-icon { font-size: 0.85rem; }
+
+.svs-orderby-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.svs-orderby-body {
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.svs-orderby-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 0.28rem 0.5rem;
+  background: var(--surface-muted);
+  width: fit-content;
+}
+
+.svs-orderby-field {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.svs-orderby-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-danger);
+  color: #ffffff;
+  font-size: 0.6rem;
+  cursor: pointer;
+}
+
+.svs-orderby-asc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.svs-orderby-asc-label {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+/* ── Two-panel field picker ─────────────────────────────── */
+.svs-fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  border-top: 1px solid var(--border-subtle);
+  min-height: 20rem;
+  margin-top: 0.5rem;
+}
+
+.svs-field-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.svs-field-panel:last-child { border-right: none; }
+
+.svs-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.svs-panel-icon { font-size: 0.8rem; }
+
+.svs-field-hint-row {
+  padding: 0.38rem 0.9rem;
+  background: var(--surface-muted);
+  font-size: 0.75rem;
+  color: var(--color-primary-strong);
+  font-style: italic;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.svs-field-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.svs-field-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border: none;
+  border-bottom: 1px solid var(--surface-app);
+  background: var(--surface-card);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.08s;
+}
+
+.svs-field-item:hover { background: var(--surface-muted); }
+.svs-field-item:last-child { border-bottom: none; }
+.svs-field-item--sel { cursor: default; }
+.svs-field-item--sel:hover { background: var(--surface-card); }
+
+.svs-grip {
+  color: #b0bec5;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.svs-field-name { flex: 1; }
+
+.svs-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-danger);
+  font-size: 0.7rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.svs-remove-btn:hover { background: var(--surface-card); }
+
+.svs-field-empty {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  color: #9aacba;
+}
+
+.svs-field-list::-webkit-scrollbar { width: 4px; }
+.svs-field-list::-webkit-scrollbar-track { background: var(--surface-app); }
+.svs-field-list::-webkit-scrollbar-thumb { background: var(--surface-muted); border-radius: 2px; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .svs-fields-row { grid-template-columns: 1fr; }
+  .svs-actions-grid { grid-template-columns: repeat(2, 1fr); }
+  .svs-sidebar { width: 110px; }
+}

@@ -1,0 +1,456 @@
+/* ── Page shell ─────────────────────────────────────────── */
+.vdv-page {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - var(--header-height) - 12px);
+  min-height: 0;
+  background: var(--surface-app);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Top bar ────────────────────────────────────────────── */
+.vdv-topbar {
+  padding: 0.45rem 1rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.vdv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.vdv-back-btn:hover { color: var(--color-primary); }
+
+/* ── Wizard panel ───────────────────────────────────────── */
+.vdv-panel {
+  margin: 0.8rem 1rem 2rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Panel title row ────────────────────────────────────── */
+.vdv-panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.vdv-panel-icon {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.vdv-panel-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Step progress bar ──────────────────────────────────── */
+.vdv-steps {
+  display: flex;
+  align-items: center;
+  padding: 0.9rem 1.4rem 0.75rem;
+  gap: 0;
+}
+
+.vdv-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.vdv-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: #999;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.vdv-step-num--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.vdv-step-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.vdv-step-label--active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.vdv-step-arrow {
+  color: #ccc;
+  font-size: 0.8rem;
+}
+
+.vdv-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0 1rem;
+}
+
+/* ── Step body ──────────────────────────────────────────── */
+.vdv-step-body {
+  padding: 1rem 1.2rem 0.5rem;
+  flex: 1;
+}
+
+.vdv-step-body--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 14rem;
+}
+
+.vdv-placeholder-text {
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+/* ── Classification box ─────────────────────────────────── */
+.vdv-classify-box {
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: var(--surface-muted);
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vdv-classify-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Classification field row */
+.vdv-cf-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.vdv-cf-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  min-width: 120px;
+}
+
+.vdv-cf-select {
+  flex: 1;
+  max-width: 560px;
+  padding: 0.38rem 0.7rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: var(--surface-card);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+/* ── Status box ─────────────────────────────────────────── */
+.vdv-status-box {
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: var(--surface-card);
+  padding: 0.65rem 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.vdv-status-hint-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.vdv-status-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.vdv-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  border: 1px solid var(--color-primary);
+  border-radius: 3px;
+  background: var(--color-primary);
+  cursor: pointer;
+}
+
+.vdv-sort-icon {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+/* ── Status chips ───────────────────────────────────────── */
+.vdv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.vdv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  transition: border-color 0.12s;
+}
+
+.vdv-chip:hover { border-color: var(--color-primary); }
+
+.vdv-chip-state {
+  padding: 0.2rem 0.38rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-subtle);
+  letter-spacing: 0.01em;
+  min-width: 28px;
+  text-align: center;
+}
+
+.vdv-chip-square {
+  width: 20px;
+  height: 24px;
+  flex-shrink: 0;
+  background: #5cb85c;
+  transition: background 0.12s;
+}
+
+.vdv-chip--off .vdv-chip-square {
+  background: var(--color-danger);
+}
+
+.vdv-chip-label {
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  background: var(--surface-card);
+  white-space: nowrap;
+}
+
+/* Drag hint */
+.vdv-drag-hint {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--text-primary);
+}
+
+.vdv-hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Step 3: Two-panel field picker ─────────────────────── */
+.vdv-fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  border-top: 1px solid var(--border-subtle);
+  min-height: 18rem;
+}
+
+.vdv-field-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.vdv-field-panel:last-child { border-right: none; }
+
+.vdv-panel-header {
+  padding: 0.45rem 0.9rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.vdv-field-hint-row {
+  padding: 0.38rem 0.9rem;
+  background: var(--surface-muted);
+  font-size: 0.75rem;
+  color: var(--color-primary-strong);
+  font-style: italic;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.vdv-field-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.vdv-field-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.75rem;
+  border: none;
+  border-bottom: 1px solid var(--surface-app);
+  background: var(--surface-card);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.08s;
+}
+
+.vdv-field-item:hover { background: var(--surface-muted); }
+.vdv-field-item:last-child { border-bottom: none; }
+
+.vdv-field-item--sel { cursor: default; }
+.vdv-field-item--sel:hover { background: var(--surface-card); }
+
+.vdv-grip {
+  color: #b0bec5;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.vdv-field-name { flex: 1; }
+
+.vdv-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-danger);
+  font-size: 0.72rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.vdv-remove-btn:hover { background: var(--surface-card); }
+
+.vdv-field-empty {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.78rem;
+  color: #9aacba;
+}
+
+.vdv-field-list::-webkit-scrollbar { width: 4px; }
+.vdv-field-list::-webkit-scrollbar-track { background: var(--surface-app); }
+.vdv-field-list::-webkit-scrollbar-thumb { background: var(--surface-muted); border-radius: 2px; }
+
+/* ── Footer nav ─────────────────────────────────────────── */
+.vdv-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.2rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.vdv-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 1.1rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.vdv-nav-btn:hover:not(:disabled) {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.vdv-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .vdv-fields-row { grid-template-columns: 1fr; }
+  .vdv-field-panel { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+}

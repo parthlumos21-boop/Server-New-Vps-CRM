@@ -1,0 +1,534 @@
+.remark-report-builder-page {
+  margin: -1rem -1.25rem 0;
+  min-height: 100%;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.remark-report-builder-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0.8rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.remark-report-builder-topbar h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.remark-report-builder-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.remark-report-builder-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.7rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0 0.75rem;
+  cursor: pointer;
+}
+
+.remark-report-builder-btn-cancel {
+  background: linear-gradient(180deg, #e66f6f 0%, #cd4d4d 100%);
+}
+
+.remark-report-builder-btn-save {
+  background: linear-gradient(180deg, #79b663 0%, #5c9a45 100%);
+}
+
+.remark-report-builder-form {
+  width: 100%;
+  padding: 0.75rem 0.9rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.remark-report-builder-panel {
+  position: relative;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-muted);
+  margin-bottom: 0.8rem;
+  padding: 1.05rem 1.55rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.remark-report-builder-context-panel {
+  padding: 0.8rem 1.35rem;
+}
+
+.remark-report-toggle-panel {
+  min-height: 3.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.remark-report-builder-row-inline {
+  display: grid;
+  grid-template-columns: 240px minmax(280px, 420px) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.remark-report-builder-row-inline label,
+.remark-report-meta-row > label,
+.remark-report-section-label {
+  padding-top: 0.35rem;
+  white-space: nowrap;
+}
+
+.remark-report-builder-row-inline label,
+.remark-report-meta-row > label,
+.remark-report-section-label {
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.remark-report-builder-row-inline label svg,
+.remark-report-meta-row > label svg {
+  color: var(--text-primary);
+  margin-left: 0.25rem;
+}
+
+.remark-report-builder-row-inline select,
+.remark-report-meta-form input,
+.remark-report-meta-form select,
+.remark-report-meta-form textarea,
+.remark-report-filter-row select,
+.remark-report-filter-row input {
+  width: 100%;
+  min-height: 1.95rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  padding: 0.25rem 0.55rem;
+}
+
+.remark-report-toggle-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.remark-report-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.05rem 1fr;
+  align-items: center;
+  gap: 0.22rem;
+  width: 3.1rem;
+  height: 1.35rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  background: var(--surface-card);
+  padding: 0 0.22rem;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.remark-report-toggle-knob {
+  display: block;
+  width: 1rem;
+  height: 0.82rem;
+  border-radius: 1px;
+  background: var(--surface-card);
+  transition: background 0.15s ease;
+}
+
+.remark-report-toggle-text {
+  color: var(--text-primary);
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  letter-spacing: 0;
+}
+
+.remark-report-toggle-yes {
+  grid-template-columns: 1fr 1.05rem;
+  background: var(--surface-card);
+}
+
+.remark-report-toggle-yes .remark-report-toggle-knob {
+  grid-column: 2;
+  grid-row: 1;
+  background: #60a844;
+}
+
+.remark-report-toggle-yes .remark-report-toggle-text {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.remark-report-toggle-line strong {
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.remark-report-meta-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 980px;
+}
+
+.remark-report-meta-row {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.35rem;
+  align-items: start;
+}
+
+.remark-report-meta-controls {
+  min-width: 0;
+}
+
+.remark-report-meta-controls-two {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(220px, 360px);
+  gap: 1.35rem;
+}
+
+.remark-report-meta-form textarea {
+  min-height: 4.2rem;
+  resize: vertical;
+}
+
+.remark-report-inline-select {
+  display: grid;
+  grid-template-columns: 1.55rem minmax(220px, 360px);
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.remark-report-plus-btn,
+.remark-report-trash-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.55rem;
+  height: 1.45rem;
+  border: none;
+  color: #ffffff;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.remark-report-plus-btn {
+  background: #86bb42;
+}
+
+.remark-report-trash-btn {
+  background: var(--surface-muted);
+}
+
+.remark-report-filter-panel,
+.remark-report-fields-panel {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.remark-report-blue-box {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.remark-report-blue-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.85rem;
+  padding: 0 0.65rem;
+  background: linear-gradient(180deg, #48add4 0%, #1684bd 100%);
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.remark-report-filter-inner {
+  margin: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface-muted);
+  overflow-x: auto;
+}
+
+.remark-report-filter-title {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.45rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.remark-report-filter-title::before {
+  content: '▼';
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.remark-report-filter-row {
+  display: grid;
+  grid-template-columns: 24px minmax(220px, 360px) 18px 44px minmax(110px, 150px) minmax(180px, 260px) 1.55rem 1.55rem;
+  gap: 0.35rem;
+  align-items: center;
+  min-width: 760px;
+}
+
+.remark-report-filter-row span {
+  color: var(--text-primary);
+  font-size: 0.75rem;
+}
+
+.remark-report-filter-not {
+  display: flex;
+  align-items: center;
+  gap: 0.18rem;
+  color: var(--text-primary);
+  font-size: 0.68rem;
+}
+
+.remark-report-fields-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) 72px minmax(320px, 0.88fr);
+  gap: 1.4rem;
+  padding: 0.9rem 1rem;
+  min-height: 650px;
+}
+
+.remark-report-field-box {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.remark-report-field-box-heading {
+  min-height: 1.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.65rem;
+  background: linear-gradient(180deg, #48add4 0%, #1684bd 100%);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.remark-report-field-tree,
+.remark-report-selected-list {
+  height: 610px;
+  overflow: auto;
+  padding: 1rem 1.35rem;
+}
+
+.remark-report-field-subtitle {
+  margin: 0.15rem 0 0.35rem;
+  color: var(--text-primary);
+  font-size: 1.12rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.remark-report-field-group + .remark-report-field-group {
+  margin-top: 0.4rem;
+}
+
+.remark-report-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 1.42rem;
+  padding: 0.05rem 0 0.05rem 1.55rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.remark-report-field-row svg {
+  flex: 0 0 auto;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+}
+
+.remark-report-field-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.remark-report-field-row.active {
+  background: #1f66d1;
+  color: #ffffff;
+}
+
+.remark-report-field-row.active svg {
+  color: #ffffff;
+}
+
+.remark-report-field-empty {
+  padding: 0.8rem;
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.remark-report-transfer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 0.35rem;
+}
+
+.remark-report-transfer button {
+  margin-top: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  cursor: pointer;
+}
+
+.remark-report-selected-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 1.55rem;
+  margin-bottom: 0.25rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+}
+
+.remark-report-selected-item div {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.remark-report-selected-item button {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.64rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.remark-report-builder-error {
+  margin-top: 0.6rem;
+  color: var(--color-danger);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+@media (max-width: 1180px) {
+  .remark-report-builder-form {
+    padding: 0.65rem;
+  }
+
+  .remark-report-builder-panel {
+    padding: 0.85rem 1rem;
+  }
+
+  .remark-report-fields-layout {
+    grid-template-columns: minmax(280px, 1fr) 56px minmax(280px, 1fr);
+    gap: 0.9rem;
+  }
+}
+
+@media (max-width: 980px) {
+  .remark-report-filter-panel,
+  .remark-report-fields-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .remark-report-section-label {
+    padding-top: 0;
+  }
+
+  .remark-report-fields-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .remark-report-field-tree,
+  .remark-report-selected-list {
+    height: 360px;
+  }
+
+  .remark-report-transfer {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .remark-report-transfer button {
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .remark-report-builder-row-inline,
+  .remark-report-meta-row,
+  .remark-report-meta-controls-two,
+  .remark-report-inline-select {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+  }
+
+  .remark-report-builder-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .remark-report-builder-topbar-actions {
+    justify-content: flex-end;
+  }
+
+  .remark-report-builder-panel {
+    padding: 0.75rem;
+  }
+
+  .remark-report-toggle-panel {
+    min-height: 2.7rem;
+  }
+
+  .remark-report-filter-inner {
+    margin: 0.5rem;
+    padding: 0.55rem;
+  }
+
+  .remark-report-filter-row {
+    grid-template-columns: 1fr;
+    min-width: 0;
+  }
+
+  .remark-report-plus-btn,
+  .remark-report-trash-btn {
+    width: 2rem;
+  }
+}

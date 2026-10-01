@@ -1,0 +1,83 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7c4a54f4f8459049aa317d"
+    },
+    "legacyId": 6,
+    "createdAt": {
+      "$date": "2026-08-12T10:26:28.591Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T10:26:28.591Z"
+    },
+    "groupName": "Swati test",
+    "companyId": 1,
+    "companyName": "Swati",
+    "role": "user",
+    "designation": "",
+    "state": "",
+    "city": "",
+    "description": "",
+    "createdBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "status": "active",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7c52569aaf7975a1da4ca1"
+    },
+    "legacyId": 7,
+    "createdAt": {
+      "$date": "2026-08-12T11:00:38.302Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T11:00:38.302Z"
+    },
+    "groupName": "Test Group",
+    "companyId": 1,
+    "companyName": "Swati",
+    "role": "user",
+    "designation": "",
+    "state": "",
+    "city": "",
+    "description": "",
+    "createdBy": {
+      "userId": 1,
+      "name": "Admin",
+      "email": "admin@test.com"
+    },
+    "status": "active",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7c644e61573280d10c17e3"
+    },
+    "legacyId": 8,
+    "createdAt": {
+      "$date": "2026-08-12T12:17:18.061Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T12:17:18.061Z"
+    },
+    "groupName": "swati 2",
+    "companyId": 1,
+    "companyName": "Swati",
+    "role": "admin",
+    "designation": "",
+    "state": "",
+    "city": "",
+    "description": "",
+    "createdBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "status": "active",
+    "__v": 0
+  }
+]

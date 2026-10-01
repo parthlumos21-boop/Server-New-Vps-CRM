@@ -1,0 +1,402 @@
+import React, { useMemo, useState } from 'react'
+import {
+  Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from 'recharts'
+import {
+  FaBuilding,
+  FaChartBar,
+  FaChartLine,
+  FaChartPie,
+  FaFileInvoiceDollar,
+  FaFilter,
+  FaHandshake,
+  FaHistory,
+  FaRegClock,
+} from 'react-icons/fa'
+import Badge from '../common/Badge'
+import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
+import './AnalyticsSection.css'
+
+const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
+
+const normalize = (value) => String(value || '').trim().toLowerCase()
+const amountOf = (item) => Number(item?.total || item?.grandTotal || item?.value || item?.amount || 0) || 0
+const dateOf = (item) => item?.createdAt || item?.date || item?.dealDate || item?.quotationDate || item?.updatedAt
+
+const monthKey = (date) => {
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return null
+  return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`
+}
+
+const buildMonthlyData = (deals, quotations) => {
+  const keys = Array.from(new Set([...deals, ...quotations].map((item) => monthKey(dateOf(item))).filter(Boolean))).sort().slice(-6)
+  return keys.map((key) => {
+    const [year, month] = key.split('-')
+    const scopedDeals = deals.filter((item) => monthKey(dateOf(item)) === key)
+    const scopedQuotations = quotations.filter((item) => monthKey(dateOf(item)) === key)
+    return {
+      name: new Date(Number(year), Number(month) - 1, 1).toLocaleDateString('en-IN', { month: 'short' }),
+      newDeals: scopedDeals.length,
+      wonDeals: scopedDeals.filter((item) => ['won', 'closed'].includes(normalize(item.status || item.stage))).length,
+      lostDeals: scopedDeals.filter((item) => ['lost', 'rejected', 'order_lost'].includes(normalize(item.status || item.stage))).length,
+      quotationValue: scopedQuotations.reduce((sum, item) => sum + amountOf(item), 0),
+    }
+  })
+}
+
+const CustomChartTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="analytics-tooltip">
+        <div className="analytics-tooltip-title">{label}</div>
+        {payload.map((entry, index) => (
+          <div key={`tooltip-${index}`} className="analytics-tooltip-item">
+            <span className="analytics-tooltip-dot" style={{ backgroundColor: entry.color || entry.fill }} />
+            <span className="analytics-tooltip-name">{entry.name}:</span>
+            <span className="analytics-tooltip-val">
+              {typeof entry.value === 'number' && entry.name.toLowerCase().includes('value')
+                ? formatCurrency(entry.value)
+                : entry.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
+
+const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activities = [], users = [] }) => {
+  const [period, setPeriod] = useState('month')
+  const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
+
+  const pipeline = useMemo(() => {
+    const counts = deals.reduce((result, deal) => {
+      const key = String(deal.stage || deal.status || 'unknown').replace(/_/g, ' ')
+      result[key] = (result[key] || 0) + 1
+      return result
+    }, {})
+    return Object.entries(counts).map(([name, value]) => ({ name, value }))
+  }, [deals])
+
+  const recentDeals = useMemo(() => [...deals].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [deals])
+  const recentQuotations = useMemo(() => [...quotations].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [quotations])
+
+  const totalDealsVal = useMemo(() => deals.reduce((sum, d) => sum + amountOf(d), 0), [deals])
+  const totalQuotationVal = useMemo(() => quotations.reduce((sum, q) => sum + amountOf(q), 0), [quotations])
+
+  return (
+    <section className="analytics-section" aria-label="Analytics">
+      <div className="analytics-section__header">
+        <div className="analytics-title-group">
+          <div className="analytics-header-icon">
+            <FaChartPie aria-hidden="true" />
+          </div>
+          <div>
+            <span className="analytics-eyebrow">Performance & Insights</span>
+            <h2>Sales Analytics Dashboard</h2>
+          </div>
+        </div>
+
+        <div className="analytics-header-right">
+          <div className="analytics-header-pills">
+            <div className="analytics-header-pill">
+              <span className="analytics-pill-label">Deals</span>
+              <span className="analytics-pill-val">{deals.length}</span>
+            </div>
+            <div className="analytics-header-pill">
+              <span className="analytics-pill-label">Quotations</span>
+              <span className="analytics-pill-val">{quotations.length}</span>
+            </div>
+            <div className="analytics-header-pill">
+              <span className="analytics-pill-label">Accounts</span>
+              <span className="analytics-pill-val">{accounts.length}</span>
+            </div>
+          </div>
+
+          <div className="analytics-filter-wrap">
+            <FaFilter className="analytics-filter-icon" />
+            <select
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+              aria-label="Analytics period"
+              className="analytics-select"
+            >
+              <option value="month">Month wise</option>
+              <option value="week">Week wise</option>
+              <option value="day">Day wise</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="analytics-grid analytics-grid--charts">
+        <article className="analytics-card analytics-card--wide">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaChartLine /></span>
+              Deal Volume Trend
+            </h3>
+            <span className="analytics-card-subbadge">{chartData.length} Months</span>
+          </div>
+          <div className="analytics-chart-body">
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="gradNewDeals" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="gradWonDeals" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <Tooltip content={<CustomChartTooltip />} />
+                <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
+                <Line type="monotone" dataKey="newDeals" name="New Deals" stroke="#0284c7" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="wonDeals" name="Won Deals" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="lostDeals" name="Lost Deals" stroke="#dc2626" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaChartBar /></span>
+              Pipeline Stages
+            </h3>
+            <span className="analytics-card-subbadge">{pipeline.length} Stages</span>
+          </div>
+          <div className="analytics-chart-body">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={pipeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <Tooltip content={<CustomChartTooltip />} />
+                <Bar dataKey="value" name="Deals" radius={[8, 8, 0, 0]}>
+                  {pipeline.map((entry, index) => (
+                    <Cell key={`cell-${entry.name}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-card--wide">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaFileInvoiceDollar /></span>
+              Quotation Value Trend
+            </h3>
+            <span className="analytics-card-subbadge">{formatCurrency(totalQuotationVal)}</span>
+          </div>
+          <div className="analytics-chart-body">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value) => formatCurrency(value)} content={<CustomChartTooltip />} />
+                <Bar dataKey="quotationValue" name="Quotation Value" fill="#dc2626" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+
+        <article className="analytics-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaChartPie /></span>
+              Distribution Summary
+            </h3>
+            <span className="analytics-card-subbadge">Overview</span>
+          </div>
+          <div className="analytics-chart-body">
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                  data={users.length ? users.map((user) => ({ name: user.department || user.role || 'Other', value: 1 })).reduce((all, item) => { const found = all.find((entry) => entry.name === item.name); if (found) found.value += 1; else all.push(item); return all }, []) : (pipeline.length ? pipeline : [{ name: 'Active', value: 1 }])}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={52}
+                  outerRadius={85}
+                  paddingAngle={4}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {(users.length ? users : (pipeline.length ? pipeline : [{ name: 'Active' }])).map((entry, index) => (
+                    <Cell key={`pie-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </article>
+      </div>
+
+      <div className="analytics-grid analytics-grid--tables">
+        <article className="analytics-card analytics-table-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaHandshake /></span>
+              Recent Deals
+            </h3>
+            <span className="analytics-card-subbadge">{recentDeals.length} Deals</span>
+          </div>
+          <div className="analytics-table-wrap">
+            {recentDeals.length === 0 ? (
+              <div className="analytics-empty-state">No recent deals available</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Owner</th>
+                    <th>Stage</th>
+                    <th style={{ textAlign: 'right' }}>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentDeals.map((deal) => (
+                    <tr key={deal.id || deal._id}>
+                      <td className="analytics-td-bold">{deal.name || deal.dealName || deal.title || '-'}</td>
+                      <td>{deal.ownerName || deal.dealOwner || '-'}</td>
+                      <td>
+                        <Badge variant={getStatusColor(deal.stage || deal.status)}>
+                          {deal.stage || deal.status || '-'}
+                        </Badge>
+                      </td>
+                      <td className="analytics-td-value" style={{ textAlign: 'right' }}>{formatCurrency(amountOf(deal))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-table-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaFileInvoiceDollar /></span>
+              Quotations
+            </h3>
+            <span className="analytics-card-subbadge">{recentQuotations.length} Records</span>
+          </div>
+          <div className="analytics-table-wrap">
+            {recentQuotations.length === 0 ? (
+              <div className="analytics-empty-state">No quotations available</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quotation #</th>
+                    <th>Account</th>
+                    <th style={{ textAlign: 'right' }}>Total Amount</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentQuotations.map((quotation) => (
+                    <tr key={quotation.id || quotation._id}>
+                      <td className="analytics-td-bold">{quotation.quotationNumber || quotation.number || '-'}</td>
+                      <td>{quotation.accountName || quotation.customerName || '-'}</td>
+                      <td className="analytics-td-value" style={{ textAlign: 'right' }}>{formatCurrency(amountOf(quotation))}</td>
+                      <td>{formatDate(dateOf(quotation))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-table-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaBuilding /></span>
+              Accounts
+            </h3>
+            <span className="analytics-card-subbadge">{accounts.length} Total</span>
+          </div>
+          <div className="analytics-table-wrap">
+            {accounts.length === 0 ? (
+              <div className="analytics-empty-state">No accounts available</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Account</th>
+                    <th>Contact Person</th>
+                    <th>Industry</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accounts.slice(0, 8).map((account) => (
+                    <tr key={account.id || account._id}>
+                      <td className="analytics-td-bold">{account.name || '-'}</td>
+                      <td>{account.contactPerson || '-'}</td>
+                      <td>{account.industryType || '-'}</td>
+                      <td>
+                        <Badge variant={getStatusColor(account.status || account.stage)}>
+                          {account.status || account.stage || 'Active'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </article>
+
+        <article className="analytics-card analytics-table-card">
+          <div className="analytics-card-header">
+            <h3>
+              <span className="analytics-card-badge-icon"><FaHistory /></span>
+              Recent Activity Log
+            </h3>
+            <span className="analytics-card-subbadge">Live</span>
+          </div>
+          <div className="analytics-activity-list">
+            {activities.length === 0 ? (
+              <div className="analytics-empty-state">No recent activities</div>
+            ) : (
+              activities.slice(0, 8).map((activity) => (
+                <div key={activity.id || activity._id} className="analytics-activity-item">
+                  <div className="analytics-act-icon-wrapper">
+                    <FaRegClock className="analytics-act-icon" />
+                  </div>
+                  <div className="analytics-act-content">
+                    <strong>{activity.title || activity.action || 'Activity Recorded'}</strong>
+                    <span>{activity.message || activity.description || activity.entityType || ''}</span>
+                  </div>
+                  <time>{formatDate(activity.createdAt || activity.timestamp)}</time>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+      </div>
+
+      <div className="analytics-footer-note">
+        <span>Viewing {period}-wise synchronized metrics backed by live CRM database records.</span>
+      </div>
+    </section>
+  )
+}
+
+export default AnalyticsSection

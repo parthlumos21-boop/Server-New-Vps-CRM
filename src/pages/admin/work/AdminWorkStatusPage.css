@@ -1,0 +1,105 @@
+.admin-work-status-page {
+  display: grid;
+  gap: 24px;
+}
+
+.admin-work-status-header h1 {
+  margin-bottom: 8px;
+}
+
+.admin-work-status-header p {
+  color: var(--text-secondary);
+}
+
+.admin-work-status-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.admin-work-status-stat .card-body {
+  text-align: center;
+}
+
+.admin-work-status-stat h3 {
+  margin-bottom: 8px;
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+.admin-work-status-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.admin-work-status-activity-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-work-status-activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--surface-app);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.admin-work-status-activity-card-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.admin-work-status-activity-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2ca6e0 0%, #1f84be 100%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.admin-work-status-activity-copy {
+  min-width: 0;
+}
+
+.admin-work-status-activity-item p {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+}
+
+.admin-work-status-activity-time {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.admin-work-status-empty {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 720px) {
+  .admin-work-status-activity-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

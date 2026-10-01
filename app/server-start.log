@@ -1,0 +1,1 @@
+{"level":50,"time":1785150999384,"service":"crm-server","port":5000,"msg":"Port 5000 is already in use. Stop the existing backend process and start the server again."}

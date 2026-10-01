@@ -1,0 +1,529 @@
+.bulk-upload-page {
+  min-height: 100vh;
+  background: var(--surface-app);
+  padding: 2rem 1rem;
+}
+
+.bulk-upload-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: rgba(255, 252, 247, 0.96);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.bulk-upload-header {
+  padding: 2rem;
+  border-bottom: 1px solid var(--border-default);
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98) 0%, rgba(244, 237, 227, 0.98) 100%);
+}
+
+.bulk-upload-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.bulk-upload-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.bulk-upload-stepper-container {
+  padding: 2rem;
+  border-bottom: 1px solid var(--border-default);
+  background: linear-gradient(180deg, rgba(251, 247, 240, 0.96) 0%, rgba(244, 237, 227, 0.94) 100%);
+}
+
+.bulk-upload-content {
+  padding: 2rem;
+  min-height: 400px;
+}
+
+/* Steps */
+.bulk-upload-step {
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bulk-upload-step-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+}
+
+/* Step 1: Choose File */
+.bulk-upload-step-choose-file {
+}
+
+.bulk-upload-file-input-container {
+  margin-bottom: 2rem;
+}
+
+.bulk-upload-choose-btn,
+.bulk-upload-change-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--surface-muted);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bulk-upload-choose-btn:hover,
+.bulk-upload-change-btn:hover {
+  background-color: var(--surface-muted);
+  border-color: var(--border-strong);
+}
+
+.bulk-upload-file-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background: linear-gradient(180deg, rgba(255, 251, 245, 0.96) 0%, rgba(238, 243, 246, 0.96) 100%);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-sm);
+}
+
+.bulk-upload-file-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bulk-upload-file-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.bulk-upload-error {
+  padding: 0.875rem 1rem;
+  background-color: var(--color-danger-soft);
+  border-left: 4px solid var(--color-danger);
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.bulk-upload-file-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: rgba(244, 237, 227, 0.92);
+  border-radius: var(--radius-sm);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.bulk-upload-file-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.bulk-upload-file-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Step 2: Select Fields */
+.bulk-upload-mappings {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bulk-upload-mapping-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bulk-upload-mapping-label {
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: 0.5rem;
+  background-color: rgba(244, 237, 227, 0.92);
+  border-radius: var(--radius-sm);
+  word-break: break-word;
+}
+
+.bulk-upload-mapping-select {
+  padding: 0.5rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background-color: rgba(255, 252, 247, 0.98);
+  cursor: pointer;
+}
+
+.bulk-upload-mapping-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(93, 116, 136, 0.12);
+}
+
+.bulk-upload-mapping-info {
+  padding: 1rem;
+  background-color: rgba(244, 237, 227, 0.92);
+  border-radius: var(--radius-sm);
+}
+
+.bulk-upload-mapping-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Step 3: Verify */
+.bulk-upload-step-verify {
+}
+
+.bulk-upload-verify-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.bulk-upload-verify-info,
+.bulk-upload-verify-mappings {
+  padding: 1rem;
+  background-color: rgba(244, 237, 227, 0.92);
+  border-radius: var(--radius-sm);
+}
+
+.bulk-upload-verify-info p,
+.bulk-upload-verify-mappings h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.bulk-upload-verify-info strong,
+.bulk-upload-verify-mappings strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bulk-upload-verify-mapping-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bulk-upload-verify-mapping-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.mapping-csv-header {
+  padding: 0.25rem 0.5rem;
+  background-color: var(--surface-card);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.mapping-arrow {
+  color: var(--text-muted);
+}
+
+.mapping-field {
+  padding: 0.25rem 0.5rem;
+  background-color: var(--surface-muted);
+  border-radius: 3px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.bulk-upload-verify-preview {
+  margin-bottom: 2rem;
+}
+
+.bulk-upload-verify-preview h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.bulk-upload-preview-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+}
+
+.bulk-upload-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: rgba(255, 252, 247, 0.96);
+}
+
+.bulk-upload-preview-table thead {
+  background-color: rgba(244, 237, 227, 0.96);
+}
+
+.bulk-upload-preview-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.bulk-upload-preview-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  word-break: break-word;
+  max-width: 200px;
+}
+
+.bulk-upload-preview-table tbody tr:hover {
+  background-color: rgba(249, 243, 235, 0.88);
+}
+
+/* Actions */
+.bulk-upload-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem;
+  border-top: 1px solid var(--border-default);
+  background: linear-gradient(180deg, rgba(251, 247, 240, 0.96) 0%, rgba(244, 237, 227, 0.96) 100%);
+}
+
+.bulk-upload-actions-right {
+  display: flex;
+  gap: 1rem;
+}
+
+.bulk-upload-btn-cancel,
+.bulk-upload-btn-secondary,
+.bulk-upload-btn-primary {
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.bulk-upload-btn-cancel {
+  background-color: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.bulk-upload-btn-cancel:hover {
+  background-color: var(--border-subtle);
+}
+
+.bulk-upload-btn-secondary {
+  background-color: rgba(255, 252, 247, 0.98);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+}
+
+.bulk-upload-btn-secondary:hover {
+  background-color: var(--surface-muted);
+}
+
+.bulk-upload-btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
+  color: white;
+}
+
+.bulk-upload-btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, #405869 100%);
+}
+
+.bulk-upload-btn-primary:disabled {
+  background-color: var(--surface-muted);
+  color: #9d9180;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bulk-upload-page {
+    padding: 1rem;
+  }
+
+  .bulk-upload-header {
+    padding: 1.5rem;
+  }
+
+  .bulk-upload-stepper-container {
+    padding: 1.5rem 1rem;
+    overflow-x: auto;
+  }
+
+  .bulk-upload-content {
+    padding: 1.5rem;
+    min-height: auto;
+  }
+
+  .bulk-upload-actions {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .bulk-upload-actions-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .bulk-upload-btn-cancel {
+    width: 100%;
+  }
+
+  .bulk-upload-verify-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .bulk-upload-mapping-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Bulk upload night-theme completion. */
+[data-theme="dark"] :where(
+  .bulk-upload-page,
+  .bulk-upload-container,
+  .bulk-upload-header,
+  .bulk-upload-stepper-container,
+  .bulk-upload-content,
+  .bulk-upload-actions,
+  .bulk-upload-file-selected,
+  .bulk-upload-file-info,
+  .bulk-upload-mapping-label,
+  .bulk-upload-mapping-info,
+  .bulk-upload-verify-info,
+  .bulk-upload-verify-mappings,
+  .bulk-upload-preview-table-container
+) {
+  background: #12202a !important;
+  border-color: var(--text-primary) !important;
+  color: #f0fffd !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] :where(
+  .bulk-upload-title,
+  .bulk-upload-step-title,
+  .bulk-upload-verify-preview h3,
+  .bulk-upload-file-info strong,
+  .bulk-upload-verify-info strong,
+  .bulk-upload-verify-mappings strong
+) {
+  color: #f0fffd !important;
+}
+
+[data-theme="dark"] :where(
+  .bulk-upload-subtitle,
+  .bulk-upload-file-info p,
+  .bulk-upload-mapping-info p,
+  .bulk-upload-verify-info p,
+  .bulk-upload-verify-mappings h3,
+  .bulk-upload-preview-table td,
+  .mapping-arrow
+) {
+  color: #c7e6e5 !important;
+}
+
+[data-theme="dark"] :where(
+  .bulk-upload-choose-btn,
+  .bulk-upload-change-btn,
+  .bulk-upload-btn-secondary,
+  .bulk-upload-btn-cancel,
+  .bulk-upload-mapping-select
+) {
+  background: #1b2c37 !important;
+  border-color: var(--text-primary) !important;
+  color: #f0fffd !important;
+  opacity: 1 !important;
+}
+
+[data-theme="dark"] :where(
+  .bulk-upload-choose-btn:hover,
+  .bulk-upload-change-btn:hover,
+  .bulk-upload-btn-secondary:hover,
+  .bulk-upload-btn-cancel:hover
+) {
+  background: #223a49 !important;
+  border-color: var(--text-primary) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .bulk-upload-preview-table {
+  background: #12202a !important;
+  color: #f0fffd !important;
+}
+
+[data-theme="dark"] .bulk-upload-preview-table thead,
+[data-theme="dark"] .bulk-upload-preview-table th {
+  background: linear-gradient(180deg, #2f6078 0%, #244b61 100%) !important;
+  border-color: var(--text-primary) !important;
+  color: #f4fbff !important;
+}
+
+[data-theme="dark"] .bulk-upload-preview-table td {
+  background: #17232d !important;
+  border-color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .bulk-upload-preview-table tbody tr:hover td {
+  background: #223a49 !important;
+}
+
+[data-theme="dark"] .bulk-upload-error {
+  background: rgba(239, 68, 68, 0.13) !important;
+  border-color: rgba(248, 113, 113, 0.45) !important;
+  color: #ffb4b4 !important;
+}
+
+[data-theme="dark"] .mapping-csv-header {
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #ffb4b4 !important;
+}
+
+[data-theme="dark"] .mapping-field {
+  background: rgba(34, 197, 94, 0.16) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] :where(.bulk-upload-file-icon, .bulk-upload-page svg) {
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+}

@@ -1,0 +1,100 @@
+﻿  border: 0;
+  padding: 0;
+}
+
+/* Force Kanban UI to match Design exactly across BOTH Light and Dark modes */
+#root .support-request-view-page .sr-status-board-shell {
+  background: #ffffff !important;
+  border-color: #DCE3E8 !important;
+}
+
+#root .support-request-view-page .sr-status-board-toolbar {
+  background: #ffffff !important;
+  border-color: #DCE3E8 !important;
+}
+
+#root .support-request-view-page .sr-status-board-toolbar h1,
+#root .support-request-view-page .sr-status-board-toolbar p {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+#root .support-request-view-page .sr-status-board-column,
+#root .support-request-view-page .sr-status-board-column-body {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-color: #DCE3E8 !important;
+}
+
+#root .support-request-view-page .sr-status-board-column-header {
+  background: #E31B23 !important;
+  background-color: #E31B23 !important;
+  border-color: #E31B23 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+#root .support-request-view-page .sr-status-board-column-header span,
+#root .support-request-view-page .sr-status-board-column-header strong {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+#root .support-request-view-page .sr-status-board-card {
+  background: #ffffff !important;
+  border-color: #DCE3E8 !important;
+  border-left-color: #E31B23 !important;
+  color: #111827 !important;
+}
+
+#root .support-request-view-page .sr-status-board-card:hover {
+  background: #ffffff !important;
+}
+
+#root .support-request-view-page .sr-status-board-card-title,
+#root .support-request-view-page .sr-status-board-card-line,
+#root .support-request-view-page .sr-status-board-card-muted,
+#root .support-request-view-page .sr-status-board-card * {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+#root .support-request-view-page .sr-status-board-card .btn-red-theme {
+  background: #ffffff !important;
+  border-color: #DCE3E8 !important;
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+#root .support-request-view-page .sr-status-board-card .btn-red-theme:hover {
+  background: #f5f5f5 !important;
+}
+
+#root .support-request-view-page .support-request-view-edge,
+#root .support-request-view-page .sr-status-board-edge {
+  background: #ffffff !important;
+  border-color: #DCE3E8 !important;
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+#root .support-request-view-page .support-request-view-edge *,
+#root .support-request-view-page .sr-status-board-edge * {
+  color: #111827 !important;
+  fill: currentColor !important;
+  -webkit-text-fill-color: #111827 !important;
+}
+
+#root .support-request-view-page .sr-status-filter-trigger {
+  border-color: #E31B23 !important;
+  background: #E31B23 !important;
+  background-color: #E31B23 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+#root .support-request-view-page .sr-status-filter-trigger * {
+  color: #ffffff !important;
+  fill: currentColor !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

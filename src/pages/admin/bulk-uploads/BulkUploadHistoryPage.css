@@ -1,0 +1,67 @@
+.bulk-history-page {
+  min-height: 100vh;
+  background: var(--surface-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.bulk-history-header {
+  padding: 16px 28px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+}
+
+.bulk-history-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.bulk-history-back-icon {
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.bulk-history-body {
+  flex: 1;
+  padding: 24px 30px;
+}
+
+.bulk-history-alert {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: #ef5c2d;
+  font-size: 16px;
+  padding: 12px 18px;
+}
+
+.bulk-history-footer-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 16px;
+  background: var(--surface-card);
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+}
+
+.bulk-history-footer-strip a,
+.bulk-history-footer-strip button {
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}

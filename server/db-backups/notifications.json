@@ -1,0 +1,874 @@
+[
+  {
+    "_id": {
+      "$oid": "6a70862d197db3e8cfd905cc"
+    },
+    "legacyId": 1,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-03T12:14:37.048Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-06T04:35:31.114Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a758188a7c449064514517d"
+    },
+    "legacyId": 2,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T06:56:08.918Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T06:14:43.158Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a758215a7c44906451451bc"
+    },
+    "legacyId": 3,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T06:58:29.790Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T10:48:01.315Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75829ea7c44906451451f7"
+    },
+    "legacyId": 4,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T07:00:46.748Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:15.769Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75c760a484c7e9e9b81bae"
+    },
+    "legacyId": 5,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T11:54:08.619Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:15.592Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75cc27562a8a58db288613"
+    },
+    "legacyId": 6,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T12:14:31.684Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:15.386Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75cc3c562a8a58db288655"
+    },
+    "legacyId": 7,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T12:14:52.255Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:15.191Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75d162c0cdeb2862c40319"
+    },
+    "legacyId": 8,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T12:36:50.487Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:14.975Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a75d59d429e731f811acee7"
+    },
+    "legacyId": 9,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-07T12:54:53.353Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:14.741Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76b3df9db4368837ef050f"
+    },
+    "legacyId": 10,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T04:43:11.882Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:14.375Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76ba6f1b3de9a237ea5f32"
+    },
+    "legacyId": 11,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T05:11:11.261Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:13.677Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76bd9cd4077ea435aa7213"
+    },
+    "legacyId": 12,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T05:24:44.627Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:13.464Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76c0a16bc475e5917d7e5b"
+    },
+    "legacyId": 13,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T05:37:37.027Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:13.222Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76c3e8b08f85842fdef878"
+    },
+    "legacyId": 14,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created adani.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T05:51:36.148Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T07:54:12.894Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76e0de0411f2b276b19818"
+    },
+    "legacyId": 15,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T07:55:10.918Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:01:54.694Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a76e18b0411f2b276b1987d"
+    },
+    "legacyId": 16,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T07:58:03.713Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:01:53.702Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a770b303a95d98b4d9e89c5"
+    },
+    "legacyId": 17,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T10:55:44.321Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T10:48:00.802Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a770b683a95d98b4d9e89e5"
+    },
+    "legacyId": 18,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-08T10:56:40.804Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T10:48:00.599Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a795fbbd601d259dbb283ca"
+    },
+    "legacyId": 19,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah created abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-10T05:20:59.758Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T09:00:13.557Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a799e7a0011655f9b01442d"
+    },
+    "legacyId": 20,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-10T09:48:42.346Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T10:48:00.427Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7af030a34155e6d4b2b249"
+    },
+    "legacyId": 21,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": false,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-11T09:49:36.140Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T09:49:36.140Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7af057a34155e6d4b2b2a7"
+    },
+    "legacyId": 22,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": false,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-11T09:50:15.706Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T09:50:15.706Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7af19aa34155e6d4b2b301"
+    },
+    "legacyId": 23,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-11T09:55:38.254Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T04:23:58.882Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7af909a34155e6d4b2b463"
+    },
+    "legacyId": 24,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-11T10:27:21.140Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T04:23:58.463Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c13a8b6ba258bef0967fb"
+    },
+    "legacyId": 25,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T06:33:12.982Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:37.161Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c1449b6ba258bef096901"
+    },
+    "legacyId": 26,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T06:35:53.134Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:37.029Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c1506b6ba258bef0969e6"
+    },
+    "legacyId": 27,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T06:39:02.217Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.824Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c4601f4f8459049aa2f1f"
+    },
+    "legacyId": 28,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T10:08:01.869Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.667Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c4621f4f8459049aa3032"
+    },
+    "legacyId": 29,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated adani.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T10:08:33.256Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.532Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c53e2f8e020b305f71da3"
+    },
+    "legacyId": 30,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T11:07:14.891Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.372Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c5878b59c8f7c7cd36c48"
+    },
+    "legacyId": 31,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T11:26:48.357Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.228Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7c5f587ad67da9f2223c3a"
+    },
+    "legacyId": 32,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-12T11:56:08.216Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:36.086Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d452638c1c7a1f37dea28"
+    },
+    "legacyId": 33,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T04:16:38.697Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:35.928Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d4a4878d2463bb813b033"
+    },
+    "legacyId": 34,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T04:38:32.945Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:35.592Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d4dce78d2463bb813b237"
+    },
+    "legacyId": 35,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T04:53:34.178Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:35.404Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d5e343f96abd09438c17f"
+    },
+    "legacyId": 36,
+    "senderId": 16,
+    "receiverId": 16,
+    "message": "Keval V Shah updated abc.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T06:03:32.667Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:35.210Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d883f96abd09438d341"
+    },
+    "legacyId": 37,
+    "senderId": 13,
+    "receiverId": 16,
+    "message": "Bhavesh Prajapati created Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:33:44.524Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:34.725Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d883f96abd09438d343"
+    },
+    "legacyId": 38,
+    "senderId": 13,
+    "receiverId": 1,
+    "message": "Bhavesh Prajapati created Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:33:44.526Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:34.669Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d883f96abd09438d345"
+    },
+    "legacyId": 39,
+    "senderId": 13,
+    "receiverId": 17,
+    "message": "Bhavesh Prajapati created Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:33:44.527Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:34.277Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d883f96abd09438d347"
+    },
+    "legacyId": 40,
+    "senderId": 13,
+    "receiverId": 18,
+    "message": "Bhavesh Prajapati created Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:33:44.528Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T10:58:34.108Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d883f96abd09438d349"
+    },
+    "legacyId": 41,
+    "senderId": 13,
+    "receiverId": 24,
+    "message": "Bhavesh Prajapati created Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:33:44.529Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T07:06:27.560Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d993f96abd09438d3f2"
+    },
+    "legacyId": 42,
+    "senderId": 13,
+    "receiverId": 16,
+    "message": "Bhavesh Prajapati updated Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:34:01.871Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T07:06:23.783Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d993f96abd09438d3f5"
+    },
+    "legacyId": 43,
+    "senderId": 13,
+    "receiverId": 1,
+    "message": "Bhavesh Prajapati updated Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:34:01.880Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:13.865Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d993f96abd09438d3f7"
+    },
+    "legacyId": 44,
+    "senderId": 13,
+    "receiverId": 18,
+    "message": "Bhavesh Prajapati updated Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:34:01.886Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:13.461Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d993f96abd09438d3f9"
+    },
+    "legacyId": 45,
+    "senderId": 13,
+    "receiverId": 17,
+    "message": "Bhavesh Prajapati updated Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:34:01.891Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:12.998Z"
+    },
+    "__v": 0,
+    "is_read": true
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9d993f96abd09438d3fb"
+    },
+    "legacyId": 46,
+    "senderId": 13,
+    "receiverId": 24,
+    "message": "Bhavesh Prajapati updated Demo-Bhavesh.",
+    "isRead": true,
+    "companyId": 1,
+    "createdAt": {
+      "$date": "2026-08-13T10:34:01.895Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:12.295Z"
+    },
+    "__v": 0,
+    "is_read": true
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "_id": {
+      "$oid": "6a74125cf27a5d84b9dcd664"
+    },
+    "legacyId": 1,
+    "updatedAt": {
+      "$date": "2026-08-06T04:49:32.597Z"
+    },
+    "scope": "user",
+    "scopeId": "16",
+    "key": "integrations.outlook.device.16",
+    "value": {
+      "deviceCodeEncrypted": "enc:7dPtzp8n46X8W_-E:5XSjjHI8T3g7N8msKt3rMQ:QiqfXb4S9qBk5N_17UDJemNuQOTA4BvNvYUoRQZfRCx-aVFmzOlflhvtkz-CK0xqYytYyhw7LRYoo7amZ0OUDkr4LgHR0DS4gK3I-wfn2wQelx--nNUCJOkUjSF6mUBhAHrcgI8g41kVAUme9w9ju5JVHO3Isn9RevEN5OlrqMLyYvayZA8YzJByHY4JZTUnlmBfyMgeMYfqcw0Qmd53SNKaiucIz7i15RRMYT-ND02m5FyPegF-Ceri4eIK4H-fvNN4wyA6Ir7_Xpxt48OjelWnZZPw_bjGZExZ4-omVjpn_cTgti705uAHNdX5DosY271zfBpk6Luq7ZfazBhUCDw4gDvB0qXt5bsBB3WI9b4OB-ogV-7Nl57O8PO-rVIEsTUmcBuF6G1mr294lLJ1lJXvnmIGOvUM2SX6sKFWYbj5jIZ4EDgDNGJyqKOIWY5OoYsfCBoqRjfJ4ftJKiLkwHxk3mNbsNXxDF1jwcKQjwa45Jl9C-o9kwg1bFe2wRl3LEABSJ77yYVaUBmirs9IkwOD5rHhT4vk5Rf_JBfnzEcI02soVTiWORU17Nr1VnDKs25QP8ZO4Fi2Xh5mf8VGRmPCEOZQWFpkJUBRlo3lPmW88-jHfkG-gx-zPht62_DpzTMDKX8m4SgAc78QsZRZGIFF-rHiHHXsi0YBSdKMsPVCNByFKWjfclSGo2mOC9tftv7JyHSEBGvjToJ_pmXZUCHO6rX5mv_Y8S06_iPCFMZ7HGs28knSYn9sVrmVuVMWCs3MobxdGTIzEmKZNLyT84laXfCx4RRcgL0rPSI-sU_s8KiE6TkuEF1efU6jOn3BPk4QU73o-oBbAFQAwOOkyvTbmfUDoR4K56V67x5B6xwEB9wqWb9TBPLMAxQzb1OBSun2b9UHCbaT3h1KH2Ob3xffW3Q7LAQaXVjMNo1qRMLzKYTTo7_nCKJ9GMS2UhVJ1YAWQSHP5j-iRy63F4IWhpI31RPjWOXGamtQ39TMiWSMFYXGfMjNVes7o4QA9F-AOXQ3y-qTIhOIqodqH1I3-QVEShvinC6LWk6JAgLOi2IKlw4C6NLzi3C_Cg",
+      "userCode": "HJQAGB4YU",
+      "verificationUri": "https://login.microsoft.com/device",
+      "verificationUriComplete": "",
+      "message": "To sign in, use a web browser to open the page https://login.microsoft.com/device and enter the code HJQAGB4YU to authenticate.",
+      "interval": 5,
+      "expiresAt": "2026-08-06T05:04:32.555Z",
+      "sharedEmail": "parth@swatiswitchgears.com",
+      "createdAt": "2026-08-06T04:49:32.556Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-06T04:49:32.597Z"
+    },
+    "__v": 0
+  }
+]

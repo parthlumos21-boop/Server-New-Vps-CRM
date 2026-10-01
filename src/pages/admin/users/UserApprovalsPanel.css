@@ -1,0 +1,66 @@
+.user-approvals-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.user-approvals-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.user-approvals-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.user-approvals-tab.is-active {
+  background: linear-gradient(180deg, #58b5e4 0%, #3396cc 100%);
+  border-color: var(--text-primary);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(51, 150, 204, 0.18);
+}
+
+.user-approvals-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(33, 50, 67, 0.08);
+  color: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.user-approvals-tab.is-active .user-approvals-tab-count {
+  background: var(--surface-card);
+}
+
+.user-approvals-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.user-approvals-error {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(220, 53, 69, 0.08);
+  border: 1px solid rgba(220, 53, 69, 0.16);
+  color: var(--danger-color);
+}

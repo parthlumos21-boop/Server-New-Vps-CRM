@@ -1,0 +1,713 @@
+[
+  {
+    "_id": {
+      "$oid": "6a70851e4de92afdc2419a31"
+    },
+    "legacyId": 1,
+    "username": "nita-bhavsar",
+    "name": "Nita Bhavsar",
+    "email": "mkt@swatiswitchgears.com",
+    "passwordHash": "$2b$12$wlK0al8ZN8rXmxu0KNyoQec1SMoFe14F3W4EavbBVe28sfrjj3iFK",
+    "assignedPassword": "nita@waticrm1234",
+    "role": "admin",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 4,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:06.169Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T12:39:59.872Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-13T12:36:10.013Z"
+    },
+    "refreshSessions": [],
+    "company": "swati",
+    "ownerCode": "1001",
+    "assigned_password": "nita@waticrm1234",
+    "password_hash": "$2b$12$wlK0al8ZN8rXmxu0KNyoQec1SMoFe14F3W4EavbBVe28sfrjj3iFK"
+  },
+  {
+    "_id": {
+      "$oid": "6a70851e4de92afdc2419a37"
+    },
+    "legacyId": 2,
+    "username": "krunal-patel",
+    "name": "Krunal Patel",
+    "email": "mkt.brd@swatiswitchgears.com",
+    "passwordHash": "$2b$12$CSUSouuJT2nSScARrqmHFe7JGlOIGQQGH/4lxGJKJzAY0Rjv9w8v2",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:06.511Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1002"
+  },
+  {
+    "_id": {
+      "$oid": "6a70851e4de92afdc2419a3d"
+    },
+    "legacyId": 3,
+    "username": "naim-vora",
+    "name": "Naim Vora",
+    "email": "sales1@swatiswitchgears.com",
+    "passwordHash": "$2b$12$CyMgVaw7NXFL2r.aDDXr/eFUUv2//kGlOezOcPyEJHdeTUBqKUFA6",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:06.841Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1003"
+  },
+  {
+    "_id": {
+      "$oid": "6a70851f4de92afdc2419a43"
+    },
+    "legacyId": 4,
+    "username": "jay-pandya",
+    "name": "Jay Pandya",
+    "email": "sales2@swatiswitchgears.com",
+    "passwordHash": "$2b$12$PKixyGLRhFrFVta3ESLTTOBIDFgTjRGx2eQjg9lEoJ76/d9xqBSMO",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:07.169Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1004"
+  },
+  {
+    "_id": {
+      "$oid": "6a70851f4de92afdc2419a49"
+    },
+    "legacyId": 5,
+    "username": "hasmukh-chauhan",
+    "name": "Hasmukh Chauhan",
+    "email": "hasmukh@swatiswitchgears.com",
+    "passwordHash": "$2b$12$kiQfAFBtHfWm5v/rOkdEvOdgK6NxVqvo927.77/oDaDURqc8icK06",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:07.485Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1005"
+  },
+  {
+    "_id": {
+      "$oid": "6a70851f4de92afdc2419a4f"
+    },
+    "legacyId": 6,
+    "username": "vaibhavi-patel",
+    "name": "VAIBHAVI PATEL",
+    "email": "sales.ahd@swatiswitchgears.com",
+    "passwordHash": "$2b$12$N934.KV0praeIH6A7E8RBuyEJoSFD2.oPcXrMZtqJb6FUPrKS9SFC",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:07.795Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1006"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085204de92afdc2419a55"
+    },
+    "legacyId": 7,
+    "username": "atish-shah",
+    "name": "Atish Shah",
+    "email": "automation.sales@swatiswitchgears.com",
+    "passwordHash": "$2b$12$bB33oanQbNbYuoOtgvWBMu1DK9I2QaL5pRoz1Z8yevUuJy8aoBUK2",
+    "assignedPassword": "Atish@Swaticrm",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": true,
+    "authTokenVersion": 7,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:08.110Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-16T11:08:07.402Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1007",
+    "lastLoginAt": {
+      "$date": "2026-08-16T10:59:00.510Z"
+    },
+    "refreshSessions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a7085204de92afdc2419a5b"
+    },
+    "legacyId": 8,
+    "username": "kanubhai-shah",
+    "name": "Kanubhai Shah",
+    "email": "kss@swatiswitchgears.com",
+    "passwordHash": "$2b$12$KyASLsxjQ7z9ukkuB9ueHOAZhynhQ5fqML/BWVdDbyKEjKnK45WAO",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:08.438Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1008"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085204de92afdc2419a61"
+    },
+    "legacyId": 9,
+    "username": "samir-jha",
+    "name": "Samir Jha",
+    "email": "samir@swatiswitchgears.com",
+    "passwordHash": "$2b$12$nFmiJtdFbQbjmmVi0kW68OIlnniW2TxeqjMnNxvsYLGZ4cd0DDqQS",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:08.755Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1009"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085214de92afdc2419a67"
+    },
+    "legacyId": 10,
+    "username": "rajeshree-parmar",
+    "name": "Rajeshree Parmar",
+    "email": "sales.brd1@swatiswitchgears.com",
+    "passwordHash": "$2b$12$H2lB.R8iPhHux2aL3Nuq/urHDNvFE2Qz4OE4Vr0ixYPhrS/sYBGQq",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:09.067Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1010"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085214de92afdc2419a6d"
+    },
+    "legacyId": 11,
+    "username": "jagruti-parmar",
+    "name": "Jagruti Parmar",
+    "email": "sales.brd2@swatiswitchgears.com",
+    "passwordHash": "$2b$12$f8Zc9gR8689tsn25BQOVlO3McvYcEDyvDjWKVTg34.oraNtQtt74e",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:09.380Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1011"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085214de92afdc2419a73"
+    },
+    "legacyId": 12,
+    "username": "monali-pateliya",
+    "name": "Monali Pateliya",
+    "email": "sales.brd4@swatiswitchgears.com",
+    "passwordHash": "$2b$12$iIyPy4pSDuzfGoji.HCq/ORKXIWc8TUWowAfGWWXh/UcKP7hCCca6",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:09.692Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1012"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085224de92afdc2419a79"
+    },
+    "legacyId": 13,
+    "username": "bhavesh-prajapati",
+    "name": "Bhavesh Prajapati",
+    "email": "sales.brd5@swatiswitchgears.com",
+    "passwordHash": "$2b$12$pCl5ivSsr0NZ1LNPz26BdOiEfeGz5TH2OxlyldpEnyfvxn0poij.2",
+    "assignedPassword": "bhavesh@12345",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 9,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:10.013Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-14T08:26:54.217Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1013",
+    "lastLoginAt": {
+      "$date": "2026-08-13T13:33:08.350Z"
+    },
+    "refreshSessions": [
+      {
+        "id": "7e8182da-289a-40bb-909d-1f5aa51d682b",
+        "refreshTokenHash": "6fb71aad39a816bee1e21cf16df97ad125d1a8a178e4a5595d679c9f690daaf2",
+        "deviceName": "Windows",
+        "browser": "Chrome",
+        "ipAddress": "::ffff:127.0.0.1",
+        "portalRole": "user",
+        "loginTime": {
+          "$date": "2026-08-13T13:33:08.350Z"
+        },
+        "lastActivity": {
+          "$date": "2026-08-13T13:33:08.350Z"
+        },
+        "expiresAt": {
+          "$date": "2026-08-20T13:33:08.350Z"
+        }
+      }
+    ],
+    "assigned_password": "bhavesh@12345",
+    "password_hash": "$2b$12$pCl5ivSsr0NZ1LNPz26BdOiEfeGz5TH2OxlyldpEnyfvxn0poij.2",
+    "refreshTokenExpiresAt": {
+      "$date": "2026-08-20T13:33:08.350Z"
+    },
+    "refreshTokenHash": "6fb71aad39a816bee1e21cf16df97ad125d1a8a178e4a5595d679c9f690daaf2"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085224de92afdc2419a85"
+    },
+    "legacyId": 15,
+    "username": "samir-sheth",
+    "name": "Samir Sheth",
+    "email": "samirsheth@swatiswitchgears.com",
+    "passwordHash": "$2b$12$NgsumZ/VAyxzUrYpMi4N/eIfvzDKpTBItYVizvK6n/wTM5dm3A8py",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:10:10.640Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-07T09:04:05.185Z"
+    },
+    "__v": 0,
+    "company": "swati",
+    "ownerCode": "1014"
+  },
+  {
+    "_id": {
+      "$oid": "6a7085f9089467c05a266d7a"
+    },
+    "legacyId": 16,
+    "username": "kevalvshah",
+    "name": "Keval V Shah",
+    "email": "keval@swatiswitchgears.com",
+    "passwordHash": "$2b$12$TjZpUKFCZT.FVCAwH4qAru9Zq5QCiA.9hJWphUkTf6THK.hLubejW",
+    "password_hash": "$2b$12$TX/yALjgcF0KZl9Gb9bb2OWmXXNqcgj0FC3nWHXKvohDbILwGpWOy",
+    "role": "admin",
+    "status": "approved",
+    "isApproved": true,
+    "is_approved": true,
+    "isOnline": true,
+    "is_online": false,
+    "companyId": 1,
+    "company_id": 1,
+    "authTokenVersion": 35,
+    "auth_token_version": 0,
+    "createdAt": {
+      "$date": "2026-08-03T12:13:45.108Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-19T12:03:51.728Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-16T11:39:44.623Z"
+    },
+    "refreshSessions": [
+      {
+        "id": "fcebe1b5-ce5c-4f58-b6aa-6f4fb6b7a8f2",
+        "refreshTokenHash": "95186783fcf63945f49194e858282be22ac32f7ab42c43eeefe9808df214fffa",
+        "deviceName": "Windows",
+        "browser": "Microsoft Edge",
+        "ipAddress": "::ffff:127.0.0.1",
+        "portalRole": "admin",
+        "loginTime": {
+          "$date": "2026-08-16T11:08:11.925Z"
+        },
+        "lastActivity": {
+          "$date": "2026-08-19T10:57:06.652Z"
+        },
+        "expiresAt": {
+          "$date": "2026-08-26T10:57:06.652Z"
+        }
+      },
+      {
+        "id": "6e456a43-9731-40ae-96df-c793d3cc722a",
+        "refreshTokenHash": "6e5f83790d7e52cb80a3c364c679aff141bcae874cab56e788da1d6e7b707236",
+        "deviceName": "Windows",
+        "browser": "Microsoft Edge",
+        "ipAddress": "::ffff:127.0.0.1",
+        "portalRole": "admin",
+        "loginTime": {
+          "$date": "2026-08-16T11:39:44.622Z"
+        },
+        "lastActivity": {
+          "$date": "2026-08-16T11:39:44.622Z"
+        },
+        "expiresAt": {
+          "$date": "2026-08-23T11:39:44.619Z"
+        }
+      }
+    ],
+    "company": "swati",
+    "ownerCode": "1015",
+    "assignedPassword": "keval@123",
+    "refreshTokenExpiresAt": {
+      "$date": "2026-08-23T11:39:44.619Z"
+    },
+    "refreshTokenHash": "6e5f83790d7e52cb80a3c364c679aff141bcae874cab56e788da1d6e7b707236"
+  },
+  {
+    "_id": {
+      "$oid": "6a746f255e14b9bd5d5ef2d8"
+    },
+    "legacyId": 17,
+    "username": "parth-crm-support",
+    "name": "Parth Crm Support",
+    "email": "parth@support.com",
+    "passwordHash": "$2b$12$sxVjFCOYPxxjq14Z86MCyezckBS8chCOCzHWtO6Eoc.MMpEbTT9P6",
+    "assignedPassword": "parth@123",
+    "role": "admin",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 5,
+    "createdAt": {
+      "$date": "2026-08-06T11:25:25.579Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-15T15:53:54.225Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-15T12:53:57.244Z"
+    },
+    "refreshSessions": [],
+    "is_approved": true,
+    "password_hash": "$2b$12$sxVjFCOYPxxjq14Z86MCyezckBS8chCOCzHWtO6Eoc.MMpEbTT9P6",
+    "company": "swati",
+    "ownerCode": "1016"
+  },
+  {
+    "_id": {
+      "$oid": "6a746f765e14b9bd5d5ef31f"
+    },
+    "legacyId": 18,
+    "username": "rushabh-crm-support",
+    "name": "Rushabh Crm Support",
+    "email": "rushabh@support.com",
+    "passwordHash": "$2b$12$PNo.lzPMroeNIFlgD80eB.5jhnINfnwikB/co7hGXj6D9fZIRRTp2",
+    "assignedPassword": "rushabh@123",
+    "role": "admin",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 5,
+    "createdAt": {
+      "$date": "2026-08-06T11:26:46.888Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T08:56:32.319Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-10T08:55:56.514Z"
+    },
+    "refreshSessions": [],
+    "is_approved": true,
+    "password_hash": "$2b$12$PNo.lzPMroeNIFlgD80eB.5jhnINfnwikB/co7hGXj6D9fZIRRTp2",
+    "company": "swati",
+    "ownerCode": "1017"
+  },
+  {
+    "_id": {
+      "$oid": "6a75ad22458553fad08311a5"
+    },
+    "legacyId": 22,
+    "username": "dev",
+    "name": "Dev",
+    "email": "dev@swatiswitchgears.com",
+    "passwordHash": "$2b$12$rjuiBREgH/k8J5wcQiqEIuvRIfdJl2DeJbwdvTkPyPjdvMzSd9YgW",
+    "assignedPassword": "devang@123",
+    "role": "user",
+    "companyId": 1,
+    "company": "swati",
+    "ownerCode": "1018",
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 1,
+    "createdAt": {
+      "$date": "2026-08-07T10:02:10.027Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T06:08:51.051Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-08T06:08:25.853Z"
+    },
+    "refreshSessions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a76c83dd84ca0603da4b2ce"
+    },
+    "legacyId": 23,
+    "username": "temp",
+    "name": "temp",
+    "email": "temp@swatiswitchgears.com",
+    "passwordHash": "$2b$12$glQTj9vFVVe60Jc3K9kBhuWyd/2OR4sXJEYr0C0mcL1CnPxkl5RmK",
+    "assignedPassword": "",
+    "role": "user",
+    "companyId": 1,
+    "company": "lumos",
+    "ownerCode": "2001",
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 11,
+    "createdAt": {
+      "$date": "2026-08-08T06:10:05.232Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T08:55:20.739Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-10T08:55:08.464Z"
+    },
+    "refreshSessions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a79aa9e9b354fa80cdec3cd"
+    },
+    "legacyId": 24,
+    "username": "sahana-prasenjit",
+    "name": "Sahana Prasenjit",
+    "email": "sales.ahd@lumossolution.com",
+    "passwordHash": "$2b$12$JpBdaVoKQBbeYlS..eLIWe63ntv3ss/JXygJ8B6TfAhBFg8QnC0oG",
+    "assignedPassword": "prasenjit@crmlumos",
+    "role": "admin",
+    "companyId": 1,
+    "company": "lumos",
+    "ownerCode": "2002",
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 1,
+    "createdAt": {
+      "$date": "2026-08-10T10:40:30.627Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-10T10:48:03.858Z"
+    },
+    "__v": 0,
+    "lastLoginAt": {
+      "$date": "2026-08-10T10:47:56.824Z"
+    },
+    "refreshSessions": []
+  },
+  {
+    "_id": {
+      "$oid": "6a7c01cfbacf4800d2589c10"
+    },
+    "legacyId": 25,
+    "username": "tempfilledstaff",
+    "name": "tempfilledstaff",
+    "email": "tempfilledstaff@swatiswitchgears.com",
+    "passwordHash": "$2b$12$ihwgRp1BVrDoNz3TFTA50emeSdy.iNYnUprVCwALhGRAfTVDE6siC",
+    "assignedPassword": "tempfilledstaff",
+    "role": "user",
+    "designation": "Customer Support Field Staff",
+    "state": "GJ",
+    "city": "Ahmedabad",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-12T05:17:03.979Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T05:17:14.083Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7c029bbacf4800d2589c63"
+    },
+    "legacyId": 26,
+    "username": "temptamilnadu",
+    "name": "temptamilnadu",
+    "email": "temptamilnadu@swatiswitchgears.com",
+    "passwordHash": "$2b$12$tWhqhGWLanhSIHOyCxwb5uIdemytKOxPI1FW92wHZf9u9RcPf0unC",
+    "assignedPassword": "temptamilnadu",
+    "role": "user",
+    "designation": "Customer Support Field Staff",
+    "state": "TN",
+    "city": "Chennai",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-12T05:20:27.165Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T05:20:32.900Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7d857b3f96abd09438c7f0"
+    },
+    "legacyId": 27,
+    "username": "manager-test",
+    "name": "Manager Test",
+    "email": "managertest@swatiswitchgears.com",
+    "passwordHash": "$2b$12$cKQO9v3bzLh0bUOYEDU/E.co/J7NkDPODGb8kNvhVmNiNl3Q1KNia",
+    "assignedPassword": "manager@123",
+    "role": "user",
+    "designation": "Manager",
+    "state": "GJ",
+    "city": "Ahmedabad",
+    "companyId": 1,
+    "status": "approved",
+    "isApproved": true,
+    "isOnline": false,
+    "authTokenVersion": 0,
+    "createdAt": {
+      "$date": "2026-08-13T08:51:07.590Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T08:55:34.677Z"
+    },
+    "__v": 0
+  }
+]

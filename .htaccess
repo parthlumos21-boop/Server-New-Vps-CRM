@@ -1,0 +1,12 @@
+RewriteEngine On
+# Forward API requests to the Node.js backend
+RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+# Forward WebSockets (Socket.io)
+RewriteCond %{HTTP:Upgrade} websocket [NC]
+RewriteRule ^socket.io/(.*)$ ws://127.0.0.1:5000/socket.io/$1 [P,L]
+RewriteCond %{QUERY_STRING} transport=polling
+RewriteRule ^socket.io/(.*)$ http://127.0.0.1:5000/socket.io/$1 [P,L]
+# React Router Fallback
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.html [L]

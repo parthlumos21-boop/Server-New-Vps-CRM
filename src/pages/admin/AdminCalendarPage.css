@@ -1,0 +1,529 @@
+.admin-calendar-page {
+  min-height: calc(100vh - 3.25rem);
+  padding: 24px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+}
+
+.admin-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.admin-calendar-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-calendar-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #e55b55 0%, #cc3e3e 100%);
+  color: #fff;
+  font-size: 20px;
+}
+
+.admin-calendar-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.admin-calendar-subtitle {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.admin-calendar-view-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+}
+
+.admin-calendar-view-button {
+  min-width: 62px;
+  min-height: 30px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-calendar-view-button--active {
+  border-color: #b91c1c;
+  background: linear-gradient(180deg, #e55b55 0%, #cc3e3e 100%);
+  color: #ffffff;
+}
+
+.admin-calendar-shell {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+  padding: 16px;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+}
+
+.admin-calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.admin-calendar-month-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-calendar-month-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.admin-calendar-nav-button,
+.admin-calendar-today-button {
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #e55b55 0%, #cc3e3e 100%);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.admin-calendar-nav-button {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-calendar-today-button {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-calendar-weekday {
+  padding: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.admin-calendar-day {
+  min-height: 128px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-calendar-day--wide {
+  min-height: 420px;
+}
+
+.admin-calendar-day--muted {
+  opacity: 0.5;
+}
+
+.admin-calendar-day--today {
+  border-color: #cc3e3e;
+  box-shadow: inset 0 0 0 1px rgba(204, 62, 62, 0.35);
+}
+
+.admin-calendar-day--has-reminders {
+  background: color-mix(in srgb, var(--surface-card) 90%, #e55b55);
+}
+
+.admin-calendar-day-number {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-calendar-day-number:hover,
+.admin-calendar-day-number:focus-visible {
+  color: #cc3e3e;
+  outline: none;
+}
+
+.admin-calendar-day-pill {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #cc3e3e;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.admin-calendar-day-reminders {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.admin-calendar-reminder,
+.admin-calendar-reminder-more {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 26px;
+  border: 1px solid var(--border-subtle);
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  padding: 4px 6px;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.admin-calendar-reminder:hover,
+.admin-calendar-reminder:focus-visible,
+.admin-calendar-reminder-more:hover,
+.admin-calendar-reminder-more:focus-visible {
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.admin-calendar-reminder--account,
+.admin-calendar-reminder--remark-reminder {
+  border-left-color: #cc3e3e;
+}
+
+.admin-calendar-reminder--customer {
+  border-left-color: #cc3e3e;
+}
+
+.admin-calendar-reminder--deal {
+  border-left-color: #cc3e3e;
+}
+
+.admin-calendar-reminder--sr,
+.admin-calendar-reminder--support-request {
+  border-left-color: #dc2626;
+}
+
+.admin-calendar-reminder--standalone,
+.admin-calendar-reminder--mongo-reminder,
+.admin-calendar-reminder--calendar {
+  border-left-color: #cc3e3e;
+}
+
+.admin-calendar-reminder-icon,
+.admin-calendar-reminder-source {
+  flex: 0 0 auto;
+}
+
+.admin-calendar-reminder-icon {
+  color: #cc3e3e;
+}
+
+.admin-calendar-reminder-source {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(204, 62, 62, 0.12);
+  color: #b91c1c;
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-calendar-reminder-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-calendar-reminder-more {
+  justify-content: center;
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.admin-calendar-day-view {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.admin-calendar-day-view-item,
+.admin-calendar-day-view-empty {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) minmax(0, 220px);
+  gap: 12px;
+  align-items: center;
+  min-height: 56px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.admin-calendar-day-view-item {
+  cursor: pointer;
+}
+
+.admin-calendar-day-view-item:hover,
+.admin-calendar-day-view-item:focus-visible {
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.admin-calendar-day-view-item span,
+.admin-calendar-day-view-item small {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.admin-calendar-day-view-empty {
+  display: flex;
+  color: var(--text-muted);
+  font-weight: 800;
+}
+
+.admin-calendar-detail {
+  width: 100%;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 18px;
+  position: relative;
+}
+
+.admin-calendar-detail-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  min-height: 32px;
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #e55b55 0%, #cc3e3e 100%);
+  color: #ffffff;
+  padding: 0 12px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.admin-calendar-detail-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #cc3e3e;
+  color: #fff;
+}
+
+.admin-calendar-detail-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-calendar-detail-grid .admin-calendar-edit-field,
+.admin-calendar-detail-note {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-muted);
+  padding: 10px;
+}
+
+.admin-calendar-detail-grid .admin-calendar-edit-label,
+.admin-calendar-detail-note .admin-calendar-edit-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.admin-calendar-detail-note {
+  margin-top: 10px;
+}
+
+.admin-calendar-edit-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.admin-calendar-edit-pencil {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border: 1px solid #b91c1c;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #e55b55 0%, #cc3e3e 100%);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.68rem;
+}
+
+.admin-calendar-edit-value {
+  cursor: pointer;
+}
+
+.admin-calendar-edit-value:hover,
+.admin-calendar-edit-value:focus-visible {
+  color: #cc3e3e;
+  outline: none;
+}
+
+.admin-calendar-edit-input {
+  width: 100%;
+  min-height: 2.1rem;
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  padding: 0 0.65rem;
+}
+
+@media (max-width: 1100px) {
+  .admin-calendar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-calendar-weekday {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-calendar-page {
+    padding: 14px;
+  }
+
+  .admin-calendar-header,
+  .admin-calendar-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-calendar-view-actions {
+    justify-content: flex-end;
+  }
+
+  .admin-calendar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-calendar-day-view-item {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-calendar-page {
+  font-weight: 700;
+}
+
+.admin-calendar-shell {
+  width: 100%;
+  min-height: calc(100vh - 190px);
+}
+
+.admin-calendar-weekday,
+.admin-calendar-day-number,
+.admin-calendar-month-title,
+.admin-calendar-title {
+  font-weight: 900;
+}
+
+.admin-calendar-day {
+  min-height: 148px;
+}
+
+.admin-calendar-reminder,
+.admin-calendar-reminder-more,
+.admin-calendar-reminder:hover,
+.admin-calendar-reminder:focus-visible,
+.admin-calendar-reminder-more:hover,
+.admin-calendar-reminder-more:focus-visible {
+  border-color: var(--admin-red-border, #b91c1c) !important;
+  background: var(--admin-red, #dc2626) !important;
+  color: #ffffff !important;
+}
+
+.admin-calendar-reminder:hover,
+.admin-calendar-reminder:focus-visible,
+.admin-calendar-reminder-more:hover,
+.admin-calendar-reminder-more:focus-visible {
+  background: var(--admin-red-dark, #b91c1c) !important;
+}
+
+.admin-calendar-reminder *,
+.admin-calendar-reminder-icon,
+.admin-calendar-reminder-name,
+.admin-calendar-reminder-source,
+.admin-calendar-reminder-more {
+  color: #ffffff !important;
+}
+
+.admin-calendar-reminder-source {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+
+/* Landscape calendar detail view */
+.admin-calendar-detail-grid .admin-calendar-edit-field,
+.admin-calendar-detail-note,
+.admin-calendar-edit-field {
+  display: flex !important;
+  align-items: center !important;
+  gap: 20px !important;
+}

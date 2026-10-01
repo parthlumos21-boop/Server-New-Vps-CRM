@@ -1,0 +1,20 @@
+(node:5924) [MONGOOSE] Warning: Duplicate schema index on {"userId":1} found. This is often due to declaring an index 
+using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5924) [MONGOOSE] Warning: Duplicate schema index on {"productId":1} found. This is often due to declaring an 
+index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+.
+At D:\mongo db\tools\manage-runtime.ps1:312 char:5
++     throw $errorMessage
++     ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: ((node:5924) [MO... definition.
+.:String) [], RuntimeException
+    + FullyQualifiedErrorId : (node:5924) [MONGOOSE] Warning: Duplicate schema index on {"userId":1} found. This is of 
+   ten due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index def  
+  inition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+    (node:5924) [MONGOOSE] Warning: Duplicate schema index on {"productId":1} found. This is often due to declaring an 
+    index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+.
+ 
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:\mongo db\tools\manage-runtime.ps1 -Action start -Service backend failed with exit code 1.

@@ -1,0 +1,2606 @@
+[
+  {
+    "_id": {
+      "$oid": "6a708608b3cdfebc55386c8a"
+    },
+    "userId": "16",
+    "sessionId": "0ce51b3c-2b97-4214-86ae-dc2ee0fa8ff4",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-03T12:14:00.321Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-10T12:14:00.300Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "26da7280b7aa4d7fecd4f770ee4df77165772b85e83873343adddd2ec20c7a07",
+    "lastActivity": {
+      "$date": "2026-08-03T12:14:00.304Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-03T12:14:00.304Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-03T12:14:00.321Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7333f8b3cdfebc55386ca0"
+    },
+    "userId": "16",
+    "sessionId": "aad0e4a9-0e31-4c6e-85c1-07c1fd4dc046",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-05T13:00:40.576Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-12T13:00:40.517Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "801a0dde3d7f710a7d54d871a8f1834c5e4cce710e682ad046f1a877e4aad571",
+    "lastActivity": {
+      "$date": "2026-08-05T13:00:40.520Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-05T13:00:40.520Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-05T13:00:40.576Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7414e3b3cdfebc55386ca1"
+    },
+    "userId": "16",
+    "sessionId": "dee42a25-8b49-4f3f-9198-fa2a73e2e824",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-06T05:00:19.390Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T05:00:19.377Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "34085a8ded62ba87ac572222151ef3932c2b638fbb1786dc994fba8643341a48",
+    "lastActivity": {
+      "$date": "2026-08-06T05:00:19.379Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T05:00:19.379Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-06T05:00:19.390Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7418bbb3cdfebc55386ca2"
+    },
+    "sessionId": "d9fa64f6-d90e-4fc2-9dbf-30a03d7e6db1",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-06T05:16:43.985Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T05:16:43.833Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "a6f6de0fd2c9926c64888307684c2015fd3fbb1867003b6dc2e752e7bcf7e410",
+    "lastActivity": {
+      "$date": "2026-08-06T05:16:43.833Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T05:16:43.833Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-06T05:16:43.985Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a742d1bb3cdfebc55386ca3"
+    },
+    "sessionId": "a755d246-ccf1-4130-9acb-4193689d7495",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-06T06:43:39.726Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T06:43:39.627Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "beb8e98dee4bc674d1ac3f9cfac692fba998088ffe971f1a574d705f7ae982a0",
+    "lastActivity": {
+      "$date": "2026-08-06T06:43:39.631Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T06:43:39.631Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-06T06:43:39.726Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a746fc6b3cdfebc55386ca4"
+    },
+    "userId": "17",
+    "sessionId": "2abbde2f-fc10-4ed5-8ed9-29f9c7908dd1",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-06T11:28:06.149Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T11:28:06.112Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "3bb0c5383f3c8e46a6bf7af2fb3cacf3bb35fdfe40d03d482f5054ff4f7bb683",
+    "lastActivity": {
+      "$date": "2026-08-06T11:28:06.113Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T11:28:06.113Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-06T11:28:06.149Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a74795db3cdfebc55386ca5"
+    },
+    "sessionId": "8371747e-4804-4a44-9c75-3a8d29c0a3d8",
+    "userId": "17",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-06T12:09:01.161Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T12:09:01.122Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5a8f6dad2b44935c9b39913cf794be369d0c262daf6441430b863334553c24da",
+    "lastActivity": {
+      "$date": "2026-08-06T12:09:01.126Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T12:09:01.126Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-06T12:09:01.161Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a74797db3cdfebc55386ca6"
+    },
+    "sessionId": "b1d3f799-c4e0-4e92-ae55-b72dc21ee3a6",
+    "userId": "18",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-06T12:09:33.284Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T12:09:33.198Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "cce5b5993d4fec8d6c681a3f5bea84580dbc6f96ee8fc67571c8a76cadbb495a",
+    "lastActivity": {
+      "$date": "2026-08-06T12:09:33.199Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T12:09:33.199Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-06T12:09:33.284Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a748544b3cdfebc55386ca7"
+    },
+    "sessionId": "24d40a38-c6e7-4e45-834b-1df2dcfd89e1",
+    "userId": "18",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-06T12:59:48.105Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T12:59:48.064Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5d5443b5301780712f5c7840415ddd6d559c092d2d91166cf2828a40cb6adb91",
+    "lastActivity": {
+      "$date": "2026-08-06T12:59:48.066Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T12:59:48.066Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-06T12:59:48.105Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a748700b3cdfebc55386ca8"
+    },
+    "userId": "18",
+    "sessionId": "5f871e4e-3226-4ebf-becc-e715f23058cf",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-06T13:07:12.842Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-13T13:07:12.833Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "862a56e8b8e4e3adaa15be5fdcb11fcfac4568f2c1daada1868604aa9f825cf8",
+    "lastActivity": {
+      "$date": "2026-08-06T13:07:12.833Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-06T13:07:12.833Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-06T13:07:12.842Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a756268b3cdfebc55386ca9"
+    },
+    "sessionId": "e1bd63d3-3fe2-4a8e-bd57-87a4ed3e401b",
+    "userId": "17",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-07T04:43:20.625Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T04:43:20.524Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "6d4fb7240bf382bb554331b554901e6e0b38212c94c2d785309079865f51819e",
+    "lastActivity": {
+      "$date": "2026-08-07T04:43:20.528Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T04:43:20.528Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-07T04:43:20.625Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7562a0b3cdfebc55386caa"
+    },
+    "userId": "16",
+    "sessionId": "de3a9375-0cea-40b7-b491-f091ecd59e58",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-07T04:44:16.958Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T04:44:16.651Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "e2a472fc190f8d9fc44fd29f413c3bd0cb9c61a90e3955a00f8c5487aef1d66b",
+    "lastActivity": {
+      "$date": "2026-08-07T04:44:16.651Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T04:44:16.651Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-07T04:44:16.958Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a75646ab3cdfebc55386cab"
+    },
+    "userId": "1",
+    "sessionId": "864601f0-09d1-4df7-85f7-ccb7a2322502",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-07T04:51:54.779Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T04:51:54.764Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "4fe35eea3acce2def0f8b3036f56d17d519d8ef0236154800a9d50f51c4ce07e",
+    "lastActivity": {
+      "$date": "2026-08-07T04:51:54.765Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T04:51:54.765Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-07T04:51:54.779Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a757f53b3cdfebc55386cac"
+    },
+    "sessionId": "e64706ec-bdad-4774-8573-4479f3643aec",
+    "userId": "18",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-07T06:46:43.209Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T06:46:43.168Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "19359ef2d4c712030b9f92aecd50de2226c3f7330296d0b5d315c2d4a572b1a5",
+    "lastActivity": {
+      "$date": "2026-08-07T06:46:43.170Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T06:46:43.169Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-07T06:46:43.209Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a758158b3cdfebc55386cad"
+    },
+    "userId": "16",
+    "sessionId": "24726be6-8fd4-4cce-bff2-609e6502716e",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-07T06:55:20.652Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T06:55:20.640Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "517a7ba9296c136007b8b5eac9e1c03e1ce07d829f5fcd1b3271c72d4a4de2fc",
+    "lastActivity": {
+      "$date": "2026-08-07T06:55:20.641Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T06:55:20.641Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-07T06:55:20.652Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a75ae95b3cdfebc55386cae"
+    },
+    "userId": "1",
+    "sessionId": "cacac8b5-54ea-4179-9337-62bd9f8ed9a3",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-07T10:08:21.425Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-14T10:08:21.382Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "93fbe847f6debb650be9e98cd927851154faeb2db538a684b3050c224bbf0942",
+    "lastActivity": {
+      "$date": "2026-08-07T10:08:21.387Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-07T10:08:21.387Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-07T10:08:21.425Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76c7d9b3cdfebc55386caf"
+    },
+    "sessionId": "8e96f84d-3705-49a5-866b-8ae5be70b00b",
+    "userId": "22",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:08:25.870Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:08:25.852Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "513e3885c9f781fd7ba06d8645c439db4352857e646cb44404ec2abff0205bbc",
+    "lastActivity": {
+      "$date": "2026-08-08T06:08:25.852Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:08:25.852Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-08T06:08:25.870Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76c809b3cdfebc55386cb0"
+    },
+    "sessionId": "6e8193da-f41d-4b97-abf5-1c737b635a0f",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:09:13.528Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:09:13.518Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "b55e1f9c627392695928e9564502aec09b2ed61945e889801fb67e7a92d52875",
+    "lastActivity": {
+      "$date": "2026-08-08T06:09:13.518Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:09:13.518Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-08T06:09:13.528Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76c856b3cdfebc55386cb1"
+    },
+    "sessionId": "dec68457-b775-452a-bbe5-9547be2aaa07",
+    "userId": "23",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:10:30.915Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:10:30.905Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "2b7542fb434d2bac4ffd268ad49e1c8245760afebb2365e60278e0a08096ea1e",
+    "lastActivity": {
+      "$date": "2026-08-08T06:10:30.905Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:10:30.905Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-08T06:10:30.915Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76cb3ab3cdfebc55386cb2"
+    },
+    "userId": "23",
+    "sessionId": "b016864e-5337-4671-967a-1f5b2f9ee4d4",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:22:50.392Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:22:50.357Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "8fc19894dc7660ca11da9b217e4ee0273f431ee94fe573645e7158c33ae44c39",
+    "lastActivity": {
+      "$date": "2026-08-08T06:22:50.358Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:22:50.358Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-08T06:22:50.392Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76cb74b3cdfebc55386cb3"
+    },
+    "userId": "16",
+    "sessionId": "f5e42fd8-a5d6-426f-b361-c298de2349b1",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:23:48.724Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:23:48.715Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "ef49ac13e70da82883ad6a4cca70885cfd1bdc4889863ac8b81e9fd88aea4555",
+    "lastActivity": {
+      "$date": "2026-08-08T06:23:48.715Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:23:48.715Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-08T06:23:48.724Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76ce54b3cdfebc55386cb4"
+    },
+    "sessionId": "a82913fd-2cd4-4d11-9b70-e2a8db733c17",
+    "userId": "18",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-08T06:36:04.407Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:36:04.366Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "3f79a7c10baae20817d3e84e598cc0c13fa2ca88857653c11d0cacc6d4d17e44",
+    "lastActivity": {
+      "$date": "2026-08-08T06:36:04.367Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:36:04.367Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-08T06:36:04.407Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76ce93b3cdfebc55386cb5"
+    },
+    "userId": "16",
+    "sessionId": "4c44f2bc-aeb2-4cdd-9d3c-bd2229b47087",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T06:37:07.540Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T06:37:07.505Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "85ac713e63172a049be2bf03316b6b283b122ab041fa79ab0da39346f775ca04",
+    "lastActivity": {
+      "$date": "2026-08-08T06:37:07.505Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T06:37:07.505Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-08T06:37:07.540Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a76faacb3cdfebc55386cb6"
+    },
+    "sessionId": "686f59c8-029e-4037-a34b-928cd812e89d",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-08T09:45:16.438Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-15T09:45:16.420Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "9ccae6018aa1095f2e69bdfdfcc9834fea015c885f57cb7ca4dec44d161d795a",
+    "lastActivity": {
+      "$date": "2026-08-08T09:45:16.422Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-08T09:45:16.422Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-08T09:45:16.438Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a797851b3cdfebc55386cb7"
+    },
+    "sessionId": "9f674bce-79b9-4d4b-9db0-21d6e069c1d5",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T07:05:53.467Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T07:05:53.450Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "4f07a0a8a221e9c631783d03740ff85cbc443976c4e3ad6003ebbe2e178ac171",
+    "lastActivity": {
+      "$date": "2026-08-10T07:05:53.451Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T07:05:53.451Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T07:05:53.467Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79791fb3cdfebc55386cb8"
+    },
+    "userId": "23",
+    "sessionId": "eab372c7-7bb4-4024-b454-cf6947c4bc86",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T07:09:19.632Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T07:09:19.624Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "3fbde546fb27caae424ca7594757026db7e0e0966b28727c33948046c5d99677",
+    "lastActivity": {
+      "$date": "2026-08-10T07:09:19.624Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T07:09:19.624Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-10T07:09:19.632Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a797bbab3cdfebc55386cb9"
+    },
+    "userId": "23",
+    "sessionId": "014115f4-dd57-49cb-bae0-a9d1427a4327",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T07:20:26.811Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T07:20:26.796Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "f0e8c3f732a497f4e52d1cce2bceccae92ad5b49de7b8b1a886cb72e39028255",
+    "lastActivity": {
+      "$date": "2026-08-10T07:20:26.797Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T07:20:26.797Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-10T07:20:26.811Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a797bf6b3cdfebc55386cba"
+    },
+    "userId": "16",
+    "sessionId": "a65ef458-c157-48a3-b1f1-9523ba95ab22",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T07:21:26.096Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T07:21:26.089Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5b7dbd62c08f2e3a659e95991eec39e98c631046c4a67f7d98ec54966c8f66d9",
+    "lastActivity": {
+      "$date": "2026-08-10T07:21:26.089Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T07:21:26.089Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T07:21:26.096Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a797cc4b3cdfebc55386cbb"
+    },
+    "userId": "16",
+    "sessionId": "649e29dd-2762-4c47-8f5f-3b2633469ac4",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T07:24:52.070Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T07:24:52.063Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "8eae94fdb8f63862593b5b87a8e50bddf4022474437c4d6b0b9e36437a63e68c",
+    "lastActivity": {
+      "$date": "2026-08-10T07:24:52.063Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T07:24:52.063Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T07:24:52.070Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7991ecb3cdfebc55386cbc"
+    },
+    "sessionId": "d755271a-7433-4e0a-b60d-f387a50701ef",
+    "userId": "23",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T08:55:08.477Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T08:55:08.462Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "33f48376ffff43ba2214db16724c7fdc528f54b548da8dc4d9481d3257cf9613",
+    "lastActivity": {
+      "$date": "2026-08-10T08:55:08.463Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T08:55:08.463Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-10T08:55:08.477Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79921cb3cdfebc55386cbd"
+    },
+    "userId": "18",
+    "sessionId": "df18818d-f9fc-4724-84cd-7384981828a9",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-10T08:55:56.528Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T08:55:56.514Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "252807aa392f8fec7197a005ec1ad1c169da641819f14453e933c729d41325af",
+    "lastActivity": {
+      "$date": "2026-08-10T08:55:56.514Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T08:55:56.514Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T08:55:56.528Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7992d3b3cdfebc55386cbe"
+    },
+    "userId": "16",
+    "sessionId": "1cf3084a-24f5-4e1a-aab7-409360fb8b8d",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T08:58:59.267Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T08:58:59.257Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "0bced15ad40ab5b54a4d3aa40777af483e9b95e26bdfc79b370b945b26a83d2c",
+    "lastActivity": {
+      "$date": "2026-08-10T08:58:59.257Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T08:58:59.257Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T08:58:59.267Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a799319b3cdfebc55386cbf"
+    },
+    "sessionId": "83bcb720-f058-47d5-aaf4-a88a488c8f35",
+    "userId": "1",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T09:00:09.535Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T09:00:09.523Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "e33937ec2287660eed1faa922e363c9e90767e5c4b151932ebb1d5ab53fac237",
+    "lastActivity": {
+      "$date": "2026-08-10T09:00:09.523Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T09:00:09.523Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T09:00:09.535Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79945fb3cdfebc55386cc0"
+    },
+    "sessionId": "4dbf9ec5-20a5-415c-9b90-49bd6f278101",
+    "userId": "1",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T09:05:35.808Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T09:05:35.798Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d31a25ece0936fef2bd086a94f97bb252a761a76e0995dfc8bcc369d5494fa37",
+    "lastActivity": {
+      "$date": "2026-08-10T09:05:35.798Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T09:05:35.798Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T09:05:35.808Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a799468b3cdfebc55386cc1"
+    },
+    "userId": "16",
+    "sessionId": "fdee7f61-d502-46bb-a784-8fac9caff6fc",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T09:05:44.219Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T09:05:44.212Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5ec41b809ee745f60a54f4a8a6ea04e87dcd05ed51be78293346cf688230c552",
+    "lastActivity": {
+      "$date": "2026-08-10T09:05:44.212Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T09:05:44.212Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T09:05:44.219Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79a6b1b3cdfebc55386cc2"
+    },
+    "sessionId": "c0f1403f-440c-4cc3-931e-2287c7493ed0",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T10:23:45.978Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T10:23:45.951Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "46d48b2a3b4982bcea2562a5670c61860caa6c33ea418fa8bab28d922ddabcb8",
+    "lastActivity": {
+      "$date": "2026-08-10T10:23:45.952Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T10:23:45.952Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T10:23:45.978Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79a9feb3cdfebc55386cc3"
+    },
+    "sessionId": "0aeeed23-6f14-4b1c-a0ff-74e0b8a3a297",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T10:37:50.233Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T10:37:50.225Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "01926c82feaa00b9c564db019469eb17aad1288af69da8c0fffabec409eb8a94",
+    "lastActivity": {
+      "$date": "2026-08-10T10:37:50.225Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T10:37:50.225Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T10:37:50.233Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79ac5cb3cdfebc55386cc4"
+    },
+    "sessionId": "229dfc4d-7a01-4c25-b16e-5d935d52370c",
+    "userId": "24",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T10:47:56.840Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T10:47:56.824Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "ec2f9aaa26b60b48aca4206f58b406e71ebf26ee0e42c0fa98c41a3a401574f0",
+    "lastActivity": {
+      "$date": "2026-08-10T10:47:56.824Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T10:47:56.824Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T10:47:56.840Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79af28b3cdfebc55386cc5"
+    },
+    "userId": "16",
+    "sessionId": "cdbba516-4cc4-4697-abec-bc80aebf07c5",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T10:59:52.504Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T10:59:52.462Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "c9bb203d6626f9ec9967fe99ac8a2c611061ce0107841dba8651e6d1865962f7",
+    "lastActivity": {
+      "$date": "2026-08-10T10:59:52.463Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T10:59:52.463Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T10:59:52.504Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79b263b3cdfebc55386cc6"
+    },
+    "userId": "16",
+    "sessionId": "c9155a32-2a49-41d0-bae2-fdbc7fb61190",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T11:13:39.532Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T11:13:39.506Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "c5e0f471ddd181d16df3814d404ccbbb7d2efa73d93a5f0fdb9d3c96b2fa9f0b",
+    "lastActivity": {
+      "$date": "2026-08-10T11:13:39.508Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T11:13:39.508Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T11:13:39.532Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79b4a1b3cdfebc55386cc7"
+    },
+    "userId": "16",
+    "sessionId": "9b57dc7f-0b69-4ed0-8988-aa57e996d23d",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T11:23:13.154Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T11:23:13.142Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "344695230f13e36a8965ba9a7de84e8e4ac9cd4e5205d672da71b6a8cbabe7c3",
+    "lastActivity": {
+      "$date": "2026-08-10T11:23:13.142Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T11:23:13.142Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T11:23:13.154Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a79b601b3cdfebc55386cc8"
+    },
+    "sessionId": "d7039103-4d59-4abd-89fb-dec0b39fd7d4",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-10T11:29:05.862Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-17T11:29:05.851Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "f453439b5ce64b744cc6fd044105dcdc34c4909b8bc36d314caf1a56fddd0458",
+    "lastActivity": {
+      "$date": "2026-08-10T11:29:05.852Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-10T11:29:05.852Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-10T11:29:05.862Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7b0989b3cdfebc55386cc9"
+    },
+    "sessionId": "0a39ad3f-ea6c-4a6d-a58b-a6b034fed6f1",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-11T11:37:45.932Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-18T11:37:45.879Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "c4c16014e98ca8369d8f1cf36a4d36e0c8fb8055cc7ee62aecba7c8bdc1b99be",
+    "lastActivity": {
+      "$date": "2026-08-11T11:37:45.888Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-11T11:37:45.888Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-11T11:37:45.932Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c5f2db3cdfebc55386cd1"
+    },
+    "userId": "16",
+    "sessionId": "eb7d26d0-2125-45cf-acdc-b72454ed0726",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-12T11:55:25.730Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-19T11:55:25.632Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "1c8176c480095d995f4fa95aec325af3fb10a1923071ebe671a4799f89d346fa",
+    "lastActivity": {
+      "$date": "2026-08-12T11:55:25.632Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-12T11:55:25.632Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-12T11:55:25.730Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d5c7c65104698f9dea137"
+    },
+    "sessionId": "2d58dd1f-591f-4d87-95f4-737e00dc6316",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T05:56:12.469Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T05:56:12.236Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "37c5caf1bf6c4167ffba25827323235e20cd458125a9a856b2a6f2f13350b6aa",
+    "lastActivity": {
+      "$date": "2026-08-13T05:56:12.236Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T05:56:12.236Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T05:56:12.469Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d811c65104698f9dea139"
+    },
+    "userId": "13",
+    "sessionId": "29d1f9f3-5e4e-4923-af1a-45e4075b7000",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T08:32:28.485Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T08:32:28.452Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "fef8921aa645238d8ed265f2fc0e661d01abbdba1d0cb23ffefcd8f0605e9a66",
+    "lastActivity": {
+      "$date": "2026-08-13T08:32:28.461Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T08:32:28.461Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T08:32:28.485Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d815e65104698f9dea13a"
+    },
+    "sessionId": "7135b6c6-e6fa-43da-a1a2-a68c75231156",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T08:33:34.890Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T08:33:34.884Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "02e59119b0006cc56bfd090302047e14d00337c3c9cce734af0b37d4eaa21857",
+    "lastActivity": {
+      "$date": "2026-08-13T08:33:34.885Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T08:33:34.885Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T08:33:34.890Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d91d465104698f9dea13b"
+    },
+    "userId": "13",
+    "sessionId": "b9d1e5bf-6e3c-4f3c-a5c9-28363db97498",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T09:43:48.482Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T09:43:48.437Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "f507167ad00c69c94d10491a30549c688ab30743ebac4c3997e12d6a8d87fec5",
+    "lastActivity": {
+      "$date": "2026-08-13T09:43:48.443Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T09:43:48.443Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T09:43:48.482Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d926965104698f9dea13c"
+    },
+    "userId": "16",
+    "sessionId": "b35556ff-c475-4e16-bb9d-65582d54c3a9",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T09:46:17.728Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T09:46:17.718Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "90970f01be500ad1e65db623e7086291d2cdc0f8a96a5892f61362f06929967f",
+    "lastActivity": {
+      "$date": "2026-08-13T09:46:17.719Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T09:46:17.719Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T09:46:17.728Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d987065104698f9dea13d"
+    },
+    "sessionId": "1f77d1d8-7018-4ff2-ae90-83958ec301f3",
+    "userId": "13",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T10:12:00.617Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T10:12:00.596Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "84d092648bb25b604d388478362e4956d47887e10862899bc5a5080d85aaf55d",
+    "lastActivity": {
+      "$date": "2026-08-13T10:12:00.598Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T10:12:00.598Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T10:12:00.617Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d98bc65104698f9dea13e"
+    },
+    "sessionId": "dad4ef18-a5a9-4ed2-a4ac-28a3288ec1c1",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T10:13:16.980Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T10:13:16.963Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "9684f8f94131e5a9c161414f33e606dd6571f9d4f42a06a29c633d9e5c2c734f",
+    "lastActivity": {
+      "$date": "2026-08-13T10:13:16.964Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T10:13:16.964Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T10:13:16.980Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9b7665104698f9dea13f"
+    },
+    "sessionId": "7123cd75-fce5-494f-8f78-fd625b8a2441",
+    "userId": "13",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T10:24:54.392Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T10:24:54.382Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "accd7161d31b8c449eae7f6ac301906f4be8e650756ef8389bc4be3e0a460667",
+    "lastActivity": {
+      "$date": "2026-08-13T10:24:54.382Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T10:24:54.382Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T10:24:54.392Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9c5e65104698f9dea140"
+    },
+    "userId": "16",
+    "sessionId": "993c8925-4355-43a9-84b5-aa0a6066340e",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T10:28:46.333Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T10:28:46.301Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "45cd5e8dbc11a31e9d3310f2ab9462954d8e62f693abeb94e572ff5469d16060",
+    "lastActivity": {
+      "$date": "2026-08-13T10:28:46.324Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T10:28:46.324Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T10:28:46.333Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dae3e65104698f9dea142"
+    },
+    "sessionId": "0a067ceb-0a5c-41ef-b5b2-6f1855f0b615",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T11:45:02.876Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T11:45:02.825Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "e30082eaccd388751751407f49b86bcfa7ed0242970c5d33637c4f28f5ff1a7b",
+    "lastActivity": {
+      "$date": "2026-08-13T11:45:02.829Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T11:45:02.829Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T11:45:02.876Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7daf6565104698f9dea143"
+    },
+    "userId": "16",
+    "sessionId": "16ca99d1-0267-4d27-b2e2-588484ca7655",
+    "__v": 0,
+    "browser": "Unknown browser",
+    "createdAt": {
+      "$date": "2026-08-13T11:49:57.889Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T11:49:57.863Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "05daa4700262d3ee95558c4898c409696ca9acdf3f1e0cdc069276334326e8bb",
+    "lastActivity": {
+      "$date": "2026-08-13T11:49:57.864Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T11:49:57.864Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T11:49:57.889Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7daf6565104698f9dea144"
+    },
+    "userId": "16",
+    "sessionId": "70ec5def-e701-4ea6-bf28-b1e98f092604",
+    "__v": 0,
+    "browser": "Unknown browser",
+    "createdAt": {
+      "$date": "2026-08-13T11:49:57.903Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T11:49:57.852Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "05daa4700262d3ee95558c4898c409696ca9acdf3f1e0cdc069276334326e8bb",
+    "lastActivity": {
+      "$date": "2026-08-13T11:49:57.856Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T11:49:57.856Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T11:49:57.903Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db06965104698f9dea145"
+    },
+    "sessionId": "91cb412e-98d2-43a3-ab85-a98d771c13aa",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T11:54:17.640Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T11:54:17.583Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "ea196a44e6f427a6b843e7a9ab561a8727113a531a115cdb83f2f8f5863a6b49",
+    "lastActivity": {
+      "$date": "2026-08-13T11:54:17.589Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T11:54:17.589Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T11:54:17.640Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db0b465104698f9dea146"
+    },
+    "userId": "16",
+    "sessionId": "43f923f1-6a1c-4000-a586-947f83321eab",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T11:55:32.103Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T11:55:32.068Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "b08193a8a13306e6e29bcebedffb9eb5aa5fe9562fa110a14833a92298fb6341",
+    "lastActivity": {
+      "$date": "2026-08-13T11:55:32.068Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T11:55:32.068Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T11:55:32.103Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db1fc65104698f9dea147"
+    },
+    "userId": "16",
+    "sessionId": "02bb78a5-7d4d-4c8c-a217-9f69a48188fa",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:01:00.732Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:01:00.642Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d3f5090e87ac4532e55a702add43b200e57cf8ff17f1ba7b9bb4255ff2b6daa9",
+    "lastActivity": {
+      "$date": "2026-08-13T12:01:00.645Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:01:00.645Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:01:00.732Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db53c65104698f9dea148"
+    },
+    "userId": "16",
+    "sessionId": "817f4c98-0c92-4182-9e1e-7e36c9ba6764",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:14:52.633Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:14:52.411Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "c05249fefb3a05e74e15a2b2b31681bbad5972329b7f88f13ee6313a82dc9ad5",
+    "lastActivity": {
+      "$date": "2026-08-13T12:14:52.419Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:14:52.419Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:14:52.633Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db62065104698f9dea149"
+    },
+    "sessionId": "9a9b5762-6dbc-4cfe-8442-fee4e910abed",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:18:40.536Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:18:40.505Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "9c4c0f0bb034e7f51b78a12bb09bab3e1b71d03e8ac585138e16b900c7e56193",
+    "lastActivity": {
+      "$date": "2026-08-13T12:18:40.506Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:18:40.506Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:18:40.536Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db64965104698f9dea14a"
+    },
+    "userId": "1",
+    "sessionId": "6cdebd61-4bfe-4ce2-9546-21a5a5c158ae",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:19:21.172Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:19:21.165Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d594e776e95384d07110645e55b9327b2beeec545027c3bfe7b24ec2f8cbead1",
+    "lastActivity": {
+      "$date": "2026-08-13T12:19:21.165Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:19:21.165Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:19:21.172Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db68165104698f9dea14b"
+    },
+    "sessionId": "2d56b188-46b7-4c13-ae3b-88efc878b76b",
+    "userId": "17",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:20:17.219Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:20:17.205Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "e9564825294cec2e10efaf41a970b8e27b926bb1c256e898bcb0a6af1c3697e8",
+    "lastActivity": {
+      "$date": "2026-08-13T12:20:17.205Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:20:17.205Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:20:17.219Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db75965104698f9dea14c"
+    },
+    "sessionId": "0f287236-f0ff-4123-81d3-64fe12bba500",
+    "userId": "13",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-13T12:23:53.918Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:23:53.903Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "7e787d8598105a1838f28b58d64fc6d3d13affd44554d33ae735ea0ffebc7821",
+    "lastActivity": {
+      "$date": "2026-08-13T12:23:53.905Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:23:53.905Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T12:23:53.918Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7db9c965104698f9dea14d"
+    },
+    "sessionId": "d63e166d-a646-4884-9a8c-5ba84b5e4d7a",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:34:17.518Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:34:17.490Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "128ace0e6ffaddc14caf1671c3903b72a92504cd629e0b478663f4ceda42bc2d",
+    "lastActivity": {
+      "$date": "2026-08-13T12:34:17.498Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:34:17.498Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:34:17.518Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dba3a65104698f9dea14e"
+    },
+    "sessionId": "bf5d704e-667a-47f4-93bf-b5495125ec0d",
+    "userId": "1",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:36:10.023Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:36:10.013Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "c45489636565edc75eff7d0bad20b52ab62de7c1dc7d5e3191b09cdc02733bca",
+    "lastActivity": {
+      "$date": "2026-08-13T12:36:10.013Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:36:10.013Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:10.023Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dba5265104698f9dea14f"
+    },
+    "userId": "16",
+    "sessionId": "a387bd34-8371-4056-b0a4-49bcce9c00eb",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:36:34.231Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:36:34.224Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d18780a2af28d96626a3b891b6697ea6f9bd7300f77b3206a9c2fb2a978a0f65",
+    "lastActivity": {
+      "$date": "2026-08-13T12:36:34.224Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:36:34.224Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:36:34.231Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dbb7c65104698f9dea150"
+    },
+    "userId": "16",
+    "sessionId": "d28b6c7b-f034-4546-9bba-39a8a5aaf862",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-13T12:41:32.511Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:41:32.468Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "6b0f537d710933b60f32dd5882341aff4c518991494e1c652e833188c7dba68e",
+    "lastActivity": {
+      "$date": "2026-08-13T12:41:32.471Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:41:32.471Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-13T12:41:32.511Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dbde165104698f9dea151"
+    },
+    "userId": "13",
+    "sessionId": "5fa40150-9254-4262-9e00-4b461ebed049",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-13T12:51:45.464Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T12:51:45.446Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "be92427bab62f3c99966dfac0a55b711d7d8034a5b4eddd2bafaf7915ba50139",
+    "lastActivity": {
+      "$date": "2026-08-13T12:51:45.449Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T12:51:45.449Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T12:51:45.464Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dc76265104698f9dea152"
+    },
+    "userId": "13",
+    "sessionId": "d0459d56-dde5-46b2-b76c-ef6b9d4948a0",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-13T13:32:18.089Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T13:32:18.064Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "db54136aec85b0800830c2cde4ed14e2fdbf316bdf663ac23470a9497aa6ce2c",
+    "lastActivity": {
+      "$date": "2026-08-13T13:32:18.065Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T13:32:18.065Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T13:32:18.089Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7dc79465104698f9dea153"
+    },
+    "sessionId": "7e8182da-289a-40bb-909d-1f5aa51d682b",
+    "userId": "13",
+    "__v": 0,
+    "browser": "Chrome",
+    "createdAt": {
+      "$date": "2026-08-13T13:33:08.363Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-20T13:33:08.350Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "baf9f48fcaac1041d781bfd2dafb697f4c14389272317410e9fafbe19f3d34a2",
+    "lastActivity": {
+      "$date": "2026-08-13T13:33:08.350Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-13T13:33:08.350Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-13T13:33:08.363Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7e9910a7c9efbdd780e495"
+    },
+    "userId": "7",
+    "sessionId": "4cd421da-cc20-4f1b-a806-e81526aa2079",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T04:26:56.853Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T04:26:56.834Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "28a43be504729dc39c63ebfe70709b1055ca46203b72f56f3c966e8f5c545ddf",
+    "lastActivity": {
+      "$date": "2026-08-14T04:26:56.838Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T04:26:56.838Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T04:26:56.853Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7e9cf4a7c9efbdd780e496"
+    },
+    "sessionId": "22dbcf2e-a9eb-430e-9d33-7666aed6c829",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T04:43:32.991Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T04:43:32.983Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "6d858c9e24c9b1c6da1fd1bcb9c4143c40ad777673a313f4b1c240cb2d1eeffb",
+    "lastActivity": {
+      "$date": "2026-08-14T04:43:32.984Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T04:43:32.984Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T04:43:32.991Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7e9e0fa7c9efbdd780e497"
+    },
+    "sessionId": "260df03e-a927-4249-89a4-7ae84d6b1c58",
+    "userId": "7",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T04:48:15.560Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T04:48:15.549Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "2a2392d14b321fead21102032f8f39642c54ddc9afcb39d9f119833fa510c5b6",
+    "lastActivity": {
+      "$date": "2026-08-14T04:48:15.549Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T04:48:15.549Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T04:48:15.560Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7e9f1aa7c9efbdd780e498"
+    },
+    "sessionId": "c8f4b9d6-aa2c-40e1-b5b9-b20507ba006f",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T04:52:42.556Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T04:52:42.549Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "6a360cf0274053973185926bebdb4ae9ac2be81681306bd787d77f7a4839e8ec",
+    "lastActivity": {
+      "$date": "2026-08-14T04:52:42.549Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T04:52:42.549Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T04:52:42.556Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7e9ffaa7c9efbdd780e499"
+    },
+    "sessionId": "4cb11865-d4f8-4f85-bd6a-db0e2f531de5",
+    "userId": "7",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T04:56:26.109Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T04:56:26.101Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "dfd9bcdca594736feb5e3d293e68e2b21c246bf96908c431d536c465ad2ca6ef",
+    "lastActivity": {
+      "$date": "2026-08-14T04:56:26.102Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T04:56:26.102Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T04:56:26.109Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ea3fca7c9efbdd780e49a"
+    },
+    "sessionId": "8d6f4849-6fd3-4d10-aba9-ad16c04fc0c7",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T05:13:32.122Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T05:13:32.118Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5897e269839324a1d1a860a3922bd6b191dea21eebdf3faafcaf2c3456d12de6",
+    "lastActivity": {
+      "$date": "2026-08-14T05:13:32.118Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T05:13:32.118Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T05:13:32.122Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ea851a7c9efbdd780e49b"
+    },
+    "userId": "16",
+    "sessionId": "796c0db5-76d1-4406-8251-09ada4195bf6",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T05:32:01.220Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T05:32:01.199Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "4763a69f582d81c205e1b93498a925f5f4fe943b394ae6422f7912304897b1b5",
+    "lastActivity": {
+      "$date": "2026-08-14T05:32:01.200Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T05:32:01.200Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T05:32:01.220Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ea8dba7c9efbdd780e49c"
+    },
+    "sessionId": "bd7061ca-12e3-487a-8e78-d9fa84a5ec57",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T05:34:19.766Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T05:34:19.758Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "360ab2fc0d45c51d1631e2e9998f5f00e23d91687aefeacf66f3fbb8ccb6e450",
+    "lastActivity": {
+      "$date": "2026-08-14T05:34:19.758Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T05:34:19.758Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T05:34:19.766Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ea8f6a7c9efbdd780e49d"
+    },
+    "userId": "7",
+    "sessionId": "edcb1cef-dd96-4c24-a845-5b312ad488e3",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T05:34:46.112Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T05:34:46.108Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "00927febdc629cb005e02d0005cfd19f5cf7412ffcc758544daa80a2a603726a",
+    "lastActivity": {
+      "$date": "2026-08-14T05:34:46.108Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T05:34:46.108Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T05:34:46.112Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ea9a4a7c9efbdd780e49e"
+    },
+    "sessionId": "a6d5cefc-c967-4273-8ae8-300fac27e3ae",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T05:37:40.733Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T05:37:40.726Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "bebfecf42d537cc9432ef5ec49e0a000f7048a76fcb69660de445ac49965d211",
+    "lastActivity": {
+      "$date": "2026-08-14T05:37:40.726Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T05:37:40.726Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T05:37:40.733Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ebd7fa7c9efbdd780e49f"
+    },
+    "sessionId": "bce78131-304b-4377-aba8-a9e8f41c72d6",
+    "userId": "7",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T07:02:23.181Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T07:02:23.167Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "faba0aa0eb26d3c9633d01350e1d8b98b51267e31ccad6a3fa279d48c5b7715d",
+    "lastActivity": {
+      "$date": "2026-08-14T07:02:23.168Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T07:02:23.168Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T07:02:23.181Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ed92ba7c9efbdd780e4a0"
+    },
+    "sessionId": "d2cc5e0f-03a0-4835-836e-510d9addbf1d",
+    "userId": "7",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T09:00:27.334Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T09:00:27.314Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "e0e888e99f2c0507d18ce7a0a5218e4edb7c8bd8bd893e83e0694e55f54bb037",
+    "lastActivity": {
+      "$date": "2026-08-14T09:00:27.315Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T09:00:27.315Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T09:00:27.334Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7edaaca7c9efbdd780e4a1"
+    },
+    "sessionId": "6cbbc0aa-1871-4cf8-82bc-cf405cac0495",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T09:06:52.415Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T09:06:52.096Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "88c5bc399c20218cb833407c3ce4165ac37bc09f0cb479a475c3808417859d8e",
+    "lastActivity": {
+      "$date": "2026-08-14T09:06:52.096Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T09:06:52.096Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T09:06:52.415Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7edac5a7c9efbdd780e4a2"
+    },
+    "sessionId": "e56cebd0-0afc-4763-a917-bff9977d01f3",
+    "userId": "7",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T09:07:17.565Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T09:07:17.555Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "6d794f2feea4f32af74aa46f795d4c8ac70bfdc7e37875ee7393302c0eb67c66",
+    "lastActivity": {
+      "$date": "2026-08-14T09:07:17.555Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T09:07:17.555Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-14T09:07:17.565Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ef8dea7c9efbdd780e4a3"
+    },
+    "sessionId": "013cdd55-1fa0-46e0-9f7e-0abd90ce62e8",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T11:15:42.289Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T11:15:42.265Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "78309f287df120f807abf762ad112a7ccbd2fea8f85395e25e1f85aa10b2d54c",
+    "lastActivity": {
+      "$date": "2026-08-14T11:15:42.271Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T11:15:42.271Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T11:15:42.289Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7ef915a7c9efbdd780e4a4"
+    },
+    "sessionId": "feb76fd2-e756-445a-bb0f-5ce5a6a947ea",
+    "userId": "17",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-14T11:16:37.872Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-21T11:16:37.862Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "39923ad9c2b19f7b3b5edba220d6ab8b961c33506a3e70bafa32b6d735e5d823",
+    "lastActivity": {
+      "$date": "2026-08-14T11:16:37.863Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-14T11:16:37.863Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-14T11:16:37.872Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a806165a7c9efbdd780e4a5"
+    },
+    "userId": "17",
+    "sessionId": "ab2b43a3-0708-4c33-8b48-492d6f0d74fb",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-15T12:53:57.368Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-22T12:53:57.242Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "5e00d3ea0f953a6277cab8d4c0986970d2919243e7c3cac1a5d4b47c6b21693b",
+    "lastActivity": {
+      "$date": "2026-08-15T12:53:57.243Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-15T12:53:57.243Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-15T12:53:57.368Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a808beba7c9efbdd780e4a6"
+    },
+    "sessionId": "ee5da1d5-c76b-41d5-8803-7dfe73201529",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-15T15:55:23.480Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-22T15:55:23.463Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d3fa09b1df5ae9d0b5fddc542e71820c70a4fa6b7f3c3661549179c42b4cb728",
+    "lastActivity": {
+      "$date": "2026-08-15T15:55:23.464Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-15T15:55:23.464Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-15T15:55:23.480Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8091d6a7c9efbdd780e4a7"
+    },
+    "sessionId": "54f518fc-75ce-4c76-a5d5-6493a0f45c6b",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-15T16:20:38.414Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-22T16:20:38.404Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "3e5e9117c1678aa075c003e7d916636db12de68259c436a676f95a309d1c203a",
+    "lastActivity": {
+      "$date": "2026-08-15T16:20:38.404Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-15T16:20:38.404Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-15T16:20:38.414Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8197f4a7c9efbdd780e4a8"
+    },
+    "userId": "7",
+    "sessionId": "c8e19a00-1030-43d4-89e2-594d99f9c216",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-16T10:59:00.528Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-23T10:59:00.498Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "d72a09d7aa22e9db659fbad2259ef712b2df5fa3e286cb0ec24f6948c6569515",
+    "lastActivity": {
+      "$date": "2026-08-16T10:59:00.504Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-16T10:59:00.504Z"
+    },
+    "portalRole": "user",
+    "updatedAt": {
+      "$date": "2026-08-16T10:59:00.528Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a819a1ba7c9efbdd780e4a9"
+    },
+    "sessionId": "fcebe1b5-ce5c-4f58-b6aa-6f4fb6b7a8f2",
+    "userId": "16",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-16T11:08:11.938Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-23T11:08:11.924Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "0b86562fefe051d5102652d763f2d7476aaf71b2c20e8cb3fd4065a94f3b88b2",
+    "lastActivity": {
+      "$date": "2026-08-16T11:08:11.925Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-16T11:08:11.925Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-16T11:08:11.938Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a81a180a7c9efbdd780e4aa"
+    },
+    "userId": "16",
+    "sessionId": "6e456a43-9731-40ae-96df-c793d3cc722a",
+    "__v": 0,
+    "browser": "Microsoft Edge",
+    "createdAt": {
+      "$date": "2026-08-16T11:39:44.750Z"
+    },
+    "device": "Windows",
+    "expiresAt": {
+      "$date": "2026-08-23T11:39:44.619Z"
+    },
+    "ipAddress": "::ffff:127.0.0.1",
+    "jwtHash": "b2aaf58053e734321fbce187fef79a2012e2934f28b338186fe04b9e51027699",
+    "lastActivity": {
+      "$date": "2026-08-16T11:39:44.622Z"
+    },
+    "loginTime": {
+      "$date": "2026-08-16T11:39:44.622Z"
+    },
+    "portalRole": "admin",
+    "updatedAt": {
+      "$date": "2026-08-16T11:39:44.750Z"
+    }
+  }
+]

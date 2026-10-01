@@ -1,0 +1,66 @@
+.select-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.select-full-width {
+  width: 100%;
+}
+
+.select-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.select-field {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.68rem 2.45rem 0.68rem 0.92rem;
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: none;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.95rem center;
+  background-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.select-field:hover:not(:focus) {
+  border-color: var(--border-default);
+}
+
+.select-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+
+.select-error .select-field {
+  border-color: var(--color-danger);
+}
+
+.select-error-text {
+  font-size: 0.74rem;
+  color: var(--color-danger);
+}
+
+[data-theme="dark"] .select-field {
+  background-color: var(--surface-raised);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}

@@ -1,0 +1,379 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUMMARY REPORTS - PURE BRAND COLOR IDENTITY (#c60016 & WHITE ONLY)
+   Strictly solid brand red #c60016 and white. No gradients, no other colors.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.summary-reports-page {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  padding: 0.85rem 1.25rem 2.5rem;
+  background: transparent !important;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+/* ── Top Bar ─────────────────────────────────────────────────────── */
+.summary-reports-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent !important;
+  flex-wrap: wrap;
+}
+
+.summary-reports-topbar h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.summary-reports-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.summary-reports-split-btn {
+  position: relative;
+  display: inline-flex;
+}
+
+.summary-reports-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.15rem;
+  padding: 0 1rem;
+  border: 1px solid #c60016;
+  border-radius: 6px 0 0 6px;
+  background: #c60016;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.summary-reports-primary-btn:hover {
+  opacity: 0.9;
+}
+
+.summary-reports-caret-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  min-height: 2.15rem;
+  border: 1px solid #c60016;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0 6px 6px 0;
+  background: #c60016;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.summary-reports-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  min-width: 180px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.summary-reports-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.95rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.summary-reports-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.summary-reports-dropdown-item:hover {
+  background: var(--surface-muted);
+  color: #c60016;
+}
+
+/* ── 2-Column Body: Category Nav + Main Content ───────────────────── */
+.summary-reports-body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.25rem 0 0;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .summary-reports-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Left Category Sidebar ───────────────────────────────────────── */
+.summary-reports-sidebar {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.summary-reports-sidebar-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-reports-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  width: 100%;
+}
+
+.summary-reports-sidebar-item:last-child {
+  border-bottom: none;
+}
+
+.summary-reports-sidebar-item:hover {
+  background: var(--surface-muted);
+  color: #c60016;
+}
+
+.summary-reports-sidebar-item-active {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* ── Content & Summary Report Cards ──────────────────────────────── */
+.summary-reports-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.summary-reports-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.summary-report-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid #c60016;
+  border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: none;
+  padding: 1rem 1.25rem;
+}
+
+.summary-report-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.summary-report-card-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.summary-report-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.summary-report-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.12s ease;
+}
+
+.summary-report-icon-btn:hover {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+/* ── Report Card Actions & Icons Alignment ──────────────────────── */
+.summary-report-card-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  flex-shrink: 0 !important;
+}
+
+.summary-report-card-actions .summary-report-icon-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 1px solid #c60016 !important;
+  border-radius: 6px !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #c60016 !important;
+  cursor: pointer !important;
+  font-size: 0.82rem !important;
+  transition: all 0.12s ease !important;
+  box-sizing: border-box !important;
+}
+
+.summary-report-card-actions .summary-report-icon-btn svg {
+  display: block !important;
+  margin: auto !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  color: #c60016 !important;
+  fill: #c60016 !important;
+}
+
+.summary-report-card-actions .summary-report-icon-btn:hover {
+  background: #fff1f2 !important;
+  background-color: #fff1f2 !important;
+  border-color: #a80012 !important;
+  color: #a80012 !important;
+}
+
+.summary-report-card-actions .summary-report-icon-btn:hover svg {
+  color: #a80012 !important;
+  fill: #a80012 !important;
+}
+
+/* ── Card Info Grid & Icon Alignment ───────────────────────────────── */
+.summary-report-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 0.85rem;
+}
+
+.summary-report-card-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 2rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .summary-report-card-info-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+}
+
+.summary-report-line {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  min-width: 0;
+}
+
+.summary-report-line-icon {
+  flex-shrink: 0;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  font-size: 0.85rem;
+  color: #c60016 !important;
+  fill: #c60016 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.summary-report-line-content {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-report-line-content strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+/* ── Universal Icon Guarantee ────────────────────────────────────── */
+.summary-reports-page svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.summary-reports-primary-btn svg,
+.summary-reports-caret-btn svg,
+.summary-reports-sidebar-item-active svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}

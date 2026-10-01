@@ -1,0 +1,36 @@
+[
+  {
+    "_id": {
+      "$oid": "6a746b3715be393468cb04d5"
+    },
+    "createdAt": {
+      "$date": "2026-08-06T11:08:39.569Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-06T11:08:39.569Z"
+    },
+    "name": "Parth",
+    "email": "parth@support.com",
+    "role": "support",
+    "groupId": "6a746b3715be393468cb04ce",
+    "isActive": true,
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a746b3715be393468cb04d9"
+    },
+    "createdAt": {
+      "$date": "2026-08-06T11:08:39.589Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-06T11:08:39.589Z"
+    },
+    "name": "Rushabh",
+    "email": "rushabh@support.com",
+    "role": "support",
+    "groupId": "6a746b3715be393468cb04ce",
+    "isActive": true,
+    "__v": 0
+  }
+]

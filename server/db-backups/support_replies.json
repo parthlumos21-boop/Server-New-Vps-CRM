@@ -1,0 +1,282 @@
+[
+  {
+    "_id": {
+      "$oid": "6a76e711cc5b25ae3b1d13eb"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "support_agent",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": null,
+    "recipient_type": "user",
+    "recipient_email": "keval@swatiswitchgears.com",
+    "message": "hello solve",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T08:21:37.598Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T08:21:37.598Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T08:21:37.601Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:21:37.601Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76e7f1cc5b25ae3b1d13fa"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "support_agent",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": null,
+    "recipient_type": "user",
+    "recipient_email": "keval@swatiswitchgears.com",
+    "message": "hello",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T08:25:21.968Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T08:25:21.968Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T08:25:21.969Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:25:21.969Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76ea8976f1c322cd8136ea"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "user",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": 16,
+    "recipient_type": "support_agent",
+    "recipient_email": null,
+    "message": "test1111111",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T08:36:25.755Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T08:36:25.755Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T08:36:25.763Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:36:25.763Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76ee6a9e6d61a4adb8c8a2"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "user",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": 16,
+    "recipient_type": "support_agent",
+    "recipient_email": "parth@support.com, rushabh@support.com",
+    "message": "hello",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T08:52:58.098Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T08:52:58.098Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T08:52:58.105Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T08:52:58.105Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f2453f9890fab20bc45e"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "user",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": 16,
+    "recipient_type": "support_agent",
+    "recipient_email": "parth@support.com, rushabh@support.com",
+    "message": "Hello",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:09:25.069Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:09:25.069Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:09:25.076Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:09:25.076Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f5465f08fcc30760bcfe"
+    },
+    "support_request_id": 5,
+    "sender_id": 18,
+    "sender_type": "support_agent",
+    "sender_email": "rushabh@support.com",
+    "recipient_id": null,
+    "recipient_type": "user",
+    "recipient_email": "keval@swatiswitchgears.com",
+    "message": "Hello Great",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:22:14.051Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:22:14.051Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:22:14.062Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:22:14.062Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f7863a95d98b4d9e8503"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "user",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": 16,
+    "recipient_type": "support_agent",
+    "recipient_email": "parth@support.com, rushabh@support.com",
+    "message": "hey",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:31:50.763Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:31:50.763Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:31:50.773Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:31:50.773Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f7f43a95d98b4d9e8513"
+    },
+    "support_request_id": 5,
+    "sender_id": 16,
+    "sender_type": "user",
+    "sender_email": "keval@swatiswitchgears.com",
+    "recipient_id": 16,
+    "recipient_type": "support_agent",
+    "recipient_email": "parth@support.com, rushabh@support.com",
+    "message": "hii",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:33:40.971Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:33:40.971Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:33:40.971Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:33:40.971Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f9943a95d98b4d9e8589"
+    },
+    "support_request_id": 4,
+    "sender_id": 18,
+    "sender_type": "support_agent",
+    "sender_email": "rushabh@support.com",
+    "recipient_id": null,
+    "recipient_type": "user",
+    "recipient_email": "keval@swatiswitchgears.com",
+    "message": "heyy",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:40:36.065Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:40:36.065Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:40:36.069Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:40:36.069Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a76f9ba3a95d98b4d9e8625"
+    },
+    "support_request_id": 5,
+    "sender_id": 18,
+    "sender_type": "support_agent",
+    "sender_email": "rushabh@support.com",
+    "recipient_id": null,
+    "recipient_type": "user",
+    "recipient_email": "keval@swatiswitchgears.com",
+    "message": "hello",
+    "attachments": [],
+    "is_internal": false,
+    "created_at": {
+      "$date": "2026-08-08T09:41:14.869Z"
+    },
+    "updated_at": {
+      "$date": "2026-08-08T09:41:14.869Z"
+    },
+    "createdAt": {
+      "$date": "2026-08-08T09:41:14.870Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-08T09:41:14.870Z"
+    },
+    "__v": 0
+  }
+]

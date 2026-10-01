@@ -1,0 +1,70 @@
+[
+  {
+    "_id": "users",
+    "sequence": 27
+  },
+  {
+    "_id": "leads",
+    "sequence": 14
+  },
+  {
+    "_id": "notifications",
+    "sequence": 46
+  },
+  {
+    "_id": "app_settings",
+    "sequence": 1
+  },
+  {
+    "_id": "customers",
+    "sequence": 4
+  },
+  {
+    "_id": "audit_log",
+    "sequence": 51
+  },
+  {
+    "_id": "calendar_events",
+    "sequence": 4
+  },
+  {
+    "_id": "support_requests",
+    "sequence": 8
+  },
+  {
+    "_id": "quotations:1:2026-08",
+    "sequence": 1003
+  },
+  {
+    "_id": "quotations",
+    "sequence": 3
+  },
+  {
+    "_id": "password_reset_requests",
+    "sequence": 5
+  },
+  {
+    "_id": "password_reset_audit_logs",
+    "sequence": 19
+  },
+  {
+    "_id": "remarks",
+    "sequence": 1
+  },
+  {
+    "_id": "user_groups",
+    "sequence": 8
+  },
+  {
+    "_id": "user_group_members",
+    "sequence": 16
+  },
+  {
+    "_id": "deals",
+    "sequence": 18
+  },
+  {
+    "_id": "converted_deals",
+    "sequence": 3405
+  }
+]

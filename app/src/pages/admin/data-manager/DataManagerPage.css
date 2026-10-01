@@ -1,0 +1,395 @@
+/* ── Page shell ─────────────────────────────────────────── */
+.dm-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--surface-app);
+  padding: 2rem 1rem;
+}
+
+/* ── Header ──────────────────────────────────────────────– */
+.dm-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.dm-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.dm-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+/* ── Container ───────────────────────────────────────────– */
+.dm-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Cards grid ──────────────────────────────────────────– */
+.dm-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+/* ── Card component ──────────────────────────────────────– */
+.dm-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+}
+
+.dm-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--text-primary);
+  transform: translateY(-4px);
+}
+
+.dm-card-header {
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--surface-app);
+}
+
+.dm-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  font-size: 1.8rem;
+  transition: all 0.2s;
+}
+
+.dm-card:nth-child(1) .dm-card-icon {
+  background: var(--surface-card);
+  color: #f57c00;
+}
+
+.dm-card:nth-child(2) .dm-card-icon {
+  background: var(--surface-muted);
+  color: var(--color-primary);
+}
+
+.dm-card:nth-child(3) .dm-card-icon {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.dm-card:nth-child(4) .dm-card-icon {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.dm-card:hover .dm-card-icon {
+  transform: scale(1.1);
+}
+
+.dm-card-body {
+  padding: 1.5rem 2rem 2rem;
+  flex: 1;
+}
+
+.dm-card-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dm-card-description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Modal styles ────────────────────────────────────────– */
+.dm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dm-modal {
+  background: var(--surface-card);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--surface-app);
+}
+
+.dm-modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dm-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+}
+
+.dm-modal-close:hover {
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.dm-modal-body {
+  padding: 2rem 1.5rem;
+}
+
+.dm-upload-area {
+  position: relative;
+}
+
+.dm-file-input {
+  display: none;
+}
+
+.dm-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dm-upload-label:hover {
+  border-color: var(--text-primary);
+  background: var(--surface-card);
+}
+
+.dm-file-input:focus + .dm-upload-label {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px rgba(26, 95, 170, 0.1);
+}
+
+.dm-upload-icon {
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+}
+
+.dm-upload-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.dm-upload-hint {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 0.4rem;
+}
+
+/* ── Modal footer ────────────────────────────────────────– */
+.dm-modal-footer {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  border-top: 1px solid var(--surface-app);
+  background: var(--surface-card);
+}
+
+/* ── Buttons ─────────────────────────────────────────────– */
+.dm-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.dm-btn-primary {
+  background: #1a5faa;
+  color: white;
+}
+
+.dm-btn-primary:hover:not(:disabled) {
+  background: #154a8a;
+  box-shadow: 0 4px 12px rgba(26, 95, 170, 0.3);
+}
+
+.dm-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dm-btn-secondary {
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.dm-btn-secondary:hover {
+  background: var(--surface-card);
+  border-color:  var(--border-subtle);
+}
+
+/* ── Toast notification ──────────────────────────────────– */
+.dm-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 2000;
+  animation: slideInRight 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.dm-toast--success {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  border-left: 4px solid var(--border-subtle);
+}
+
+.dm-toast--error {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border-left: 4px solid var(--border-subtle);
+}
+
+.dm-toast--info {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  border-left: 4px solid var(--border-subtle);
+}
+
+/* ── Responsive design ───────────────────────────────────– */
+@media (max-width: 900px) {
+  .dm-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .dm-page {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .dm-header {
+    margin-bottom: 2rem;
+  }
+
+  .dm-title {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .dm-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dm-page {
+    padding: 1rem;
+  }
+
+  .dm-title {
+    font-size: 1.4rem;
+  }
+
+  .dm-modal {
+    width: 95%;
+  }
+
+  .dm-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .dm-btn {
+    width: 100%;
+  }
+
+  .dm-toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+  }
+}

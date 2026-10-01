@@ -1,0 +1,398 @@
+/* ── Page shell ─────────────────────────────────────────── */
+.mv-page {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - var(--header-height) - 12px);
+  min-height: 0;
+  background: var(--surface-card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ────────────────────────────────────────────── */
+.mv-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.42rem 1rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mv-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.mv-back-btn:hover { color: var(--color-primary); }
+
+.mv-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 1.1rem;
+  background: #1a4a6e;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.mv-add-btn:hover { background: #14395a; }
+
+.mv-add-icon {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+/* ── Body layout ────────────────────────────────────────── */
+.mv-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left category panel ────────────────────────────────── */
+.mv-left-panel {
+  width: 172px;
+  flex-shrink: 0;
+  background: var(--surface-card);
+  border-right: 1px solid var(--border-subtle);
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mv-category {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.mv-category:hover { background: var(--surface-app); }
+
+.mv-category--active {
+  background: #4da6c8;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.mv-category--active:hover { background: #3d96b8; }
+
+/* ── Main content ───────────────────────────────────────── */
+.mv-content {
+  flex: 1;
+  padding: 0.75rem 0.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── View card ──────────────────────────────────────────── */
+.mv-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+}
+
+/* Card header */
+.mv-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.mv-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mv-toggle-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #4da6c8;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.mv-toggle-btn:hover { background: #3d96b8; }
+
+.mv-card-title {
+  color: var(--color-primary);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.mv-card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.mv-view-type {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+}
+
+.mv-hdr-divider {
+  color: #c0ccd8;
+  font-size: 0.95rem;
+  margin: 0 0.1rem;
+}
+
+.mv-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  border-radius: 2px;
+  transition: background 0.1s, color 0.1s;
+}
+
+.mv-icon-btn:hover { background: var(--surface-app); color: var(--text-primary); }
+
+.mv-icon-btn--delete { color: var(--color-danger); }
+.mv-icon-btn--delete:hover { background: var(--surface-card); color: var(--color-danger); }
+
+/* ── Card body ──────────────────────────────────────────── */
+.mv-card-body {
+  display: flex;
+  min-height: 70px;
+}
+
+/* Conditions column */
+.mv-conditions-col {
+  width: 42%;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+/* Fields column */
+.mv-fields-col {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+/* Shared badge style */
+.mv-col-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.48rem;
+  border-radius: 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.mv-col-badge--dark {
+  background: #2c3e50;
+  color: #ffffff;
+}
+
+.mv-col-badge--orange {
+  background: var(--color-warning);
+  color: #ffffff;
+}
+
+/* Condition items */
+.mv-conditions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.mv-condition-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  background: var(--surface-card);
+  align-self: flex-start;
+}
+
+.mv-cond-check {
+  color: var(--color-success);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Fields / filter rows */
+.mv-fields-row,
+.mv-filter-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.38rem;
+  flex-wrap: wrap;
+}
+
+.mv-arrow-icon {
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  margin-top: 0.22rem;
+}
+
+.mv-arrow-icon--orange {
+  color: var(--color-warning);
+}
+
+.mv-chain-text {
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.55;
+}
+
+/* Empty state */
+.mv-empty {
+  padding: 2.5rem;
+  color: #9aacba;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Scrollbar */
+.mv-content::-webkit-scrollbar { width: 4px; }
+.mv-content::-webkit-scrollbar-track { background: var(--surface-card); }
+.mv-content::-webkit-scrollbar-thumb { background: var(--surface-muted); border-radius: 2px; }
+
+/* Light mode only custom overrides for My Views Page (Phase 14) */
+html:not([data-theme="dark"]) .mv-topbar {
+  background: #dc2626 !important;
+  border-bottom: 1px solid #b91c1c !important;
+}
+html:not([data-theme="dark"]) .mv-back-btn {
+  color: #ffffff !important;
+}
+html:not([data-theme="dark"]) .mv-back-btn:hover {
+  color: #fca5a5 !important;
+}
+html:not([data-theme="dark"]) .mv-add-btn {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+  border: 1px solid #991b1b !important;
+}
+html:not([data-theme="dark"]) .mv-add-btn:hover {
+  background: #991b1b !important;
+}
+html:not([data-theme="dark"]) .mv-add-icon {
+  color: #ffffff !important;
+}
+
+/* Left Panel Category Lists Override */
+html:not([data-theme="dark"]) .mv-category {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #b91c1c !important;
+  opacity: 0.7 !important;
+}
+html:not([data-theme="dark"]) .mv-category:hover {
+  background: #b91c1c !important;
+  opacity: 0.85 !important;
+}
+html:not([data-theme="dark"]) .mv-category--active,
+html:not([data-theme="dark"]) .mv-category--active:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  border-left: 4px solid #ffffff !important;
+}
+
+/* Card Headers styling Override */
+html:not([data-theme="dark"]) .mv-card-header {
+  background: #dc2626 !important;
+  border-bottom: 1px solid #b91c1c !important;
+}
+html:not([data-theme="dark"]) .mv-card-title,
+html:not([data-theme="dark"]) .mv-view-type,
+html:not([data-theme="dark"]) .mv-hdr-divider {
+  color: #ffffff !important;
+}
+html:not([data-theme="dark"]) .mv-toggle-btn {
+  background: #ffffff !important;
+  color: #dc2626 !important;
+}
+html:not([data-theme="dark"]) .mv-toggle-btn:hover {
+  background: #fee2e2 !important;
+}
+html:not([data-theme="dark"]) .mv-icon-btn {
+  color: #ffffff !important;
+  opacity: 0.8 !important;
+}
+html:not([data-theme="dark"]) .mv-icon-btn:hover {
+  background: #b91c1c !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Column Badges, Filter Row Labels, and Condition Item Tiles Overrides */
+html:not([data-theme="dark"]) .mv-col-badge {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+}
+html:not([data-theme="dark"]) .mv-condition-item {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+}
+html:not([data-theme="dark"]) .mv-cond-check {
+  color: #ffffff !important;
+}

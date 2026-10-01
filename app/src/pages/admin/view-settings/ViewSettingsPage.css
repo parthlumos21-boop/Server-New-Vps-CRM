@@ -1,0 +1,103 @@
+/* ── Page shell ─────────────────────────────────────────── */
+.vs-page {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(100vh - var(--header-height) - 12px);
+  min-height: 0;
+  background: var(--surface-app);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Top bar ────────────────────────────────────────────── */
+.vs-topbar {
+  padding: 0.75rem 1.4rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.vs-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Card grid ──────────────────────────────────────────── */
+.vs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  padding: 1.25rem 1.4rem 2rem;
+  align-content: start;
+}
+
+/* ── Individual card ────────────────────────────────────── */
+.vs-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 1.4rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 5.5rem;
+}
+
+.vs-card:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  border-color: var(--border-subtle);
+}
+
+.vs-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.vs-card-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.vs-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .vs-page {
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - 12px);
+    overflow: visible;
+  }
+
+  .vs-topbar {
+    position: static;
+  }
+
+  .vs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .vs-grid {
+    grid-template-columns: 1fr;
+  }
+}

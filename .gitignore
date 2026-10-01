@@ -1,0 +1,7 @@
+node_modules
+mongodb-local/
+
+# AI Agent Workflows & Skills
+.agents/
+openspec/
+graphify-out/

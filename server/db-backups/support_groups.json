@@ -1,0 +1,17 @@
+[
+  {
+    "_id": {
+      "$oid": "6a746b3715be393468cb04ce"
+    },
+    "createdAt": {
+      "$date": "2026-08-06T11:08:39.360Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-06T11:08:39.360Z"
+    },
+    "name": "Default Support",
+    "description": "Default support group for all support agents",
+    "members": [],
+    "__v": 0
+  }
+]

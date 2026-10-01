@@ -1,0 +1,319 @@
+.account-details-page {
+  --account-details-available-height: calc(100vh - var(--header-height) - (var(--app-gutter) * 3));
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: var(--surface-card);
+  padding: 0;
+}
+
+.account-details-shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  background: var(--surface-card);
+  min-height: 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.account-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+}
+
+.account-details-header h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.account-details-close {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.account-details-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem 0.8rem;
+}
+
+.account-details-account-number {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.account-details-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.account-details-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.account-details-quick-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: none;
+  background: transparent;
+  color: #d39a33;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.account-details-quick-action:nth-child(2) {
+  color: var(--color-warning);
+}
+
+.account-details-quick-action:nth-child(3) {
+  color: var(--text-primary);
+}
+
+.account-details-quick-action:nth-child(4) {
+  color: var(--text-primary);
+}
+
+.account-details-quick-action:nth-child(5) {
+  color: var(--text-primary);
+}
+
+.account-details-actions {
+  position: relative;
+}
+
+.account-details-actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 92px;
+  min-height: 30px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(180deg, var(--color-primary) 0%, #2171b5 100%);
+  color: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0 0 0.9rem;
+}
+
+.account-details-actions-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  min-height: 28px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  font-size: 0.58rem;
+}
+
+.account-details-actions-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  z-index: 20;
+}
+
+.account-details-actions-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-details-actions-item:last-child {
+  border-bottom: none;
+}
+
+.account-details-actions-item:hover {
+  background: var(--surface-card);
+}
+
+.account-details-actions-item-icon {
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+.account-details-overview {
+  padding: 0 1.2rem 1rem;
+}
+
+.account-details-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.account-details-summary-card {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.account-details-summary-card span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.account-details-summary-card strong {
+  color: var(--text-primary);
+  font-size: 0.84rem;
+}
+
+.account-details-status-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+}
+
+.account-details-section-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 1.2rem 1.2rem;
+}
+
+.account-details-section {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.9rem;
+}
+
+.account-details-section-header {
+  margin-bottom: 0.7rem;
+}
+
+.account-details-section-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.account-details-section-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem 1.2rem;
+}
+
+.account-details-field {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.account-details-field-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.account-details-field-icon {
+  color: #95a5a6;
+  font-size: 0.78rem;
+}
+
+.account-details-field-value {
+  margin-top: 0.18rem;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.account-details-field-value-missing {
+  color: #ff6b35 !important;
+}
+
+.account-details-empty {
+  flex: 1 1 auto;
+  padding: 2rem 1.2rem;
+}
+
+.account-details-empty h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.account-details-empty p {
+  margin: 0 0 1rem;
+  color: var(--text-primary);
+}
+
+@media (max-width: 980px) {
+  .account-details-page {
+    min-height: calc(100vh - 1rem);
+  }
+
+  .account-details-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-details-section-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-details-page {
+    margin: -0.55rem -0.55rem 0;
+    min-height: calc(100vh - 0.75rem);
+  }
+
+  .account-details-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .account-details-toolbar-right {
+    justify-content: space-between;
+  }
+
+  .account-details-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

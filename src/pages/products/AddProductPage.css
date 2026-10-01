@@ -1,0 +1,95 @@
+.add-product-container {
+  padding: 20px;
+  background-color: #f4f6f9;
+  min-height: 100vh;
+}
+
+.add-product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-product-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
+.add-product-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-product-form {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.form-group label {
+  width: 150px;
+  color: #333;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tax-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.tax-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tax-item input[type="number"] {
+  width: 60px;
+  padding: 4px 8px;
+}
+
+.file-upload-info {
+  font-size: 11px;
+  color: #1976d2;
+  margin-top: 5px;
+  margin-left: 150px;
+}
+
+.section-title {
+  margin-top: 30px;
+  margin-bottom: 15px;
+  color: #3498db;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}

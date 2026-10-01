@@ -1,0 +1,25 @@
+.admin-messages-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-messages-page-recipient-cell,
+.admin-messages-page-body-cell {
+  min-width: 0;
+}
+
+.admin-messages-page-recipient-count {
+  font-weight: 700;
+  color: var(--color-primary-strong);
+  margin-bottom: 0.2rem;
+}
+
+.admin-messages-page-recipient-list,
+.admin-messages-page-body-cell {
+  color: var(--text-primary);
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow: visible;
+}

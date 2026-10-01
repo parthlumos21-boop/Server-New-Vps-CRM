@@ -1,0 +1,120 @@
+.kb-page {
+  min-height: 100vh;
+  background: var(--surface-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.kb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 10px 11px 30px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+}
+
+.kb-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.kb-back-icon {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.kb-add-new-button,
+.kb-primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border-subtle);
+  background: linear-gradient(to bottom, #4b9adb, #2d74b9);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kb-add-new-button {
+  min-height: 34px;
+  padding: 0 14px;
+}
+
+.kb-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 130px 24px 24px;
+  text-align: center;
+}
+
+.kb-empty-message {
+  margin: 0 0 22px;
+  color: var(--text-primary);
+  font-size: 23px;
+  line-height: 1.35;
+}
+
+.kb-primary-button {
+  min-height: 37px;
+  padding: 0 18px;
+  font-size: 17px;
+}
+
+.kb-add-new-icon,
+.kb-primary-button-icon {
+  font-size: 14px;
+}
+
+.kb-footer-strip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 16px;
+  background: var(--surface-card);
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+}
+
+.kb-footer-strip a,
+.kb-footer-strip button {
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-decoration: underline;
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .kb-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .kb-content {
+    padding-top: 60px;
+  }
+
+  .kb-empty-message {
+    font-size: 18px;
+  }
+}

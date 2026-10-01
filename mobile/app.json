@@ -1,0 +1,60 @@
+{
+  "expo": {
+    "name": "Sales CRM",
+    "slug": "crm-mobile",
+    "version": "1.0.0",
+    "scheme": "crm-mobile",
+    "icon": "./assets/images/logo.png",
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#C62828"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-font",
+      "expo-build-properties"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bac033a8-306b-4e38-8473-cfadff2d9cb6"
+      }
+    },
+    "owner": "therushabhpanchal",
+    "android": {
+      "package": "com.swaticrm.mobile",
+      "googleServicesFile": "./google-services.json",
+      "notification": {
+        "icon": "./assets/images/notification-icon.png",
+        "color": "#C62828"
+      }
+    },
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#F9FAFB"
+    },
+    "androidNavigationBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#F9FAFB"
+    },
+    "ios": {
+      "bundleIdentifier": "com.swaticrm.mobile"
+    }
+  }
+}

@@ -1,0 +1,339 @@
+/* ── AddReminderPage ─────────────────────────────────────────────── */
+.arp-page {
+  min-height: calc(100vh - 3.25rem);
+  background: var(--surface-app);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.arp-shell {
+  width: 100%;
+  max-width: 720px;
+  background: var(--surface-card);
+  border-radius: 18px;
+  box-shadow: 0 20px 56px rgba(13, 132, 116, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.arp-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.75rem 2rem 1.4rem;
+  background: linear-gradient(135deg, #0d8474 0%, #0a6e60 100%);
+  color: #fff;
+}
+
+.arp-head-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.arp-head-copy {
+  flex: 1;
+}
+
+.arp-head-kicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 3px;
+}
+
+.arp-head-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+  line-height: 1.15;
+}
+
+.arp-head-sub {
+  font-size: 0.82rem;
+  opacity: 0.85;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.arp-head-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.arp-head-link-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface-card);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.arp-head-link-badge--tasks {
+  background: var(--surface-card);
+}
+
+/* ── Success banner ── */
+.arp-success-banner {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.75rem 2rem;
+  border-bottom: 1.5px solid var(--border-subtle);
+  text-align: center;
+}
+
+/* ── Form ── */
+.arp-form {
+  padding: 1.75rem 2rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.arp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 200px;
+  flex: 1;
+}
+
+.arp-field--wide {
+  flex-basis: 100%;
+  min-width: 100%;
+}
+
+.arp-row-2 {
+  display: flex;
+  gap: 1.2rem;
+  flex-basis: 100%;
+  min-width: 100%;
+}
+
+.arp-row-2 > .arp-field {
+  flex: 1;
+}
+
+@media (max-width: 520px) {
+  .arp-row-2 { flex-direction: column; }
+}
+
+.arp-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.arp-input,
+.arp-select,
+.arp-textarea {
+  border: 1.5px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.62rem 0.9rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  outline: none;
+  background: var(--surface-card);
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.arp-input:focus,
+.arp-select:focus,
+.arp-textarea:focus {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px rgba(13, 132, 116, 0.12);
+}
+
+.arp-select {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+.arp-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Chips */
+.arp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.arp-chip {
+  padding: 0.35rem 0.75rem;
+  border-radius: 7px;
+  border: 1.5px solid var(--glass-border);
+  background: var(--surface-card);
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.arp-chip:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.arp-chip--active {
+  border-color: var(--text-primary);
+  background: #0d8474;
+  color: #fff;
+}
+
+/* Other time */
+.arp-other-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.arp-other-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.arp-other-input {
+  border: 1.5px solid var(--glass-border);
+  border-radius: 7px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  outline: none;
+  background: var(--surface-card);
+  transition: border-color 0.15s;
+}
+
+.arp-other-input:focus {
+  border-color: var(--text-primary);
+}
+
+/* Checkbox */
+.arp-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.arp-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--text-primary);
+  cursor: pointer;
+}
+
+.arp-check-label {
+  font-size: 0.87rem;
+  color: var(--text-primary);
+}
+
+/* Actions */
+.arp-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-basis: 100%;
+  min-width: 100%;
+  border-top: 1.5px solid var(--border-subtle);
+  padding-top: 1.2rem;
+  margin-top: 0.3rem;
+}
+
+.arp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  border: 1.5px solid transparent;
+}
+
+.arp-btn--outline {
+  background: var(--surface-card);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+.arp-btn--outline:hover {
+  border-color: var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.arp-btn--ghost {
+  background: var(--surface-card);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+}
+
+.arp-btn--ghost:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.arp-btn--primary {
+  background: #0d8474;
+  color: #fff;
+  border-color: var(--text-primary);
+  margin-left: auto;
+}
+
+.arp-btn--primary:hover:not(:disabled) {
+  background: #0a6e60;
+}
+
+.arp-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .arp-form {
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+
+  .arp-head {
+    flex-wrap: wrap;
+    padding: 1.25rem;
+  }
+
+  .arp-head-links {
+    flex-direction: row;
+    width: 100%;
+  }
+}

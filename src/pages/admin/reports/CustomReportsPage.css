@@ -1,0 +1,512 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CUSTOM REPORTS - PURE BRAND COLOR IDENTITY (#c60016 & WHITE ONLY)
+   Strictly solid brand red #c60016 and white. No gradients, no other colors.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cr-list-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  padding: 0.85rem 1.25rem 2.5rem;
+  box-sizing: border-box;
+  background: transparent !important;
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+/* ── Top Bar ─────────────────────────────────────────────────────── */
+.cr-list-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent !important;
+  flex-wrap: wrap;
+}
+
+.cr-list-topbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.cr-list-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.cr-list-split {
+  position: relative;
+  display: inline-flex;
+}
+
+.cr-list-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.15rem;
+  padding: 0 1rem;
+  border: 1px solid #c60016;
+  border-radius: 6px 0 0 6px;
+  background: #c60016;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.cr-list-primary-btn:hover {
+  opacity: 0.9;
+}
+
+.cr-list-caret-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.15rem;
+  min-height: 2.15rem;
+  border: 1px solid #c60016;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0 6px 6px 0;
+  background: #c60016;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.cr-list-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  min-width: 220px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.cr-list-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 0.95rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cr-list-dropdown button:last-child {
+  border-bottom: none;
+}
+
+.cr-list-dropdown button:hover {
+  background: var(--surface-muted);
+  color: #c60016;
+}
+
+/* ── Category Tabs ───────────────────────────────────────────────── */
+.cr-list-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.85rem 0 0;
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.cr-list-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0 1.2rem;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.cr-list-tabs button:hover {
+  color: #c60016;
+  background: var(--surface-muted);
+}
+
+.cr-list-tabs button.active {
+  color: #c60016 !important;
+  border-bottom-color: #c60016 !important;
+  background: var(--surface-muted) !important;
+  font-weight: 800 !important;
+}
+
+/* ── 2-Column Split: Sidebar & Main List ─────────────────────────── */
+.cr-list-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.25rem 0 0;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .cr-list-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────── */
+.cr-list-sidebar {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--surface-card);
+  padding: 0.85rem;
+  box-shadow: none;
+}
+
+.cr-list-sidebar-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cr-list-sidebar-title svg {
+  color: #c60016;
+}
+
+.cr-list-sidebar-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.6rem;
+}
+
+.cr-list-sidebar-items > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  width: 100%;
+}
+
+.cr-list-sidebar-items > button:hover {
+  background: var(--surface-muted);
+  color: #c60016;
+}
+
+.cr-list-sidebar-items > button.active {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  font-weight: 800;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* ── Main Section & Group Cards ──────────────────────────────────── */
+.cr-list-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.cr-list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cr-list-group h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.cr-list-group-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+/* ── Individual Report Card (Strict Red #c60016 & White) ─────────── */
+.cr-list-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-left: 4px solid #c60016;
+  border-radius: 10px;
+  background: var(--surface-card);
+  box-shadow: none;
+  padding: 1rem 1.25rem;
+}
+
+.cr-list-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.cr-list-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cr-list-card-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.12s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cr-list-card-title:hover {
+  color: #c60016;
+}
+
+.cr-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.cr-list-card-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.cr-settings-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-app);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.12s ease;
+}
+
+.cr-settings-btn:hover {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+.cr-card-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  min-width: 170px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--surface-card);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.cr-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cr-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.cr-dropdown-item:hover {
+  background: var(--surface-muted);
+  color: #c60016;
+}
+
+/* ── Card Body Grid & Key-Value Alignment ────────────────────────── */
+.cr-list-card-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  padding-top: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .cr-list-card-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cr-list-card-left,
+.cr-list-card-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.cr-list-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.cr-list-row svg {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  position: relative;
+  top: 1px;
+  color: #c60016 !important;
+}
+
+.cr-list-row strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-right: 0.2rem;
+}
+
+/* ── Universal Icon Guarantee ────────────────────────────────────── */
+.cr-list-page svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.cr-list-primary-btn svg,
+.cr-list-caret-btn svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+/* ── Custom Reports Proper Scrolling Bar (#c60016 & White) ──────── */
+.cr-list-page {
+  scrollbar-width: thin;
+  scrollbar-color: #c60016 rgba(0, 0, 0, 0.05);
+  scrollbar-gutter: stable;
+  overflow-y: auto;
+}
+
+.cr-list-page::-webkit-scrollbar,
+.cr-list-main::-webkit-scrollbar,
+.cr-list-sidebar::-webkit-scrollbar,
+.cr-list-tabs::-webkit-scrollbar,
+.cr-web-modal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cr-list-page::-webkit-scrollbar-track,
+.cr-list-main::-webkit-scrollbar-track,
+.cr-list-sidebar::-webkit-scrollbar-track,
+.cr-list-tabs::-webkit-scrollbar-track,
+.cr-web-modal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+}
+
+.cr-list-page::-webkit-scrollbar-thumb,
+.cr-list-main::-webkit-scrollbar-thumb,
+.cr-list-sidebar::-webkit-scrollbar-thumb,
+.cr-list-tabs::-webkit-scrollbar-thumb,
+.cr-web-modal-body::-webkit-scrollbar-thumb {
+  background: #c60016;
+  border-radius: 9999px;
+  border: 1px solid #ffffff;
+}
+
+.cr-list-page::-webkit-scrollbar-thumb:hover,
+.cr-list-main::-webkit-scrollbar-thumb:hover,
+.cr-list-sidebar::-webkit-scrollbar-thumb:hover,
+.cr-list-tabs::-webkit-scrollbar-thumb:hover,
+.cr-web-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #a80012;
+}
+
+.cr-list-main {
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #c60016 rgba(0, 0, 0, 0.05);
+}
+
+.cr-list-sidebar {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c60016 rgba(0, 0, 0, 0.05);
+}

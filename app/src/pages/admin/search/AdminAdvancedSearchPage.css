@@ -1,0 +1,393 @@
+.admin-search-page {
+  min-height: 100%;
+  background: var(--surface-app);
+}
+
+.admin-search-shell {
+  min-height: 100%;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.admin-search-header {
+  padding: 1rem 1.3rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.admin-search-header h1 {
+  margin: 0 0 0.25rem;
+  color: var(--text-primary);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.admin-search-header p {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.admin-search-grid {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.admin-search-section {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+
+.admin-search-section-title {
+  padding: 0.75rem 0.95rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.admin-search-section-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-search-section-table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.admin-search-section-table th,
+.admin-search-section-table td {
+  padding: 0.72rem 0.78rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.admin-search-section-table th {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.admin-search-section-table tbody tr:nth-child(even) {
+  background: var(--surface-card);
+}
+
+.admin-search-record-link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.admin-search-record-link:hover {
+  color: var(--text-primary);
+}
+
+.admin-search-record-link:focus-visible,
+.admin-search-account-actions-trigger:focus-visible,
+.admin-search-account-actions-item:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+.admin-search-empty-cell {
+  text-align: center !important;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.admin-search-account-modal {
+  display: grid;
+  gap: 1rem;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.admin-search-account-modal-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.admin-search-account-number {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.admin-search-account-modal-copy h2 {
+  margin: 0.45rem 0 0.65rem;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.admin-search-account-icon-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.admin-search-account-icon-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.6rem;
+  border-radius: 999px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.admin-search-account-actions {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.admin-search-account-actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.25rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-search-account-actions-trigger:hover,
+.admin-search-account-actions-trigger:active {
+  background: var(--surface-card);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.admin-search-account-actions-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  min-width: 230px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+  z-index: 8;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.admin-search-account-actions-item {
+  display: block;
+  width: 100%;
+  padding: 0.72rem 0.95rem;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-search-account-actions-item:last-child {
+  border-bottom: none;
+}
+
+.admin-search-account-actions-item:hover {
+  background: var(--surface-card);
+}
+
+.admin-search-account-actions-item:active {
+  background: var(--surface-card);
+}
+
+.admin-search-account-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.admin-search-account-summary-item {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.admin-search-account-summary-item span,
+.admin-search-account-field span {
+  color: var(--text-primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-search-account-summary-item strong,
+.admin-search-account-field strong {
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.admin-search-account-sections {
+  display: grid;
+  gap: 0.95rem;
+}
+
+.admin-search-account-section {
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface-card);
+}
+
+.admin-search-account-section-title {
+  padding: 0.72rem 0.95rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.admin-search-account-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding: 0.95rem;
+}
+
+.admin-search-account-field {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.admin-search-page,
+.admin-search-page :is(
+  .admin-search-shell,
+  .admin-search-header,
+  .admin-search-grid,
+  .admin-search-section,
+  .admin-search-section-title,
+  .admin-search-section-table-wrap,
+  .admin-search-section-table,
+  .admin-search-section-table thead,
+  .admin-search-section-table tbody,
+  .admin-search-section-table tr,
+  .admin-search-section-table th,
+  .admin-search-section-table td,
+  .admin-search-account-modal,
+  .admin-search-account-section,
+  .admin-search-account-section-title,
+  .admin-search-account-summary-item,
+  .admin-search-account-actions-trigger,
+  .admin-search-account-actions-menu,
+  .admin-search-account-actions-item,
+  .admin-search-account-icon-row span
+) {
+  background: var(--surface-card) !important;
+  background-color: var(--surface-card) !important;
+  background-image: none !important;
+}
+
+.admin-search-page :is(
+  .admin-search-shell,
+  .admin-search-section,
+  .admin-search-section-title,
+  .admin-search-section-table,
+  .admin-search-section-table th,
+  .admin-search-section-table td,
+  .admin-search-account-section,
+  .admin-search-account-section-title,
+  .admin-search-account-summary-item,
+  .admin-search-account-actions-trigger,
+  .admin-search-account-actions-menu,
+  .admin-search-account-actions-item,
+  .admin-search-account-icon-row span
+) {
+  border-color: var(--border-subtle) !important;
+}
+
+.admin-search-page :is(
+  .admin-search-header,
+  .admin-search-section-title,
+  .admin-search-account-section-title,
+  .admin-search-section-table th,
+  .admin-search-section-table td,
+  .admin-search-account-actions-item
+) {
+  border-bottom-color: var(--border-subtle) !important;
+}
+
+.admin-search-page :is(
+  .admin-search-header h1,
+  .admin-search-header p,
+  .admin-search-section-title,
+  .admin-search-section-table th,
+  .admin-search-section-table td,
+  .admin-search-record-link,
+  .admin-search-empty-cell,
+  .admin-search-account-section-title,
+  .admin-search-account-actions-trigger,
+  .admin-search-account-actions-item,
+  .admin-search-account-summary-item span,
+  .admin-search-account-summary-item strong,
+  .admin-search-account-field span,
+  .admin-search-account-field strong
+) {
+  color: var(--text-primary) !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+}
+
+@media (max-width: 1024px) {
+  .admin-search-account-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-search-grid {
+    padding: 0.85rem;
+  }
+
+  .admin-search-account-modal-top,
+  .admin-search-account-field-grid,
+  .admin-search-account-summary-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .admin-search-account-actions {
+    justify-self: start;
+  }
+}

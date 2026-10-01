@@ -1,0 +1,1197 @@
+import { authService } from '../services/authService'
+
+// Lightweight XLSX writer — no external dependencies.
+// Produces a true OOXML .xlsx file with:
+//   • Title + subtitle + metadata block
+//   • Bold/colored header row, borders on data cells
+//   • Frozen header row, auto-fit column widths, wrap-text
+//   • Real Excel number formats (currency / number / integer / date / datetime / percent)
+//   • Configurable sheet name and worksheet name shown in Excel's tab strip
+//
+// Public API (unchanged from previous implementation, plus new optional fields):
+//   exportExcelWorkbook({ filename, title, subtitle, metadata, columns, rows, sheetName, compact })
+// Column descriptor: { key, label, align?, formatter?, type?, width?, wrap? }
+//   type: 'currency' | 'number' | 'integer' | 'date' | 'datetime' | 'percent' | 'text' (default)
+
+const DEFAULT_COMPANY_NAME = 'Swati Switchgears India Pvt Ltd'
+const DEFAULT_REPORT_TITLE = 'CRM Export'
+const DEFAULT_SHEET_NAME = 'Data Export'
+const EMPTY_EXPORT_VALUE = '-'
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256)
+  for (let i = 0; i < 256; i += 1) {
+    let value = i
+    for (let bit = 0; bit < 8; bit += 1) {
+      value = (value & 1) ? (0xEDB88320 ^ (value >>> 1)) : (value >>> 1)
+    }
+    table[i] = value >>> 0
+  }
+  return table
+})()
+
+const crc32 = (bytes) => {
+  let crc = 0xFFFFFFFF
+  for (let i = 0; i < bytes.length; i += 1) {
+    crc = CRC_TABLE[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8)
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0
+}
+
+const utf8Encode = (value) => new TextEncoder().encode(value)
+
+const xmlEscape = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&apos;')
+
+const sanitizeFilename = (name) => String(name || 'export')
+  .replace(/[\\/:*?"<>|]+/g, '_')
+  .replace(/\s+/g, '_')
+  .replace(/_+/g, '_')
+  .replace(/^_+|_+$/g, '')
+  || 'export'
+
+const sanitizeSheetName = (name) => {
+  const cleaned = String(name || 'Sheet1').replace(/[\\/?*\[\]:]/g, ' ').trim() || 'Sheet1'
+  return cleaned.slice(0, 31)
+}
+
+const columnLetter = (index) => {
+  let n = index + 1
+  let result = ''
+  while (n > 0) {
+    const rem = (n - 1) % 26
+    result = String.fromCharCode(65 + rem) + result
+    n = Math.floor((n - 1) / 26)
+  }
+  return result
+}
+
+const isFiniteNumber = (value) => typeof value === 'number' && Number.isFinite(value)
+
+const parseNumericLike = (value) => {
+  if (isFiniteNumber(value)) return value
+  if (typeof value === 'string') {
+    const trimmed = value.trim().replace(/[ ,]/g, '').replace(/[^\d.\-+eE]/g, '')
+    if (trimmed === '' || trimmed === '-' || trimmed === '+') return null
+    const parsed = Number(trimmed)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+  return null
+}
+
+const toExcelSerialDate = (input, withTime) => {
+  let date = null
+  if (input instanceof Date) {
+    date = input
+  } else if (typeof input === 'string' && input.trim()) {
+    const parsed = new Date(input)
+    if (!Number.isNaN(parsed.getTime())) date = parsed
+  } else if (isFiniteNumber(input)) {
+    return input
+  }
+  if (!date) return null
+
+  // Excel's epoch is 1899-12-30 (accounting for Excel's leap-year bug at 1900-02-29).
+  const epoch = Date.UTC(1899, 11, 30)
+  const utc = Date.UTC(
+    date.getFullYear(), date.getMonth(), date.getDate(),
+    date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()
+  )
+  const days = (utc - epoch) / (24 * 60 * 60 * 1000)
+  if (!Number.isFinite(days)) return null
+  return withTime ? days : Math.floor(days)
+}
+
+const normalizeMetadataLabel = (value) => String(value || '').trim().toLowerCase()
+
+const resolveCompanyName = (companyName) => {
+  const normalized = String(companyName || '').trim()
+  return normalized || DEFAULT_COMPANY_NAME
+}
+
+const resolveGeneratedBy = (generatedBy) => {
+  const normalized = String(generatedBy || '').trim()
+  if (normalized) return normalized
+
+  const currentUser = authService.getCurrentUser()
+  return currentUser?.name || currentUser?.username || currentUser?.email || 'System'
+}
+
+const resolveExportDate = (exportDate) => {
+  const normalized = String(exportDate || '').trim()
+  return normalized || new Date().toLocaleString('en-IN')
+}
+
+const normalizeSheetName = (sheetName, title) => {
+  const source = `${sheetName || ''} ${title || ''}`.toLowerCase()
+  if (source.includes('summary')) return 'Summary'
+  if (source.includes('report')) return 'Report'
+  return DEFAULT_SHEET_NAME
+}
+
+const buildStandardMetadata = ({ companyName, title, metadata, generatedBy, exportDate }) => {
+  const baseMetadata = [
+    { label: 'Company Name', value: resolveCompanyName(companyName) },
+    { label: 'Report Title', value: String(title || DEFAULT_REPORT_TITLE).trim() || DEFAULT_REPORT_TITLE },
+    { label: 'Export Date', value: resolveExportDate(exportDate) },
+    { label: 'Generated By', value: resolveGeneratedBy(generatedBy) },
+  ]
+
+  const seenLabels = new Set(baseMetadata.map((entry) => normalizeMetadataLabel(entry.label)))
+  const mergedMetadata = [...baseMetadata]
+
+  ;(Array.isArray(metadata) ? metadata : []).forEach((entry) => {
+    if (!entry || !entry.label) return
+    const normalizedLabel = normalizeMetadataLabel(entry.label)
+    if (!normalizedLabel || seenLabels.has(normalizedLabel)) return
+    seenLabels.add(normalizedLabel)
+    mergedMetadata.push(entry)
+  })
+
+  return mergedMetadata
+}
+
+const normalizeExportValue = (value) => {
+  if (value === null || value === undefined) return EMPTY_EXPORT_VALUE
+  if (typeof value === 'string' && value.trim() === '') return EMPTY_EXPORT_VALUE
+  return value
+}
+
+const buildRowSignature = (columns, row, rowIndex) => JSON.stringify(
+  columns.map((column) => {
+    if (!column) return EMPTY_EXPORT_VALUE
+    const rawValue = column.key === '__serialNumber' ? EMPTY_EXPORT_VALUE : row?.[column.key]
+    const formattedValue = column.formatter ? column.formatter(rawValue, row, rowIndex) : rawValue
+    return normalizeExportValue(formattedValue)
+  })
+)
+
+const normalizeExportRows = (rows, columns) => {
+  const safeRows = Array.isArray(rows) ? rows : []
+  const safeColumns = Array.isArray(columns) ? columns.filter(Boolean) : []
+  const seenSignatures = new Set()
+  const normalizedRows = []
+
+  safeRows.forEach((row, rowIndex) => {
+    const safeRow = row && typeof row === 'object' ? { ...row } : {}
+    const signature = buildRowSignature(safeColumns, safeRow, rowIndex)
+    if (seenSignatures.has(signature)) return
+    seenSignatures.add(signature)
+
+    safeColumns.forEach((column) => {
+      if (!column?.key || column.key === '__serialNumber') return
+      safeRow[column.key] = normalizeExportValue(safeRow[column.key])
+    })
+
+    normalizedRows.push(safeRow)
+  })
+
+  return normalizedRows
+}
+
+const normalizeSummary = (summary, columns, rows) => {
+  if (!Array.isArray(summary) || summary.length === 0) return []
+  const safeRows = Array.isArray(rows) ? rows : []
+  const totalsByKey = {}
+
+  return summary.map((entry) => {
+    if (!entry || !entry.label) return null
+    const column = columns.find((col) => col.key === entry.key) || null
+    const resolvedType = entry.type || column?.type
+
+    let resolvedValue = entry.value
+    if (resolvedValue === undefined && entry.key) {
+      if (totalsByKey[entry.key] === undefined) {
+        let total = 0
+        for (const row of safeRows) {
+          const raw = row?.[entry.key]
+          const numeric = parseNumericLike(raw)
+          if (numeric !== null) total += numeric
+        }
+        totalsByKey[entry.key] = total
+      }
+      resolvedValue = totalsByKey[entry.key]
+    }
+
+    return {
+      label: String(entry.label),
+      key: entry.key || '',
+      type: resolvedType,
+      value: resolvedValue,
+      align: entry.align,
+    }
+  }).filter(Boolean)
+}
+
+const normalizeExportOptions = ({
+  filename,
+  title,
+  subtitle,
+  metadata,
+  columns,
+  rows,
+  sheetName,
+  compact,
+  companyName,
+  generatedBy,
+  exportDate,
+  summary,
+}) => {
+  const resolvedTitle = String(title || DEFAULT_REPORT_TITLE).trim() || DEFAULT_REPORT_TITLE
+  const safeColumns = Array.isArray(columns) ? columns.filter(Boolean) : []
+  const normalizedRows = normalizeExportRows(rows, safeColumns)
+
+  return {
+    filename,
+    title: resolvedTitle,
+    subtitle: String(subtitle || '').trim(),
+    metadata: buildStandardMetadata({
+      companyName,
+      title: resolvedTitle,
+      metadata,
+      generatedBy,
+      exportDate,
+    }),
+    columns: safeColumns,
+    rows: normalizedRows,
+    sheetName: normalizeSheetName(sheetName, resolvedTitle),
+    compact,
+    summary: normalizeSummary(summary, safeColumns, normalizedRows),
+  }
+}
+
+// Custom Excel number formats indexed by our column type.
+// numFmtId values >= 164 are user-defined; we register them in styles.xml.
+const NUMBER_FORMATS = {
+  currency: { id: 164, code: '_-* #,##0.00_-;-* #,##0.00_-;_-* "-"??_-;_-@_-' },
+  number:   { id: 165, code: '#,##0.00' },
+  integer:  { id: 166, code: '#,##0' },
+  percent:  { id: 167, code: '0.00%' },
+  date:     { id: 168, code: 'dd-mmm-yyyy' },
+  datetime: { id: 169, code: 'dd-mmm-yyyy hh:mm' },
+}
+
+// ── Style index assignment ──────────────────────────────────────────────
+// We pre-define a fixed set of cellXfs entries so worksheet cells just
+// reference an integer 's' attribute.
+//
+// Order (kept in sync with buildStylesXml):
+//   0  default
+//   1  title          (font 1 bold large, left, no border)
+//   2  subtitle       (font 2 small italic muted)
+//   3  meta-label     (font 3 bold, left, border, fill light)
+//   4  meta-value     (font 0, left, border)
+//   5  header         (font 4 bold white, fill blue, border, center, wrap)
+//   6  cell-text-left           (border, left, wrap)
+//   7  cell-text-center         (border, center, wrap)
+//   8  cell-text-right          (border, right, wrap)
+//   9  cell-currency-right      (border, right, currency)
+//   10 cell-number-right        (border, right, number)
+//   11 cell-integer-right       (border, right, integer)
+//   12 cell-percent-right       (border, right, percent)
+//   13 cell-date-center         (border, center, date)
+//   14 cell-datetime-center     (border, center, datetime)
+//   15 footer-total-label       (border, bold, right)
+//   16 footer-total-value       (border, bold, currency, right)
+//   17 alt-cell-text-left
+//   18 alt-cell-text-center
+//   19 alt-cell-text-right
+//   20 alt-cell-currency-right
+//   21 alt-cell-number-right
+//   22 alt-cell-integer-right
+//   23 alt-cell-percent-right
+//   24 alt-cell-date-center
+//   25 alt-cell-datetime-center
+
+const STYLE_INDICES = {
+  default: 0,
+  title: 1,
+  subtitle: 2,
+  metaLabel: 3,
+  metaValue: 4,
+  header: 5,
+  cellTextLeft: 6,
+  cellTextCenter: 7,
+  cellTextRight: 8,
+  cellCurrency: 9,
+  cellNumber: 10,
+  cellInteger: 11,
+  cellPercent: 12,
+  cellDate: 13,
+  cellDatetime: 14,
+  footerLabel: 15,
+  footerValue: 16,
+  altCellTextLeft: 17,
+  altCellTextCenter: 18,
+  altCellTextRight: 19,
+  altCellCurrency: 20,
+  altCellNumber: 21,
+  altCellInteger: 22,
+  altCellPercent: 23,
+  altCellDate: 24,
+  altCellDatetime: 25,
+  sectionHeader: 26,
+}
+
+const styleForColumn = (column, align, rowIndex = 0) => {
+  const useAltStyle = rowIndex % 2 === 1
+  const colType = column?.type || 'text'
+  if (colType === 'currency') return useAltStyle ? STYLE_INDICES.altCellCurrency : STYLE_INDICES.cellCurrency
+  if (colType === 'number') return useAltStyle ? STYLE_INDICES.altCellNumber : STYLE_INDICES.cellNumber
+  if (colType === 'integer') return useAltStyle ? STYLE_INDICES.altCellInteger : STYLE_INDICES.cellInteger
+  if (colType === 'percent') return useAltStyle ? STYLE_INDICES.altCellPercent : STYLE_INDICES.cellPercent
+  if (colType === 'date') return useAltStyle ? STYLE_INDICES.altCellDate : STYLE_INDICES.cellDate
+  if (colType === 'datetime') return useAltStyle ? STYLE_INDICES.altCellDatetime : STYLE_INDICES.cellDatetime
+  if (align === 'right') return useAltStyle ? STYLE_INDICES.altCellTextRight : STYLE_INDICES.cellTextRight
+  if (align === 'center') return useAltStyle ? STYLE_INDICES.altCellTextCenter : STYLE_INDICES.cellTextCenter
+  return useAltStyle ? STYLE_INDICES.altCellTextLeft : STYLE_INDICES.cellTextLeft
+}
+
+const buildStylesXml = () => {
+  const numFmts = Object.values(NUMBER_FORMATS)
+  const numFmtsXml = `<numFmts count="${numFmts.length}">${numFmts
+    .map((fmt) => `<numFmt numFmtId="${fmt.id}" formatCode="${xmlEscape(fmt.code)}"/>`)
+    .join('')}</numFmts>`
+
+  // Fonts: 0 default, 1 title, 2 subtitle, 3 meta-label, 4 header, 5 section-header
+  const fontsXml = `<fonts count="6">
+    <font><sz val="11"/><name val="Calibri"/><color rgb="FF1F2937"/></font>
+    <font><b/><sz val="18"/><name val="Calibri"/><color rgb="FF15324A"/></font>
+    <font><sz val="11"/><name val="Calibri"/><color rgb="FF5B7085"/></font>
+    <font><b/><sz val="11"/><name val="Calibri"/><color rgb="FF24425C"/></font>
+    <font><b/><sz val="11"/><name val="Calibri"/><color rgb="FFFFFFFF"/></font>
+    <font><b/><sz val="9"/><name val="Calibri"/><color rgb="FF65798B"/></font>
+  </fonts>`
+
+  // Fills: 0 none, 1 gray125 (required reserved), 2 meta light, 3 header blue, 4 alt-row, 5 title banner
+  const fillsXml = `<fills count="6">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF8FBFE"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF2F86BA"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF5FAF7"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFEFF6FB"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>`
+
+  // Borders: 0 none, 1 thin all-sides
+  const bordersXml = `<borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FFD0D7DE"/></left>
+      <right style="thin"><color rgb="FFD0D7DE"/></right>
+      <top style="thin"><color rgb="FFD0D7DE"/></top>
+      <bottom style="thin"><color rgb="FFD0D7DE"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>`
+
+  const cellXf = ({
+    numFmtId = 0, fontId = 0, fillId = 0, borderId = 0,
+    horizontal, vertical = 'center', wrap = true,
+  }) => {
+    const hasAlignment = horizontal || vertical || wrap
+    const applyNumber = numFmtId !== 0
+    const alignmentXml = hasAlignment
+      ? `<alignment ${horizontal ? `horizontal="${horizontal}"` : ''} ${vertical ? `vertical="${vertical}"` : ''} ${wrap ? 'wrapText="1"' : ''}/>`
+      : ''
+    return `<xf numFmtId="${numFmtId}" fontId="${fontId}" fillId="${fillId}" borderId="${borderId}" `
+      + `applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"${applyNumber ? ' applyNumberFormat="1"' : ''}>`
+      + alignmentXml
+      + '</xf>'
+  }
+
+  const cellXfsList = [
+    // 0 default
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>',
+    // 1 title — centered banner across the sheet
+    cellXf({ fontId: 1, fillId: 5, horizontal: 'center', vertical: 'center', wrap: true }),
+    // 2 subtitle — centered under title
+    cellXf({ fontId: 2, fillId: 5, horizontal: 'center', vertical: 'center', wrap: true }),
+    // 3 meta-label
+    cellXf({ fontId: 3, fillId: 2, borderId: 1, horizontal: 'left', vertical: 'center', wrap: true }),
+    // 4 meta-value
+    cellXf({ fontId: 0, borderId: 1, horizontal: 'left', vertical: 'center', wrap: true }),
+    // 5 header
+    cellXf({ fontId: 4, fillId: 3, borderId: 1, horizontal: 'center', vertical: 'center', wrap: true }),
+    // 6 cell-text-left
+    cellXf({ fontId: 0, borderId: 1, horizontal: 'left', vertical: 'center', wrap: true }),
+    // 7 cell-text-center
+    cellXf({ fontId: 0, borderId: 1, horizontal: 'center', vertical: 'center', wrap: true }),
+    // 8 cell-text-right
+    cellXf({ fontId: 0, borderId: 1, horizontal: 'right', vertical: 'center', wrap: true }),
+    // 9 cell-currency-right
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.currency.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 10 cell-number-right
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.number.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 11 cell-integer-right
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.integer.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 12 cell-percent-right
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.percent.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 13 cell-date-center
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.date.id, horizontal: 'center', vertical: 'center', wrap: false }),
+    // 14 cell-datetime-center
+    cellXf({ fontId: 0, borderId: 1, numFmtId: NUMBER_FORMATS.datetime.id, horizontal: 'center', vertical: 'center', wrap: false }),
+    // 15 footer-total-label
+    cellXf({ fontId: 3, fillId: 2, borderId: 1, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 16 footer-total-value
+    cellXf({ fontId: 3, fillId: 2, borderId: 1, numFmtId: NUMBER_FORMATS.currency.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 17 alt-cell-text-left
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, horizontal: 'left', vertical: 'center', wrap: true }),
+    // 18 alt-cell-text-center
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, horizontal: 'center', vertical: 'center', wrap: true }),
+    // 19 alt-cell-text-right
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, horizontal: 'right', vertical: 'center', wrap: true }),
+    // 20 alt-cell-currency-right
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.currency.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 21 alt-cell-number-right
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.number.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 22 alt-cell-integer-right
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.integer.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 23 alt-cell-percent-right
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.percent.id, horizontal: 'right', vertical: 'center', wrap: false }),
+    // 24 alt-cell-date-center
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.date.id, horizontal: 'center', vertical: 'center', wrap: false }),
+    // 25 alt-cell-datetime-center
+    cellXf({ fontId: 0, fillId: 4, borderId: 1, numFmtId: NUMBER_FORMATS.datetime.id, horizontal: 'center', vertical: 'center', wrap: false }),
+    // 26 section-header (small uppercase muted label above metadata block)
+    cellXf({ fontId: 5, horizontal: 'left', vertical: 'center', wrap: false }),
+  ]
+
+  const cellXfsXml = `<cellXfs count="${cellXfsList.length}">${cellXfsList.join('')}</cellXfs>`
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  ${numFmtsXml}
+  ${fontsXml}
+  ${fillsXml}
+  ${bordersXml}
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  ${cellXfsXml}
+  <cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+  <dxfs count="0"/>
+  <tableStyles count="0"/>
+</styleSheet>`
+}
+
+const getDisplayLineLength = (value) => {
+  const text = value === null || value === undefined ? '' : String(value)
+  return text.split(/\r?\n/).reduce((maxLength, line) => Math.max(maxLength, line.length), 0)
+}
+
+const computeColumnWidth = (column, rows, headerLabel) => {
+  if (column?.width && Number.isFinite(column.width)) return column.width
+
+  let maxLength = getDisplayLineLength(headerLabel || '')
+  rows.forEach((row) => {
+    const raw = column.key === '__serialNumber' ? '' : row[column.key]
+    const formatted = column.formatter ? column.formatter(raw, row) : raw
+    maxLength = Math.max(maxLength, getDisplayLineLength(formatted))
+  })
+
+  // Excel widths are roughly "characters of the default font" — small padding makes it pleasant.
+  const padded = maxLength + 3
+  return Math.max(9, Math.min(42, padded))
+}
+
+const buildCellXml = ({ ref, styleIndex, value, type, sharedStringIndex }) => {
+  const styleAttr = ` s="${styleIndex}"`
+  if (value === null || value === undefined || value === '') {
+    return `<c r="${ref}"${styleAttr}/>`
+  }
+  if (type === 'inlineStr') {
+    return `<c r="${ref}"${styleAttr} t="inlineStr"><is><t xml:space="preserve">${xmlEscape(value)}</t></is></c>`
+  }
+  if (type === 's') {
+    return `<c r="${ref}"${styleAttr} t="s"><v>${sharedStringIndex}</v></c>`
+  }
+  if (type === 'n') {
+    return `<c r="${ref}"${styleAttr}><v>${value}</v></c>`
+  }
+  if (type === 'b') {
+    return `<c r="${ref}"${styleAttr} t="b"><v>${value ? 1 : 0}</v></c>`
+  }
+  return `<c r="${ref}"${styleAttr} t="inlineStr"><is><t xml:space="preserve">${xmlEscape(value)}</t></is></c>`
+}
+
+const buildSheetXml = ({ title, subtitle, metadata, columns, rows, sheetName, compact = false, summary = [] }) => {
+  const colCount = columns.length
+  const sheetColCount = Math.max(colCount, 2)
+  const lastDataCol = colCount > 0 ? columnLetter(colCount - 1) : 'A'
+  const lastSheetCol = columnLetter(sheetColCount - 1)
+  const validMetadata = (metadata || []).filter((entry) => entry && entry.label)
+  const mergeRanges = []
+  const metadataLabelWidth = validMetadata.reduce(
+    (maxWidth, entry) => Math.max(maxWidth, getDisplayLineLength(entry.label) + 4),
+    20
+  )
+  const metadataValueWidth = validMetadata.reduce(
+    (maxWidth, entry) => Math.max(maxWidth, getDisplayLineLength(entry.value) + 6),
+    Math.max(getDisplayLineLength(title) + 4, getDisplayLineLength(subtitle) + 4, 36)
+  )
+
+  // ── Pre-block: title, subtitle, metadata table ────────────────────────
+  const headerBlock = []
+  let currentRow = 0
+
+  const pushRow = (rowNumber, cellsXml, { height } = {}) => {
+    const heightAttr = Number.isFinite(height) ? ` ht="${height}" customHeight="1"` : ''
+    headerBlock.push(`<row r="${rowNumber}"${heightAttr}>${cellsXml}</row>`)
+  }
+
+  if (!compact) {
+    if (title) {
+      currentRow += 1
+      // OOXML rule: when cells are merged, ONLY the top-left cell may exist
+      // in the file. Excel refuses to open a workbook that emits cells inside
+      // the merged range. The merge's fill carries across the merged area
+      // automatically, so emitting just A is enough.
+      pushRow(currentRow, buildCellXml({
+        ref: `A${currentRow}`,
+        styleIndex: STYLE_INDICES.title,
+        value: title,
+        type: 'inlineStr',
+      }), { height: 32 })
+      if (sheetColCount > 1) {
+        mergeRanges.push(`A${currentRow}:${lastSheetCol}${currentRow}`)
+      }
+    }
+
+    if (subtitle) {
+      currentRow += 1
+      pushRow(currentRow, buildCellXml({
+        ref: `A${currentRow}`,
+        styleIndex: STYLE_INDICES.subtitle,
+        value: subtitle,
+        type: 'inlineStr',
+      }), { height: 22 })
+      if (sheetColCount > 1) {
+        mergeRanges.push(`A${currentRow}:${lastSheetCol}${currentRow}`)
+      }
+    }
+
+    if (validMetadata.length > 0) {
+      currentRow += 1 // blank spacer row
+      // Small "REPORT INFORMATION" section header
+      currentRow += 1
+      pushRow(currentRow, buildCellXml({
+        ref: `A${currentRow}`,
+        styleIndex: STYLE_INDICES.sectionHeader,
+        value: 'REPORT INFORMATION',
+        type: 'inlineStr',
+      }), { height: 18 })
+      if (sheetColCount > 1) {
+        mergeRanges.push(`A${currentRow}:${lastSheetCol}${currentRow}`)
+      }
+
+      validMetadata.forEach((entry) => {
+        currentRow += 1
+        const labelCell = buildCellXml({
+          ref: `A${currentRow}`,
+          styleIndex: STYLE_INDICES.metaLabel,
+          value: entry.label,
+          type: 'inlineStr',
+        })
+        const valueCell = buildCellXml({
+          ref: `B${currentRow}`,
+          styleIndex: STYLE_INDICES.metaValue,
+          value: entry.value ?? '',
+          type: 'inlineStr',
+        })
+        pushRow(currentRow, labelCell + valueCell)
+        if (sheetColCount > 2) {
+          mergeRanges.push(`B${currentRow}:${lastSheetCol}${currentRow}`)
+        }
+      })
+    }
+
+    // Blank spacer row before the data table.
+    currentRow += 1
+  }
+
+  const headerRowNumber = currentRow + 1
+  currentRow = headerRowNumber
+
+  // ── Header row ──────────────────────────────────────────────────────
+  const headerCells = columns.map((column, index) => buildCellXml({
+    ref: `${columnLetter(index)}${headerRowNumber}`,
+    styleIndex: STYLE_INDICES.header,
+    value: column.label ?? column.key ?? '',
+    type: 'inlineStr',
+  })).join('')
+  pushRow(headerRowNumber, headerCells, { height: 24 })
+
+  // ── Data rows ───────────────────────────────────────────────────────
+  rows.forEach((row, rowIndex) => {
+    currentRow += 1
+    const cells = columns.map((column, colIndex) => {
+      const ref = `${columnLetter(colIndex)}${currentRow}`
+      const rawValue = column.key === '__serialNumber' ? rowIndex + 1 : row[column.key]
+      const formatted = column.formatter ? column.formatter(rawValue, row, rowIndex) : rawValue
+      const styleIndex = styleForColumn(column, column.align, rowIndex)
+      const type = column.type
+
+      if (formatted === null || formatted === undefined || formatted === '') {
+        return buildCellXml({ ref, styleIndex, value: '' })
+      }
+
+      if (type === 'currency' || type === 'number' || type === 'integer' || type === 'percent') {
+        const numeric = parseNumericLike(formatted)
+        if (numeric !== null) {
+          const numValue = type === 'percent' && Math.abs(numeric) > 1 ? numeric / 100 : numeric
+          return buildCellXml({ ref, styleIndex, value: numValue, type: 'n' })
+        }
+        return buildCellXml({ ref, styleIndex: STYLE_INDICES.cellTextRight, value: String(formatted), type: 'inlineStr' })
+      }
+
+      if (type === 'date' || type === 'datetime') {
+        const serial = toExcelSerialDate(formatted, type === 'datetime')
+        if (serial !== null) {
+          return buildCellXml({ ref, styleIndex, value: serial, type: 'n' })
+        }
+        return buildCellXml({ ref, styleIndex: STYLE_INDICES.cellTextCenter, value: String(formatted), type: 'inlineStr' })
+      }
+
+      return buildCellXml({ ref, styleIndex, value: String(formatted), type: 'inlineStr' })
+    }).join('')
+    pushRow(currentRow, cells)
+  })
+
+  // ── Empty-result placeholder ────────────────────────────────────────
+  // If there are no data rows, render a single styled row spanning the table
+  // saying "No records to export" so the file doesn't look broken. OOXML
+  // rule: only the top-left cell may exist inside the merge range, so emit
+  // just A and let the merge carry the styling.
+  if (rows.length === 0 && colCount > 0) {
+    currentRow += 1
+    pushRow(currentRow, buildCellXml({
+      ref: `A${currentRow}`,
+      styleIndex: STYLE_INDICES.cellTextCenter,
+      value: 'No records to export',
+      type: 'inlineStr',
+    }), { height: 28 })
+    if (colCount > 1) {
+      mergeRanges.push(`A${currentRow}:${lastDataCol}${currentRow}`)
+    }
+  }
+
+  const lastDataRow = currentRow
+
+  // ── Summary / totals rows ──────────────────────────────────────────
+  // Render bordered total rows directly under the data table. Each entry
+  // becomes a row of `{ label, value }` aligned with the data columns.
+  // OOXML rule: when columns are merged, only the top-left cell may exist.
+  // So for the label-merge area (A → valueColIndex-1) we emit only A. Cells
+  // at and after the value column are emitted normally.
+  if (summary.length > 0 && colCount > 0) {
+    summary.forEach((entry) => {
+      currentRow += 1
+      const valueColumn = entry.key ? columns.find((col) => col.key === entry.key) : null
+      const valueColIndex = valueColumn ? columns.indexOf(valueColumn) : (colCount - 1)
+      const valueType = entry.type || valueColumn?.type || 'text'
+      const willMerge = valueColIndex > 1
+
+      const buildValueCell = (ref) => {
+        const styleIndex = valueType === 'currency'
+          ? STYLE_INDICES.footerValue
+          : STYLE_INDICES.footerLabel
+        if (valueType === 'currency' || valueType === 'number' || valueType === 'integer' || valueType === 'percent') {
+          const numeric = parseNumericLike(entry.value)
+          if (numeric !== null) {
+            const numValue = valueType === 'percent' && Math.abs(numeric) > 1 ? numeric / 100 : numeric
+            return buildCellXml({ ref, styleIndex, value: numValue, type: 'n' })
+          }
+        }
+        return buildCellXml({
+          ref,
+          styleIndex,
+          value: entry.value === null || entry.value === undefined ? '' : String(entry.value),
+          type: 'inlineStr',
+        })
+      }
+
+      const cells = columns.map((column, colIndex) => {
+        const ref = `${columnLetter(colIndex)}${currentRow}`
+
+        if (colIndex === 0) {
+          return buildCellXml({
+            ref,
+            styleIndex: STYLE_INDICES.footerLabel,
+            value: entry.label,
+            type: 'inlineStr',
+          })
+        }
+
+        // Skip emitting cells inside the merged label area.
+        if (willMerge && colIndex < valueColIndex) return ''
+
+        if (colIndex === valueColIndex) return buildValueCell(ref)
+
+        // Trailing columns after the value cell — emit empty styled cells.
+        return buildCellXml({ ref, styleIndex: STYLE_INDICES.footerLabel, value: '' })
+      }).join('')
+      pushRow(currentRow, cells, { height: 22 })
+
+      if (willMerge) {
+        mergeRanges.push(`A${currentRow}:${columnLetter(valueColIndex - 1)}${currentRow}`)
+      }
+    })
+  }
+
+  // ── Column widths ───────────────────────────────────────────────────
+  const colsXml = sheetColCount > 0
+    ? `<cols>${Array.from({ length: sheetColCount }, (_, index) => {
+        let width = 12
+
+        if (index < columns.length) {
+          width = computeColumnWidth(columns[index], rows, columns[index].label)
+        }
+
+        if (index === 0) {
+          width = Math.max(width, Math.min(28, metadataLabelWidth))
+        } else if (index === 1) {
+          width = Math.max(width, Math.min(48, metadataValueWidth))
+        }
+
+        return `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`
+      }).join('')}</cols>`
+    : ''
+
+  // ── Sheet view: freeze the header row ───────────────────────────────
+  const freezeRow = headerRowNumber + 1
+  const sheetViewXml = `<sheetViews>
+    <sheetView workbookViewId="0" showGridLines="0">
+      <pane state="frozen" ySplit="${headerRowNumber}" topLeftCell="A${freezeRow}" activePane="bottomLeft"/>
+      <selection pane="bottomLeft" activeCell="A${freezeRow}" sqref="A${freezeRow}"/>
+    </sheetView>
+  </sheetViews>`
+
+  // ── Auto filter on data table ──────────────────────────────────────
+  const autoFilterXml = rows.length > 0 && colCount > 0
+    ? `<autoFilter ref="A${headerRowNumber}:${lastDataCol}${lastDataRow}"/>`
+    : ''
+  const mergeCellsXml = mergeRanges.length > 0
+    ? `<mergeCells count="${mergeRanges.length}">${mergeRanges.map((ref) => `<mergeCell ref="${ref}"/>`).join('')}</mergeCells>`
+    : ''
+
+  const sheetFormatXml = '<sheetFormatPr defaultRowHeight="20"/>'
+
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+           xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  ${sheetViewXml}
+  ${sheetFormatXml}
+  ${colsXml}
+  <sheetData>${headerBlock.join('')}</sheetData>
+  ${mergeCellsXml}
+  ${autoFilterXml}
+  <pageMargins left="0.5" right="0.5" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>
+  <pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>
+</worksheet>`
+}
+
+const buildWorkbookXml = (sheetName) => `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <fileVersion appName="MapleCRM"/>
+  <workbookPr defaultThemeVersion="166925"/>
+  <sheets>
+    <sheet name="${xmlEscape(sheetName)}" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`
+
+const WORKBOOK_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`
+
+const ROOT_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`
+
+const CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`
+
+// ── ZIP packaging (STORED, no compression) ────────────────────────────
+const writeUint16LE = (out, offset, value) => {
+  out[offset] = value & 0xFF
+  out[offset + 1] = (value >>> 8) & 0xFF
+}
+
+const writeUint32LE = (out, offset, value) => {
+  out[offset] = value & 0xFF
+  out[offset + 1] = (value >>> 8) & 0xFF
+  out[offset + 2] = (value >>> 16) & 0xFF
+  out[offset + 3] = (value >>> 24) & 0xFF
+}
+
+const dosDateTime = (date = new Date()) => {
+  const time = ((date.getHours() & 0x1F) << 11)
+    | ((date.getMinutes() & 0x3F) << 5)
+    | ((Math.floor(date.getSeconds() / 2)) & 0x1F)
+  const dosDate = (((date.getFullYear() - 1980) & 0x7F) << 9)
+    | (((date.getMonth() + 1) & 0x0F) << 5)
+    | (date.getDate() & 0x1F)
+  return { time, date: dosDate }
+}
+
+const buildZip = (entries) => {
+  const now = dosDateTime()
+  const localBlocks = []
+  const centralBlocks = []
+  let offset = 0
+
+  entries.forEach((entry) => {
+    const nameBytes = utf8Encode(entry.name)
+    const dataBytes = entry.data
+    const crc = crc32(dataBytes)
+    const size = dataBytes.length
+
+    const localHeader = new Uint8Array(30 + nameBytes.length)
+    writeUint32LE(localHeader, 0, 0x04034B50)
+    writeUint16LE(localHeader, 4, 20)            // version needed
+    writeUint16LE(localHeader, 6, 0x0800)        // general flags (bit 11 = UTF-8 names)
+    writeUint16LE(localHeader, 8, 0)             // method = stored
+    writeUint16LE(localHeader, 10, now.time)
+    writeUint16LE(localHeader, 12, now.date)
+    writeUint32LE(localHeader, 14, crc)
+    writeUint32LE(localHeader, 18, size)         // compressed size
+    writeUint32LE(localHeader, 22, size)         // uncompressed size
+    writeUint16LE(localHeader, 26, nameBytes.length)
+    writeUint16LE(localHeader, 28, 0)
+    localHeader.set(nameBytes, 30)
+    localBlocks.push(localHeader, dataBytes)
+
+    const central = new Uint8Array(46 + nameBytes.length)
+    writeUint32LE(central, 0, 0x02014B50)
+    writeUint16LE(central, 4, 0x0314)            // version made by (UNIX, version 20)
+    writeUint16LE(central, 6, 20)                // version needed
+    writeUint16LE(central, 8, 0x0800)            // general flags (UTF-8)
+    writeUint16LE(central, 10, 0)                // method
+    writeUint16LE(central, 12, now.time)
+    writeUint16LE(central, 14, now.date)
+    writeUint32LE(central, 16, crc)
+    writeUint32LE(central, 20, size)
+    writeUint32LE(central, 24, size)
+    writeUint16LE(central, 28, nameBytes.length)
+    writeUint16LE(central, 30, 0)                // extra length
+    writeUint16LE(central, 32, 0)                // comment length
+    writeUint16LE(central, 34, 0)                // disk number
+    writeUint16LE(central, 36, 0)                // internal attrs
+    writeUint32LE(central, 38, 0)                // external attrs
+    writeUint32LE(central, 42, offset)           // local header offset
+    central.set(nameBytes, 46)
+    centralBlocks.push(central)
+
+    offset += localHeader.length + dataBytes.length
+  })
+
+  const centralSize = centralBlocks.reduce((sum, block) => sum + block.length, 0)
+  const centralOffset = offset
+
+  const eocd = new Uint8Array(22)
+  writeUint32LE(eocd, 0, 0x06054B50)
+  writeUint16LE(eocd, 4, 0)                      // disk number
+  writeUint16LE(eocd, 6, 0)                      // disk with CD start
+  writeUint16LE(eocd, 8, entries.length)         // entries on this disk
+  writeUint16LE(eocd, 10, entries.length)        // total entries
+  writeUint32LE(eocd, 12, centralSize)
+  writeUint32LE(eocd, 16, centralOffset)
+  writeUint16LE(eocd, 20, 0)                     // comment length
+
+  const totalSize = offset + centralSize + eocd.length
+  const result = new Uint8Array(totalSize)
+  let cursor = 0
+  localBlocks.forEach((block) => {
+    result.set(block, cursor)
+    cursor += block.length
+  })
+  centralBlocks.forEach((block) => {
+    result.set(block, cursor)
+    cursor += block.length
+  })
+  result.set(eocd, cursor)
+  return result
+}
+
+const buildXlsxBytes = ({ title, subtitle, metadata, columns, rows, sheetName, compact = false, summary = [] }) => {
+  const safeSheetName = sanitizeSheetName(sheetName || title || 'Sheet1')
+  const sheetXml = buildSheetXml({ title, subtitle, metadata, columns, rows, sheetName: safeSheetName, compact, summary })
+  const stylesXml = buildStylesXml()
+  const workbookXml = buildWorkbookXml(safeSheetName)
+
+  return buildZip([
+    { name: '[Content_Types].xml', data: utf8Encode(CONTENT_TYPES_XML) },
+    { name: '_rels/.rels', data: utf8Encode(ROOT_RELS_XML) },
+    { name: 'xl/workbook.xml', data: utf8Encode(workbookXml) },
+    { name: 'xl/_rels/workbook.xml.rels', data: utf8Encode(WORKBOOK_RELS_XML) },
+    { name: 'xl/styles.xml', data: utf8Encode(stylesXml) },
+    { name: 'xl/worksheets/sheet1.xml', data: utf8Encode(sheetXml) },
+  ])
+}
+
+const triggerBlobDownload = (bytes, filename) => {
+  const blob = new Blob([bytes], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+  const objectUrl = window.URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  setTimeout(() => window.URL.revokeObjectURL(objectUrl), 0)
+}
+
+const ensureXlsxExtension = (filename) => {
+  const base = sanitizeFilename((filename || 'export').replace(/\.(xlsx|xls|csv)$/i, ''))
+  return `${base}.xlsx`
+}
+
+const ensureCsvExtension = (filename) => {
+  const base = sanitizeFilename((filename || 'export').replace(/\.(xlsx|xls|csv)$/i, ''))
+  return `${base}.csv`
+}
+
+export const exportExcelWorkbook = ({
+  filename = 'export.xlsx',
+  title = 'CRM Export',
+  subtitle = '',
+  metadata = [],
+  columns = [],
+  rows = [],
+  sheetName,
+  compact = false,
+  companyName = '',
+  generatedBy = '',
+  exportDate = '',
+  summary = [],
+} = {}) => {
+  const normalizedOptions = normalizeExportOptions({
+    filename,
+    title,
+    subtitle,
+    metadata,
+    columns,
+    rows,
+    sheetName,
+    compact,
+    companyName,
+    generatedBy,
+    exportDate,
+    summary,
+  })
+  const bytes = buildXlsxBytes({
+    title: normalizedOptions.title,
+    subtitle: normalizedOptions.subtitle,
+    metadata: normalizedOptions.metadata,
+    columns: normalizedOptions.columns,
+    rows: normalizedOptions.rows,
+    sheetName: normalizedOptions.sheetName,
+    compact: normalizedOptions.compact,
+    summary: normalizedOptions.summary,
+  })
+  triggerBlobDownload(bytes, ensureXlsxExtension(filename))
+}
+
+// ── CSV writer (mirrors the Excel structure) ────────────────────────────
+// Output sections:
+//   1. Title row
+//   2. Subtitle row
+//   3. Blank spacer + metadata block (label,value) + blank spacer
+//   4. Sheet name row (for clarity when opening in Excel)
+//   5. Header row
+//   6. Data rows (formatted via the same column descriptors as Excel)
+//
+// CSV values are quoted using RFC-4180 rules (double-quote any value
+// containing a comma, quote, CR, or LF; escape internal quotes by doubling).
+// The file is prefixed with a UTF-8 BOM so Excel auto-detects encoding.
+
+const csvEscape = (value) => {
+  if (value === null || value === undefined) return ''
+  const text = String(value)
+  if (text === '') return ''
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`
+  }
+  return text
+}
+
+const formatCsvCell = (column, rawValue, row, rowIndex) => {
+  const value = column.formatter ? column.formatter(rawValue, row, rowIndex) : rawValue
+  if (value === null || value === undefined || value === '') return ''
+
+  const colType = column.type
+  if (colType === 'currency' || colType === 'number' || colType === 'integer' || colType === 'percent') {
+    const numeric = parseNumericLike(value)
+    if (numeric !== null) {
+      if (colType === 'integer') return String(Math.round(numeric))
+      if (colType === 'percent') {
+        const pct = Math.abs(numeric) > 1 ? numeric : numeric * 100
+        return `${pct.toFixed(2)}%`
+      }
+      return numeric.toFixed(2)
+    }
+    return String(value)
+  }
+
+  if (colType === 'date' || colType === 'datetime') {
+    const serial = toExcelSerialDate(value, colType === 'datetime')
+    if (serial !== null) {
+      const ms = serial * 24 * 60 * 60 * 1000 + Date.UTC(1899, 11, 30)
+      const d = new Date(ms)
+      const pad = (n) => String(n).padStart(2, '0')
+      const day = pad(d.getUTCDate())
+      const month = pad(d.getUTCMonth() + 1)
+      const year = d.getUTCFullYear()
+      if (colType === 'datetime') {
+        return `${day}-${month}-${year} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`
+      }
+      return `${day}-${month}-${year}`
+    }
+    return String(value)
+  }
+
+  return String(value)
+}
+
+const buildCsvContent = ({ title, subtitle, metadata, columns, rows, sheetName, compact = false, summary = [] }) => {
+  const lines = []
+  const safeColumns = Array.isArray(columns) ? columns.filter(Boolean) : []
+  const safeRows = Array.isArray(rows) ? rows : []
+  const safeSummary = Array.isArray(summary) ? summary : []
+
+  if (!compact) {
+    if (title) {
+      lines.push(csvEscape(title))
+    }
+    if (subtitle) {
+      lines.push(csvEscape(subtitle))
+    }
+
+    const validMetadata = (metadata || []).filter((entry) => entry && entry.label)
+    if (validMetadata.length > 0) {
+      lines.push('') // spacer
+      lines.push(csvEscape('REPORT INFORMATION'))
+      validMetadata.forEach((entry) => {
+        lines.push([csvEscape(entry.label), csvEscape(entry.value ?? '')].join(','))
+      })
+    }
+
+    if (sheetName) {
+      lines.push('') // spacer
+      lines.push(csvEscape(`Sheet: ${sheetName}`))
+    }
+  }
+
+  if (safeColumns.length > 0) {
+    if (!compact) {
+      lines.push('') // spacer before table
+    }
+    const headerLine = safeColumns.map((column) => csvEscape(column.label ?? column.key ?? '')).join(',')
+    lines.push(headerLine)
+
+    if (safeRows.length === 0) {
+      // Empty-result placeholder so the CSV mirrors the XLSX behavior.
+      const placeholder = safeColumns.map((_, idx) => csvEscape(idx === 0 ? 'No records to export' : '')).join(',')
+      lines.push(placeholder)
+    } else {
+      safeRows.forEach((row, rowIndex) => {
+        const cells = safeColumns.map((column) => {
+          const rawValue = column.key === '__serialNumber' ? rowIndex + 1 : row[column.key]
+          return csvEscape(formatCsvCell(column, rawValue, row, rowIndex))
+        })
+        lines.push(cells.join(','))
+      })
+    }
+
+    if (safeSummary.length > 0) {
+      safeSummary.forEach((entry) => {
+        const valueColumn = entry.key ? safeColumns.find((col) => col.key === entry.key) : null
+        const valueColIndex = valueColumn ? safeColumns.indexOf(valueColumn) : (safeColumns.length - 1)
+        const cells = safeColumns.map((_, colIndex) => {
+          if (colIndex === 0) return csvEscape(entry.label)
+          if (colIndex === valueColIndex) {
+            return csvEscape(formatCsvCell({ type: entry.type || valueColumn?.type }, entry.value, {}, 0))
+          }
+          return ''
+        })
+        lines.push(cells.join(','))
+      })
+    }
+  }
+
+  return `﻿${lines.join('\r\n')}\r\n`
+}
+
+const triggerCsvDownload = (content, filename) => {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
+  const objectUrl = window.URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+  setTimeout(() => window.URL.revokeObjectURL(objectUrl), 0)
+}
+
+export const exportCsvWorkbook = ({
+  filename = 'export.csv',
+  title = 'CRM Export',
+  subtitle = '',
+  metadata = [],
+  columns = [],
+  rows = [],
+  sheetName,
+  compact = false,
+  companyName = '',
+  generatedBy = '',
+  exportDate = '',
+  summary = [],
+} = {}) => {
+  const normalizedOptions = normalizeExportOptions({
+    filename,
+    title,
+    subtitle,
+    metadata,
+    columns,
+    rows,
+    sheetName,
+    compact,
+    companyName,
+    generatedBy,
+    exportDate,
+    summary,
+  })
+  const content = buildCsvContent({
+    title: normalizedOptions.title,
+    subtitle: normalizedOptions.subtitle,
+    metadata: normalizedOptions.metadata,
+    columns: normalizedOptions.columns,
+    rows: normalizedOptions.rows,
+    sheetName: normalizedOptions.sheetName,
+    compact: normalizedOptions.compact,
+    summary: normalizedOptions.summary,
+  })
+  triggerCsvDownload(content, ensureCsvExtension(filename))
+}
+
+// Re-exported for unit-testing / callers that want raw CSV text.
+export const buildCsvWorkbookText = (options) => buildCsvContent(options || {})
+
+// Legacy compatibility shim: some older callers may still import this name.
+// It now produces the same XLSX bytes (kept for any test/import paths).
+export const buildExcelWorkbookHtml = (options) => buildXlsxBytes(options)

@@ -1,0 +1,231 @@
+.ud-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: transparent;
+}
+
+.ud-page::before {
+  display: none;
+}
+
+.ud-header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ud-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+.ud-header p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.ud-stats-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.ud-stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.ud-stat-card:hover {
+  background: var(--surface-muted);
+}
+
+.ud-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 18px;
+  font-size: 1.4rem;
+  margin-right: 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.05);
+}
+
+.ud-stat-icon--blue { color: #5ed1ff; background: rgba(94, 209, 255, 0.1); }
+.ud-stat-icon--green { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+.ud-stat-icon--red { color: #f87171; background: rgba(248, 113, 113, 0.1); }
+.ud-stat-icon--purple { color: #c084fc; background: rgba(192, 132, 252, 0.1); }
+
+.ud-stat-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.ud-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+}
+
+.ud-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.ud-stat-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.ud-content-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .ud-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ud-card {
+  background: var(--surface-card);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ud-card-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface-muted);
+}
+
+.ud-card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.ud-view-all-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-primary);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ud-view-all-btn:hover {
+  background: var(--color-primary-soft);
+  color: var(--text-primary);
+}
+
+.ud-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.ud-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s;
+}
+
+.ud-list-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.ud-list-item:last-child {
+  border-bottom: none;
+}
+
+.ud-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ud-item-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.ud-item-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.ud-item-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.ud-item-value {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.ud-item-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ud-empty-state {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9rem;
+}

@@ -1,0 +1,744 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADD ACCOUNT WIZARD - MODERN, ALIGNED & SEAMLESS DESIGN (#c60016 & WHITE)
+   Strictly solid brand red #c60016 and white. No gradients, no other colors.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.add-account-landscape-page {
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100vh - var(--header-height) - 2rem);
+  padding: 0.85rem 1.25rem 2.5rem;
+  box-sizing: border-box;
+  color: var(--text-primary);
+  background: transparent !important;
+  font-family: inherit;
+}
+
+.add-account-landscape-form {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* ── Stepper ──────────────────────────────────────────────────────── */
+.add-account-landscape-stepper.wizard-stepper {
+  padding: 0.85rem 1.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.add-account-landscape-stepper .wizard-stepper__track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.add-account-landscape-stepper .wizard-stepper__step {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.add-account-landscape-stepper .wizard-stepper__step:hover {
+  background: var(--surface-muted);
+}
+
+.add-account-landscape-stepper .wizard-stepper__index {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.add-account-landscape-stepper .wizard-stepper__step--active .wizard-stepper__index,
+.add-account-landscape-stepper .wizard-stepper__step[aria-current="step"] .wizard-stepper__index {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.add-account-landscape-stepper .wizard-stepper__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.add-account-landscape-stepper .wizard-stepper__kicker {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.add-account-landscape-stepper .wizard-stepper__label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.add-account-landscape-stepper .wizard-stepper__step--active .wizard-stepper__label {
+  color: #c60016 !important;
+}
+
+/* ── Section Cards ───────────────────────────────────────────────── */
+.add-account-landscape-section {
+  padding: 1.5rem !important;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--surface-card);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+}
+
+.add-account-mockup-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.85rem;
+}
+
+.add-account-mockup-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.add-account-mockup-header-title-bar {
+  width: 4px;
+  height: 2.2rem;
+  background-color: #c60016;
+  border-radius: 4px;
+}
+
+.add-account-mockup-header-title h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.add-account-mockup-header-title p {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.add-account-mockup-step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(198, 0, 22, 0.08);
+  color: #c60016;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.add-account-mockup-step-chip i {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--border-subtle);
+}
+
+.add-account-mockup-step-chip i.is-active {
+  background: #c60016;
+}
+
+/* ── Existing Customer Banner ────────────────────────────────────── */
+.add-account-mockup-existing-banner {
+  min-height: 2.6rem;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: rgba(198, 0, 22, 0.04);
+  border: 1px solid rgba(198, 0, 22, 0.15);
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.add-account-mockup-existing-banner input[type="checkbox"] {
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: #c60016;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+/* ── 2-Column Mockup Columns & Alignment ───────────────────────── */
+.add-account-mockup-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+  width: 100%;
+  align-items: start;
+}
+
+.add-account-mockup-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 960px) {
+  .add-account-mockup-columns {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+.add-account-project-shell {
+  display: block;
+  width: 100%;
+}
+
+.add-account-project-accent {
+  display: none;
+}
+
+.add-account-project-grid {
+  display: block;
+  width: 100%;
+}
+
+.add-account-project-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.add-account-project-cell {
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+@media (max-width: 960px) {
+  .add-account-project-row {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+/* ── Form Row & Controls Alignment (Mockup Pixel Perfect) ─────────── */
+.legacy-form-row {
+  display: grid;
+  grid-template-columns: 175px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  margin: 0;
+}
+
+.legacy-form-row-textarea {
+  align-items: flex-start !important;
+}
+
+.legacy-form-row-textarea .legacy-form-label {
+  padding-top: 0.35rem !important;
+}
+
+.legacy-form-row:has(textarea) {
+  align-items: flex-start;
+}
+
+.legacy-form-row:has(textarea) .legacy-form-label {
+  padding-top: 0.35rem;
+}
+
+.legacy-form-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+}
+
+.legacy-form-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 8px;
+  background-color: #fff1f2;
+  color: #c60016;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+
+.legacy-form-label-text {
+  display: inline;
+  font-weight: 700;
+  color: #334155;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.legacy-form-required-marker,
+.text-red-500,
+.text-red-600 {
+  color: #c60016 !important;
+  font-weight: 800;
+}
+
+.legacy-form-control,
+.add-account-landscape-section .legacy-form-control {
+  width: 100%;
+  min-height: 2.45rem;
+  height: 2.45rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.84rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.legacy-form-control:focus,
+.add-account-landscape-section .legacy-form-control:focus {
+  border-color: #c60016 !important;
+  box-shadow: 0 0 0 3px rgba(198, 0, 22, 0.12) !important;
+}
+
+textarea.legacy-form-control,
+.add-account-landscape-section textarea.legacy-form-control {
+  min-height: 82px !important;
+  height: 82px !important;
+  resize: vertical;
+  padding: 0.55rem 0.85rem !important;
+  line-height: 1.4 !important;
+}
+
+/* ── Panel Assemblies Tag Options ────────────────────────────────── */
+.add-account-panel-assemblies {
+  margin-top: 0.45rem;
+  padding: 0.55rem;
+  border: 1px dashed rgba(198, 0, 22, 0.25);
+  border-radius: 8px;
+  background: rgba(198, 0, 22, 0.03);
+}
+
+.add-account-panel-assemblies-title {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: #c60016;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.add-account-panel-assemblies-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.add-account-panel-assembly-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-account-panel-assembly-option input {
+  accent-color: #c60016;
+}
+
+/* ── Wizard Footer Actions ───────────────────────────────────────── */
+.add-account-landscape-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--border-subtle);
+  background: transparent;
+  flex-wrap: wrap;
+}
+
+.add-account-mockup-footer-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.add-account-mockup-footer-bar {
+  width: 140px;
+  height: 6px;
+  background-color: var(--surface-muted);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.add-account-mockup-footer-bar-fill {
+  height: 100%;
+  background-color: #c60016;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.add-account-mockup-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.add-account-landscape-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0 1.25rem;
+  border-radius: 6px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.add-account-landscape-button-primary {
+  border: 1px solid #c60016;
+  background: #c60016;
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.add-account-landscape-button-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.add-account-landscape-button-secondary,
+.add-account-landscape-button-cancel {
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.add-account-landscape-button-secondary:hover:not(:disabled),
+.add-account-landscape-button-cancel:hover:not(:disabled) {
+  border-color: #c60016;
+  color: #c60016;
+}
+
+/* ── SVG Icons Guarantee ─────────────────────────────────────────── */
+.add-account-landscape-page svg {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  flex-shrink: 0 !important;
+}
+
+.add-account-landscape-button-primary svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFIED ADMIN & USER PARITY OVERRIDES
+   Guarantees 100% identical pixel-perfect alignment, inputs, and colors
+   ═══════════════════════════════════════════════════════════════════════════ */
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-page {
+  padding: 0.85rem 1.25rem 2.5rem !important;
+  background: transparent !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form {
+  width: 100% !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.25rem !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper.wizard-stepper {
+  padding: 0.85rem 1.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__step {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__step--active {
+  background: rgba(198, 0, 22, 0.04) !important;
+  border: 1px solid rgba(198, 0, 22, 0.2) !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__index {
+  width: 2.35rem !important;
+  height: 2.35rem !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__step--active .wizard-stepper__index,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__step[aria-current="step"] .wizard-stepper__index {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__label {
+  font-size: 0.92rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-stepper .wizard-stepper__step--active .wizard-stepper__label {
+  color: #c60016 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-section {
+  padding: 1.5rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
+  margin-bottom: 1.25rem !important;
+  transform: none !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-section:hover {
+  transform: none !important;
+  border-color: #e2e8f0 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-mockup-columns {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 2.5rem !important;
+  width: 100% !important;
+  align-items: start !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-mockup-column {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.85rem !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-row {
+  display: grid !important;
+  grid-template-columns: 175px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 0.85rem !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-row-textarea,
+html body #root :is(.layout--admin, .layout--user) .legacy-form-row:has(textarea) {
+  align-items: flex-start !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-row-textarea .legacy-form-label,
+html body #root :is(.layout--admin, .layout--user) .legacy-form-row:has(textarea) .legacy-form-label {
+  padding-top: 0.35rem !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  width: auto !important;
+  min-width: 0 !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  line-height: 1.3 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  text-align: left !important;
+  justify-self: start !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-icon-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 2.1rem !important;
+  height: 2.1rem !important;
+  border-radius: 8px !important;
+  background-color: #fff1f2 !important;
+  color: #c60016 !important;
+  font-size: 0.88rem !important;
+  flex-shrink: 0 !important;
+  box-shadow: none !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-label-text {
+  display: inline !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-required-marker {
+  color: #c60016 !important;
+  font-weight: 900 !important;
+  font-size: 0.95rem !important;
+  margin-left: 0.25rem !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: middle !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-section .legacy-form-control,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form :is(input, select, textarea).legacy-form-control,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form :is(input, select, textarea) {
+  width: 100% !important;
+  min-height: 2.45rem !important;
+  height: 2.45rem !important;
+  padding: 0.45rem 0.85rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-section .legacy-form-control:focus,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form :is(input, select, textarea).legacy-form-control:focus,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form :is(input, select, textarea):focus {
+  border-color: #c60016 !important;
+  box-shadow: 0 0 0 3px rgba(198, 0, 22, 0.12) !important;
+  background: #ffffff !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-section textarea.legacy-form-control,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form textarea.legacy-form-control,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form textarea {
+  min-height: 82px !important;
+  height: 82px !important;
+  resize: vertical !important;
+}
+
+@media (max-width: 960px) {
+  html body #root :is(.layout--admin, .layout--user) .add-account-mockup-columns {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* ── Existing Customer Checkmark Banner & Checkbox Alignment ── */
+html body #root :is(.layout--admin, .layout--user) .add-account-mockup-existing-banner {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0.65rem !important;
+  margin: 0.5rem 0 1rem 0 !important;
+  padding: 0.6rem 0.9rem !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  font-size: 0.86rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  width: auto !important;
+  align-self: flex-start !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .add-account-mockup-existing-banner input[type="checkbox"] {
+  width: 0.95rem !important;
+  height: 0.95rem !important;
+  min-height: 0.95rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  accent-color: #c60016 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+}
+

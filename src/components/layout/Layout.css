@@ -1,0 +1,346 @@
+.layout {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  padding-bottom: 10px;
+  background-color: transparent !important;
+}
+
+.layout .header {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.layout-aura {
+  display: none;
+  position: fixed;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(12px);
+  opacity: 0.82;
+}
+
+.layout-body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--app-gutter);
+  width: 100%;
+  margin: 0;
+  padding: calc(var(--header-height) + 12px) var(--app-gutter) 0;
+  align-items: start;
+  min-width: 0;
+}
+
+.layout--admin .layout-body {
+  grid-template-columns:
+    minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
+    minmax(760px, 1fr)
+    minmax(260px, var(--right-panel-width));
+}
+
+.layout--admin.layout--admin-no-right-panel .layout-body {
+  grid-template-columns:
+    minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
+    minmax(0, 1fr);
+}
+
+.layout--user .layout-body {
+  grid-template-columns:
+    minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
+    minmax(760px, 1fr);
+}
+
+.layout-column,
+.layout-stage,
+.layout-main-shell {
+  min-width: 0;
+}
+
+.layout-column {
+  display: flex;
+  align-self: start;
+}
+
+.layout-stage {
+  display: block;
+  min-height: calc(100vh - var(--header-height) - 8px);
+  align-self: start;
+  width: 100%;
+}
+
+.layout-main-shell {
+  position: relative;
+  min-height: 0;
+  width: 100%;
+  perspective: 1800px;
+}
+
+.layout-main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-height) - 8px);
+  height: auto;
+  overflow: visible;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.layout-main-inner {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 100%;
+  overflow: visible;
+  padding: 0;
+  width: 100%;
+}
+
+.layout-content-frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: none;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+}
+
+.layout-content-frame > * {
+  position: relative;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  animation: none;
+}
+
+/* User pages use the same full-bleed workspace surface as the admin dashboard. */
+.layout--user .layout-content-frame {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Remove the remaining user workspace frame lines; cards keep their own borders. */
+.layout--user .layout-body,
+.layout--user .layout-stage,
+.layout--user .layout-main-shell,
+.layout--user .layout-main,
+.layout--user .layout-main-inner,
+.layout--user .layout-column--sidebar,
+.layout--user .layout-column--right {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+.layout--user .sidebar--user {
+  border-right: 0 !important;
+  border-left: 0 !important;
+}
+
+/* User workspace refresh: calm, clean, and intentionally separate from admin styling. */
+.layout--user {
+  background:
+    radial-gradient(circle at 90% 0%, rgba(220, 38, 38, 0.08), transparent 28rem),
+    linear-gradient(135deg, #fffdf9 0%, #f8fafc 48%, #fdf7f5 100%) !important;
+}
+
+.layout--user .layout-body {
+  gap: clamp(12px, 1.4vw, 24px);
+}
+
+.layout--user .layout-stage {
+  padding: 0 clamp(4px, 0.8vw, 12px);
+}
+
+.layout--user .layout-main-inner {
+  padding: 0 !important;
+}
+
+.layout--user .sidebar--user {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.layout--user .header--user {
+  background: rgba(255, 253, 249, 0.86) !important;
+  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.16) !important;
+}
+
+/* Compact user-side Sales Dashboard header signals without changing admin styling. */
+.layout--user .sales-dashboard .sales-header {
+  min-height: 0 !important;
+  padding: 1rem 1.2rem !important;
+}
+
+.layout--user .sales-dashboard .sales-header-signals {
+  align-self: center;
+  gap: 0.25rem !important;
+}
+
+.layout--user .sales-dashboard .sales-header-signal {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0.28rem 0.65rem !important;
+  line-height: 1.05 !important;
+  text-align: center !important;
+  margin: 0 !important;
+}
+
+.layout--user .sales-dashboard .sales-header-signal-label {
+  margin: 0 0 0.08rem !important;
+  line-height: 1 !important;
+}
+
+.layout--user .sales-dashboard .sales-header-signal-value {
+  margin: 0 !important;
+  line-height: 1.05 !important;
+}
+
+@media (min-width: 981px) {
+  .layout-body {
+    min-height: calc(100vh - var(--header-height) - 8px);
+  }
+
+  .layout-column--sidebar {
+    position: sticky;
+    top: 6px !important;
+    margin-top: calc(-1 * (var(--header-height) + 6px)) !important;
+    max-height: calc(100vh - 12px) !important;
+  }
+
+  .layout-column--right {
+    position: sticky;
+    top: calc(var(--header-height) + 12px);
+    max-height: calc(100vh - var(--header-height) - 8px);
+  }
+
+  .layout-stage,
+  .layout-main-shell,
+  .layout-main {
+    min-height: calc(100vh - var(--header-height) - 8px);
+  }
+
+  .layout-main-inner,
+  .layout-content-frame {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 1480px) {
+  .layout-body {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .layout--admin .layout-body,
+  .layout--user .layout-body {
+    grid-template-columns:
+      minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
+      minmax(0, 1fr);
+  }
+
+  .layout-column--right {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .layout {
+    padding-bottom: 4px;
+  }
+
+  .layout-body {
+    grid-template-columns: 1fr;
+    width: min(var(--page-max-width), calc(100% - 6px));
+    padding: calc(var(--header-height) + 8px) 0 0;
+  }
+
+  .layout--admin .layout-body,
+  .layout--user .layout-body {
+    grid-template-columns: 1fr;
+  }
+
+  .layout-column--sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1200;
+    width: min(22rem, calc(100vw - 3rem));
+    max-width: 90vw;
+    transform: translateX(-105%) !important;
+    opacity: 1 !important;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+
+  .layout-column--sidebar-open {
+    transform: translateX(0) !important;
+  }
+
+  .layout-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1150;
+    border: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    cursor: pointer;
+  }
+
+  .layout-stage {
+    min-height: 0;
+  }
+
+  .layout-main {
+    min-height: calc(100vh - 1rem);
+    min-height: calc(100dvh - 1rem);
+  }
+
+  .layout-aura,
+  .layout-main-grid,
+  .layout-main-beacon {
+    display: none;
+  }
+
+  .layout-main {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .layout-main,
+  .layout-content-frame { border-radius: 18px; }
+}
+
+@media (max-width: 640px) {
+  .layout-body {
+    width: min(var(--page-max-width), calc(100% - 4px));
+  }
+
+  .layout-main { min-height: calc(100vh - 0.6rem); border-radius: 16px; }
+}

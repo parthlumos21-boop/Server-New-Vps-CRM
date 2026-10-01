@@ -1,0 +1,213 @@
+.wa-dash-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.wa-dash-header {
+  margin-bottom: 32px;
+}
+
+.wa-dash-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.wa-dash-header p {
+  color: #666;
+  margin: 0;
+}
+
+.wa-dash-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.wa-dash-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.wa-dash-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wa-dash-icon {
+  font-size: 24px;
+  color: #25D366;
+}
+
+.wa-dash-card-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.wa-dash-card-body {
+  padding: 24px;
+}
+
+.wa-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.wa-status-connected {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.wa-status-disconnected {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.wa-status-dot {
+  font-size: 10px;
+}
+
+.wa-connected-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wa-detail-row {
+  display: flex;
+  gap: 16px;
+}
+
+.wa-detail-label {
+  color: #64748b;
+  width: 140px;
+  font-weight: 500;
+}
+
+.wa-detail-value {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.wa-disconnected-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.wa-warning-icon {
+  color: #f59e0b;
+  font-size: 20px;
+}
+
+.wa-dash-card-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.wa-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.wa-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.wa-btn-primary {
+  background: #25D366;
+  color: white;
+}
+
+.wa-btn-primary:hover:not(:disabled) {
+  background: #1da851;
+}
+
+.wa-btn-danger {
+  background: white;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+}
+
+.wa-btn-danger:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.wa-dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.wa-stat-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.wa-stat-card h3 {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.wa-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wa-stat-warning {
+  color: #dc2626;
+}
+
+.wa-dash-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #64748b;
+}
+
+.wa-dash-spinner {
+  font-size: 32px;
+  color: #25D366;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

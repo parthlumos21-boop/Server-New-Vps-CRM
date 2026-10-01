@@ -1,0 +1,303 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7470395e14b9bd5d5ef3ed"
+    },
+    "legacyId": 1,
+    "name": "Demo Cust",
+    "email": "dkdesigner535@gmail.com",
+    "phone": "789790769",
+    "company": "Demo Cust",
+    "address": "jsjb",
+    "city": null,
+    "state": null,
+    "country": null,
+    "postalCode": null,
+    "status": "New",
+    "source": null,
+    "assignedTo": null,
+    "createdBy": 16,
+    "data": {
+      "name": "Demo Cust",
+      "email": "dkdesigner535@gmail.com",
+      "phone": "789790769",
+      "company": "Demo Cust",
+      "address": "jsjb",
+      "status": "New",
+      "assignedTo": null,
+      "customerName": "Demo Cust",
+      "addedDate": "2026-08-06",
+      "customerOwner": "Keval V Shah",
+      "customerCategory": "SWATI",
+      "customerStatus": "New",
+      "customerType": null,
+      "contacts": [
+        {
+          "id": "primary-contact",
+          "contactPerson": "Demo Man",
+          "phone": "789790769",
+          "mobile": "789790769",
+          "email": "dkdesigner535@gmail.com",
+          "designation": null
+        }
+      ],
+      "reminderDate": "2026-08-12",
+      "reminderMode": "Email",
+      "remark": null,
+      "description": null,
+      "documents": [],
+      "city": null,
+      "state": null,
+      "country": null,
+      "postalCode": null,
+      "source": null,
+      "legacyId": 1,
+      "createdBy": 16,
+      "data": {
+        "name": "Demo Cust",
+        "email": null,
+        "phone": "789790769",
+        "company": "Demo Cust",
+        "address": null,
+        "status": "New",
+        "assignedTo": null,
+        "customerName": "Demo Cust",
+        "addedDate": "2026-08-06",
+        "customerOwner": "Keval V Shah",
+        "customerCategory": "SWATI",
+        "customerStatus": "New",
+        "customerType": null,
+        "contacts": [
+          {
+            "id": "primary-contact",
+            "contactPerson": "Demo Man",
+            "phone": null,
+            "mobile": "789790769",
+            "email": null,
+            "designation": null
+          }
+        ],
+        "reminderDate": "2026-08-06",
+        "reminderMode": "Email",
+        "remark": null,
+        "description": null,
+        "documents": []
+      },
+      "companyId": 1,
+      "ownerUserId": 16,
+      "projectId": null,
+      "workflowId": null,
+      "createdAt": "2026-08-06T11:30:01.701Z",
+      "updatedAt": "2026-08-11T07:18:59.195Z",
+      "id": "1",
+      "mongoId": "6a7470395e14b9bd5d5ef3ed",
+      "customerNumber": "SSC00001",
+      "customerOwnerName": "Keval V Shah",
+      "customerOwnerCode": "1006",
+      "customerOwnerDisplay": "Keval V Shah",
+      "contactPerson": "Demo Man",
+      "designation": null,
+      "productCategory": null,
+      "projectName": "Demo Cust",
+      "industryType": null,
+      "alternateEmail": null,
+      "alternatePhone": null,
+      "jobNo": "55",
+      "gstin": null,
+      "gstIn": null,
+      "stateCode": "32455",
+      "reminderNote": null
+    },
+    "companyId": 1,
+    "ownerUserId": 16,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-06T11:30:01.701Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T08:25:01.916Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7d4f3478d2463bb813b2c4"
+    },
+    "legacyId": 2,
+    "name": "adani",
+    "email": "dkdesigner535@gmail.com",
+    "phone": "7203090270",
+    "company": "adani",
+    "address": null,
+    "city": null,
+    "state": null,
+    "country": null,
+    "postalCode": null,
+    "status": "New",
+    "source": null,
+    "assignedTo": null,
+    "createdBy": 16,
+    "data": {
+      "name": "adani",
+      "email": "dkdesigner535@gmail.com",
+      "phone": "7203090270",
+      "company": "adani",
+      "address": null,
+      "status": "New",
+      "assignedTo": null,
+      "customerName": "adani",
+      "addedDate": "2026-08-13",
+      "customerOwner": "Keval V Shah",
+      "customerCategory": "SWATI",
+      "customerStatus": "New",
+      "customerType": null,
+      "contacts": [
+        {
+          "id": "primary-contact",
+          "contactPerson": "Dk Designer",
+          "phone": null,
+          "mobile": "7203090270",
+          "email": "dkdesigner535@gmail.com",
+          "designation": null
+        }
+      ],
+      "reminderDate": "2026-08-13",
+      "reminderMode": "Email",
+      "remark": null,
+      "description": null,
+      "documents": []
+    },
+    "companyId": 1,
+    "ownerUserId": 16,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-13T04:59:32.895Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T04:59:32.895Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9dd93f96abd09438d496"
+    },
+    "legacyId": 3,
+    "name": "abc",
+    "email": "dkdesigner535@gmail.com",
+    "phone": "7203090277",
+    "company": "abc",
+    "address": null,
+    "city": null,
+    "state": null,
+    "country": null,
+    "postalCode": null,
+    "status": "New",
+    "source": null,
+    "assignedTo": 13,
+    "createdBy": 13,
+    "data": {
+      "name": "abc",
+      "email": "dkdesigner535@gmail.com",
+      "phone": "7203090277",
+      "company": "abc",
+      "address": null,
+      "status": "New",
+      "assignedTo": null,
+      "customerName": "abc",
+      "addedDate": "2026-08-13",
+      "customerOwner": "Bhavesh Prajapati",
+      "customerCategory": "SWATI",
+      "customerStatus": "New",
+      "customerType": null,
+      "contacts": [
+        {
+          "id": "primary-contact",
+          "contactPerson": "Dk Designer",
+          "phone": null,
+          "mobile": "7203090277",
+          "email": "dkdesigner535@gmail.com",
+          "designation": null
+        }
+      ],
+      "reminderDate": "2026-08-13",
+      "reminderMode": null,
+      "remark": null,
+      "description": null,
+      "documents": []
+    },
+    "companyId": 1,
+    "ownerUserId": 13,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-13T10:35:05.765Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T10:35:05.765Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7ef8737fee144c591f9426"
+    },
+    "legacyId": 4,
+    "name": "adani",
+    "email": "dkdesigner535@gmail.com",
+    "phone": null,
+    "company": "adani",
+    "address": null,
+    "city": null,
+    "state": null,
+    "country": null,
+    "postalCode": null,
+    "status": "New",
+    "source": null,
+    "assignedTo": 7,
+    "createdBy": 7,
+    "data": {
+      "name": "adani",
+      "email": "dkdesigner535@gmail.com",
+      "phone": null,
+      "company": "adani",
+      "address": null,
+      "status": "New",
+      "assignedTo": null,
+      "customerName": "adani",
+      "addedDate": "2026-08-14",
+      "customerOwner": "Atish Shah",
+      "customerCategory": "SWATI",
+      "customerStatus": "New",
+      "customerType": null,
+      "contacts": [
+        {
+          "id": "primary-contact",
+          "contactPerson": "Dk Designer",
+          "phone": null,
+          "mobile": null,
+          "email": "dkdesigner535@gmail.com",
+          "designation": null
+        }
+      ],
+      "reminderDate": "2026-08-14",
+      "reminderMode": null,
+      "remark": null,
+      "description": null,
+      "documents": []
+    },
+    "companyId": 1,
+    "ownerUserId": 7,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-14T11:13:55.830Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-14T11:13:55.830Z"
+    },
+    "__v": 0
+  }
+]

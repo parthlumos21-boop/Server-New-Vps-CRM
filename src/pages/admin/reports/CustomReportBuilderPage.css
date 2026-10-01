@@ -1,0 +1,747 @@
+.cr-page {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.cr-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+
+.cr-topbar-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.cr-topbar-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.cr-topbar-actions,
+.cr-output-actions,
+.cr-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cr-btn,
+.cr-output-actions button,
+.cr-mini-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cr-btn-blue {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.cr-btn-green {
+  background: #238a55;
+  border-color: var(--text-primary);
+  color: #ffffff;
+}
+
+.cr-btn-light:hover,
+.cr-output-actions button:hover,
+.cr-mini-btn:hover {
+  background: var(--surface-card);
+}
+
+.cr-message {
+  margin: 0.75rem 1rem 0;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.cr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  min-width: 0;
+  padding: clamp(0.55rem, 0.85vw, 1rem);
+  box-sizing: border-box;
+}
+
+.cr-management,
+.cr-builder,
+.cr-section {
+  min-width: 0;
+}
+
+.cr-management {
+  align-self: start;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.cr-panel-title {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.cr-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cr-tabs button {
+  flex: 1;
+  min-height: 2.25rem;
+  border: none;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cr-tabs button:last-child {
+  border-right: none;
+}
+
+.cr-tabs button.active {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.cr-manage-table-wrap,
+.cr-output-wrap {
+  overflow: auto;
+}
+
+.cr-manage-table,
+.cr-output-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.cr-manage-table th,
+.cr-manage-table td,
+.cr-output-table th,
+.cr-output-table td {
+  padding: 0.5rem 0.55rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.cr-manage-table th,
+.cr-output-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-weight: 800;
+  z-index: 1;
+}
+
+.cr-output-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cr-output-sort-btn span {
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 0.68rem;
+}
+
+.cr-manage-row-active td {
+  background: var(--surface-muted);
+}
+
+.cr-row-actions button,
+.cr-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.cr-row-actions button:disabled,
+.cr-icon-danger:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cr-icon-danger {
+  align-self: end;
+  color: #b73b3b;
+}
+
+.cr-empty-cell,
+.cr-output-empty {
+  padding: 1rem;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.cr-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.cr-section {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.cr-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.cr-section-heading h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.cr-config-grid,
+.cr-sort-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(0.5rem, 0.75vw, 0.75rem);
+  padding: clamp(0.6rem, 0.85vw, 0.8rem);
+}
+
+.cr-config-grid label,
+.cr-sort-grid label,
+.cr-filter-row label {
+  min-width: 0;
+}
+
+.cr-config-grid span,
+.cr-sort-grid span {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.cr-config-grid input,
+.cr-config-grid select,
+.cr-config-grid textarea,
+.cr-sort-grid select,
+.cr-filter-row select,
+.cr-filter-row input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.cr-config-grid textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.cr-field-wide {
+  grid-column: 1 / -1;
+}
+
+.cr-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.1rem;
+}
+
+.cr-toggle input {
+  width: auto;
+}
+
+.cr-toggle span {
+  margin: 0;
+}
+
+.cr-sort-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px 2rem;
+  gap: 0.55rem;
+  grid-column: 1 / -1;
+}
+
+.cr-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.8rem;
+}
+
+.cr-filter-row {
+  display: grid;
+  grid-template-columns: 82px minmax(150px, 1.1fr) repeat(3, minmax(118px, 0.75fr)) 2rem;
+  gap: 0.45rem;
+  align-items: end;
+  min-width: 0;
+}
+
+.cr-filter-row input:nth-last-child(2):not(:disabled) {
+  display: block;
+}
+
+.cr-field-picker {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 44px minmax(220px, 1fr);
+  gap: clamp(0.5rem, 0.75vw, 0.75rem);
+  min-width: 0;
+  padding: clamp(0.6rem, 0.85vw, 0.8rem);
+}
+
+.cr-field-box {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.cr-field-box-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cr-field-search {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: min(180px, 100%);
+  padding: 0 0.45rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.cr-field-search input {
+  width: 100%;
+  min-height: 1.65rem;
+  border: none;
+  outline: none;
+  font-size: 0.78rem;
+}
+
+.cr-field-list {
+  height: 360px;
+  overflow: auto;
+  padding: 0.45rem;
+}
+
+.cr-field-group + .cr-field-group {
+  margin-top: 0.6rem;
+}
+
+.cr-field-group-title {
+  margin: 0 0 0.3rem;
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cr-field-list button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2rem;
+  margin-bottom: 0.25rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cr-field-list button.active {
+  border-color: var(--color-primary);
+  background: var(--surface-muted);
+}
+
+.cr-field-transfer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.cr-field-transfer button {
+  width: 2.2rem;
+  height: 2rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  cursor: pointer;
+}
+
+.cr-selected-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.cr-output-section {
+  overflow: hidden;
+}
+
+.cr-section-heading--output {
+  align-items: center;
+  background: var(--surface-card);
+}
+
+.cr-output-actions {
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.cr-output-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  min-height: 2.15rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cr-output-action svg {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.cr-output-action:hover {
+  border-color: var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.cr-output-action--preview {
+  min-width: 10.2rem;
+}
+
+.cr-output-action--excel svg { color: var(--text-primary); }
+.cr-output-action--csv svg { color: var(--text-primary); }
+.cr-output-action--pdf svg { color: #9f3a38; }
+.cr-output-action--print svg { color: var(--text-primary); }
+.cr-output-action--download svg { color: var(--text-primary); }
+
+.cr-output-wrap {
+  max-height: 520px;
+  overflow: auto;
+  background: var(--surface-card);
+}
+
+.cr-output-table th {
+  background: var(--surface-app);
+}
+
+.cr-output-table td {
+  color: var(--text-primary);
+}
+
+.cr-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  font-size: 0.78rem;
+}
+
+.cr-pagination button {
+  min-height: 1.8rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--surface-card);
+  cursor: pointer;
+}
+
+.cr-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1180px) {
+  .cr-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cr-config-grid,
+  .cr-sort-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cr-field-wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 1400px) {
+  .layout--admin .cr-filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .layout--admin .cr-filter-row .cr-icon-danger {
+    align-self: end;
+  }
+
+  .layout--admin .cr-field-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .layout--admin .cr-field-transfer {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 760px) {
+  .cr-topbar,
+  .cr-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cr-output-actions,
+  .cr-output-action {
+    width: 100%;
+  }
+
+  .cr-layout {
+    padding: 0.75rem;
+  }
+
+  .cr-config-grid,
+  .cr-sort-grid,
+  .cr-field-picker,
+  .cr-filter-row,
+  .cr-sort-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cr-field-wide {
+    grid-column: auto;
+  }
+
+  .cr-field-transfer {
+    flex-direction: row;
+  }
+}
+
+/* Night theme completion: custom report builder/output */
+[data-theme="dark"] .cr-page,
+[data-theme="dark"] .cr-layout,
+[data-theme="dark"] .cr-output-section {
+  background: var(--surface-app) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-topbar, .cr-management, .cr-builder, .cr-section, .cr-manage-table-wrap, .cr-output-wrap, .cr-field-box, .cr-message) {
+  background: var(--surface-card) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+[data-theme="dark"] .cr-page :is(h1, h2, h3, h4, label, strong, .cr-topbar-title, .cr-panel-title, .cr-section-heading h2, .cr-field-group-title) {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(p, small, span, .cr-topbar-subtitle, .cr-empty-cell, .cr-output-empty) {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(input, select, textarea, .cr-field-search input) {
+  background: var(--surface-sunken) !important;
+  border-color: var(--glass-border-strong) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-manage-table, .cr-output-table) {
+  background: var(--surface-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--glass-border) !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-manage-table th, .cr-output-table th) {
+  background: linear-gradient(180deg, #43a9d1 0%, #2a8eb8 100%) !important;
+  border-color: var(--text-primary) !important;
+  color: #f8fcff !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-manage-table td, .cr-output-table td) {
+  background: var(--surface-card) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-tabs button, .cr-btn-light, .cr-output-action, .cr-mini-btn, .cr-field-list button, .cr-field-transfer button, .cr-pagination button) {
+  background: var(--surface-raised) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .cr-page :is(.cr-tabs button, .cr-btn-light, .cr-output-action, .cr-mini-btn, .cr-field-list button, .cr-pagination button):hover {
+  background: rgba(56, 189, 248, 0.16) !important;
+  color: #e8f8ff !important;
+}
+
+[data-theme="dark"] .cr-page svg {
+  color: inherit;
+  opacity: 1;
+}
+
+/* Light mode only custom overrides for Custom Reports Builder (Phase 10) */
+html:not([data-theme="dark"]) .cr-section-heading,
+html:not([data-theme="dark"]) .cr-field-box-head,
+html:not([data-theme="dark"]) .cr-field-group-title,
+html:not([data-theme="dark"]) .cr-topbar-title {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+}
+html:not([data-theme="dark"]) .cr-section-heading h2,
+html:not([data-theme="dark"]) .cr-section-heading span,
+html:not([data-theme="dark"]) .cr-field-box-head span,
+html:not([data-theme="dark"]) .cr-field-box-head label,
+html:not([data-theme="dark"]) .cr-field-group-title,
+html:not([data-theme="dark"]) .cr-topbar-title {
+  color: #ffffff !important;
+}
+
+/* Style all buttons (Back to Reports, New, Save, Save As, Run, row actions, delete, tabs, pagination, transfer, and output actions) red with white text */
+html:not([data-theme="dark"]) .cr-page button,
+html:not([data-theme="dark"]) .cr-page .cr-btn,
+html:not([data-theme="dark"]) .cr-page .cr-output-action,
+html:not([data-theme="dark"]) .cr-page .cr-mini-btn,
+html:not([data-theme="dark"]) .cr-page .cr-field-transfer button,
+html:not([data-theme="dark"]) .cr-page :is(.cr-tabs, .cr-pagination) button,
+html:not([data-theme="dark"]) .cr-page .cr-row-actions button,
+html:not([data-theme="dark"]) .cr-page .cr-icon-danger {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border: 1px solid #b91c1c !important;
+}
+
+html:not([data-theme="dark"]) .cr-page button svg,
+html:not([data-theme="dark"]) .cr-page .cr-btn svg,
+html:not([data-theme="dark"]) .cr-page .cr-output-action svg,
+html:not([data-theme="dark"]) .cr-page .cr-mini-btn svg,
+html:not([data-theme="dark"]) .cr-page .cr-field-transfer button svg,
+html:not([data-theme="dark"]) .cr-page :is(.cr-tabs, .cr-pagination) button svg,
+html:not([data-theme="dark"]) .cr-page .cr-row-actions button svg,
+html:not([data-theme="dark"]) .cr-page .cr-icon-danger svg {
+  color: #ffffff !important;
+  fill: currentColor !important;
+}
+
+/* Light mode only simple Report Fields Selection list override */
+html:not([data-theme="dark"]) .cr-field-box {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: none !important;
+}
+html:not([data-theme="dark"]) .cr-field-list button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+  border-radius: 0 !important;
+  padding: 0.5rem 0.25rem !important;
+}
+html:not([data-theme="dark"]) .cr-field-list button.active {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}

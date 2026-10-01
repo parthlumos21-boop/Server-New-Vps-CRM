@@ -1,0 +1,233 @@
+.bulk-deal-tables-page {
+  min-height: 100vh;
+  background: var(--surface-card);
+}
+
+.bulk-deal-tables-header {
+  padding: 18px 30px 14px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+}
+
+.bulk-deal-tables-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bulk-deal-tables-shell {
+  padding: 20px 24px;
+}
+
+.bulk-deal-tables-card {
+  min-height: calc(100vh - 140px);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+  box-shadow: inset 0 0 0 1px #f7f7f7;
+  padding: 8px 14px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.bulk-deal-tables-stepper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 16px;
+  padding: 0 12px;
+  min-height: 40px;
+}
+
+.bulk-deal-tables-step-item {
+  display: flex;
+  justify-content: center;
+}
+
+.bulk-deal-tables-step-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-deal-tables-step-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.bulk-deal-tables-step-number--active,
+.bulk-deal-tables-step-number--completed {
+  border-color: var(--text-primary);
+  background: linear-gradient(to bottom, #4ac2f4, #2ea2d4);
+  color: #ffffff;
+}
+
+.bulk-deal-tables-step-label {
+  color: #c4c4c4;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.bulk-deal-tables-step-label--active,
+.bulk-deal-tables-step-label--completed {
+  color: var(--text-primary);
+}
+
+.bulk-deal-tables-divider {
+  margin: 8px 0 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bulk-deal-tables-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 88px 20px 32px;
+}
+
+.bulk-deal-tables-form-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bulk-deal-tables-label {
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.bulk-deal-tables-file-picker {
+  display: flex;
+  align-items: stretch;
+}
+
+.bulk-deal-tables-file-display {
+  width: 215px;
+  min-height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-right: 0;
+  background: var(--surface-card);
+  padding: 7px 10px;
+  color: var(--text-primary);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bulk-deal-tables-file-button {
+  min-height: 32px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-app);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bulk-deal-tables-file-button:hover {
+  background: var(--surface-app);
+}
+
+.bulk-deal-tables-file-input {
+  display: none;
+}
+
+.bulk-deal-tables-placeholder {
+  color: var(--text-primary);
+  font-size: 16px;
+  text-align: center;
+}
+
+.bulk-deal-tables-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: auto;
+}
+
+.bulk-deal-tables-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bulk-deal-tables-btn {
+  min-width: 82px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bulk-deal-tables-btn--cancel {
+  background: linear-gradient(to bottom, #ef5f5f, #cf3434);
+  border-color: var(--border-subtle);
+  color: #ffffff;
+}
+
+.bulk-deal-tables-btn--secondary {
+  background: var(--surface-app);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.bulk-deal-tables-btn--primary {
+  background: linear-gradient(to bottom, #4b9adb, #2d74b9);
+  border-color: var(--text-primary);
+  color: #ffffff;
+}
+
+.bulk-deal-tables-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .bulk-deal-tables-stepper {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    padding: 8px 12px;
+  }
+
+  .bulk-deal-tables-step-item {
+    justify-content: flex-start;
+  }
+
+  .bulk-deal-tables-content {
+    padding-top: 40px;
+  }
+
+  .bulk-deal-tables-form-row {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .bulk-deal-tables-file-picker {
+    width: 100%;
+  }
+
+  .bulk-deal-tables-file-display {
+    width: 100%;
+  }
+}

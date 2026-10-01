@@ -1,0 +1,106 @@
+.toaster-root {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 360px;
+  width: calc(100vw - 40px);
+}
+
+.toaster-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.06);
+  animation: toaster-slide-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toaster-item--success { border-left: 4px solid var(--border-subtle); }
+.toaster-item--error   { border-left: 4px solid var(--border-subtle); }
+.toaster-item--warning { border-left: 4px solid var(--border-subtle); }
+.toaster-item--info    { border-left: 4px solid var(--border-subtle); }
+
+.toaster-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.toaster-icon svg,
+.toaster-close svg {
+  display: block;
+}
+
+.toaster-icon--success { background: #16a34a; }
+.toaster-icon--error   { background: var(--surface-muted); }
+.toaster-icon--warning { background: var(--surface-muted); }
+.toaster-icon--info    { background: #2563eb; }
+
+.toaster-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.toaster-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.toaster-message {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.toaster-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--surface-app);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  color: #9ca3af;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.toaster-close:hover {
+  color: var(--text-secondary);
+}
+
+@keyframes toaster-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

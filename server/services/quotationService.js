@@ -1,0 +1,691 @@
+const quotationRepository = require('../repositories/quotationRepository')
+const { createCrudService } = require('./crudServiceFactory')
+const { AppError } = require('../utils/appError')
+const { getNextCounterSequence } = require('../models/mongoModels')
+
+const DEFAULT_QUOTATION_NUMBER_START = 1001
+
+const computeTotals = (lineItems = []) => {
+  let total = 0
+  let tax = 0
+  let discount = 0
+  lineItems.forEach((item) => {
+    const qty = Number(item?.quantity ?? 1) || 0
+    const rate = Number(item?.rate ?? item?.price ?? 0) || 0
+    const lineTotal = qty * rate
+    total += lineTotal
+    tax += Number(item?.tax ?? 0) || 0
+    discount += Number(item?.discount ?? 0) || 0
+  })
+  return { total, tax, discount }
+}
+
+const parseQuotationNumber = (quotationNumber = '') => {
+  const match = String(quotationNumber).match(/(\d+)$/)
+  return match ? Number.parseInt(match[1], 10) : NaN
+}
+
+const buildQuotationNumber = (sequence, referenceDate) => {
+  const year = new Date(referenceDate || Date.now()).getFullYear()
+  return `SSIPL/${year}/${String(sequence).padStart(4, '0')}`
+}
+
+const getQuotationSequenceMonth = (referenceDate) => {
+  const date = new Date(referenceDate || Date.now())
+  const validDate = Number.isNaN(date.getTime()) ? new Date() : date
+  const year = validDate.getFullYear()
+  const month = String(validDate.getMonth() + 1).padStart(2, '0')
+  return `${year}-${month}`
+}
+
+const isUploadQuotationPayload = (body = {}) => Boolean(
+  body.quoteFile
+  || body.quoteFileName
+  || body.quotationFileName
+  || body.uploadedQuotationFileName
+)
+
+const isInSequenceWindow = (sequence) => (
+  Number.isFinite(sequence)
+  && sequence >= DEFAULT_QUOTATION_NUMBER_START
+  && sequence < 10000
+)
+
+const getRecordSequenceMonth = (record = {}) => (
+  record.quotationSequenceMonth
+  || record.data?.quotationSequenceMonth
+  || getQuotationSequenceMonth(record.quotationDate || record.data?.quotationDate || record.createdAt)
+)
+
+const getNextQuotationSequenceForMonth = (records = [], sequenceMonth) => {
+  const maxSequence = records.reduce((currentMax, record) => {
+    if (getRecordSequenceMonth(record) !== sequenceMonth) return currentMax
+
+    const parsedValue = parseQuotationNumber(
+      record?.quoteNumber
+      || record?.quotationNumber
+      || record?.data?.quoteNumber
+      || record?.data?.quotationNumber
+    )
+
+    return isInSequenceWindow(parsedValue)
+      ? Math.max(currentMax, parsedValue)
+      : currentMax
+  }, DEFAULT_QUOTATION_NUMBER_START - 1)
+
+  return maxSequence + 1
+}
+
+const parseJsonValue = (value) => {
+  try {
+    return JSON.parse(value)
+  } catch (_error) {
+    return null
+  }
+}
+
+const toLineItemSource = (lineItems) => {
+  if (Array.isArray(lineItems)) return lineItems
+  if (lineItems && typeof lineItems === 'object') return [lineItems]
+  if (typeof lineItems !== 'string') return []
+
+  const parsedValue = parseJsonValue(lineItems.trim())
+  if (Array.isArray(parsedValue)) return parsedValue
+  if (parsedValue && typeof parsedValue === 'object') return [parsedValue]
+  return []
+}
+
+const normalizeLineItem = (lineItem, index) => {
+  if (typeof lineItem === 'string') {
+    const parsedValue = parseJsonValue(lineItem.trim())
+    return normalizeLineItem(parsedValue, index)
+  }
+
+  if (!lineItem || typeof lineItem !== 'object' || Array.isArray(lineItem)) {
+    return null
+  }
+
+  const description = String(lineItem.description ?? lineItem.product ?? '').trim()
+  if (!description) {
+    return null
+  }
+
+  const quantity = String(lineItem.quantity ?? '1').trim() || '1'
+  const rate = String(lineItem.rate ?? lineItem.price ?? '0').trim() || '0'
+  const amount = Number(lineItem.amount)
+  const computedAmount = (Number(quantity) || 0) * (Number(rate) || 0)
+
+  return {
+    ...lineItem,
+    id: lineItem.id || `line-item-${index + 1}`,
+    description,
+    quantity,
+    unit: String(lineItem.unit ?? 'Nos').trim() || 'Nos',
+    rate,
+    amount: Number.isFinite(amount) ? amount : computedAmount,
+  }
+}
+
+const normalizeLineItems = (lineItems = []) => (
+  toLineItemSource(lineItems)
+    .map((lineItem, index) => normalizeLineItem(lineItem, index))
+    .filter(Boolean)
+)
+
+const getNextQuotationSequence = (records = [], referenceDate) => {
+  const sequenceMonth = getQuotationSequenceMonth(referenceDate)
+  const maxSequence = records.reduce((currentMax, record) => {
+    if (getRecordSequenceMonth(record) !== sequenceMonth) return currentMax
+
+    const parsedValue = parseQuotationNumber(
+      record?.quoteNumber
+      || record?.quotationNumber
+      || record?.data?.quoteNumber
+      || record?.data?.quotationNumber
+    )
+
+    return isInSequenceWindow(parsedValue)
+      ? Math.max(currentMax, parsedValue)
+      : currentMax
+  }, DEFAULT_QUOTATION_NUMBER_START - 1)
+
+  return maxSequence + 1
+}
+
+const resolveQuoteNumber = async (body, existing, actor) => {
+  const requestedQuoteNumber = String(body.quoteNumber || body.quotationNumber || '').trim()
+  const referenceDate = body.quotationDate || body.createdAt || existing?.quotationDate || existing?.createdAt
+  const quotationSequenceMonth = getQuotationSequenceMonth(referenceDate)
+
+  if (existing) {
+    const retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || buildQuotationNumber(DEFAULT_QUOTATION_NUMBER_START, referenceDate)
+    return {
+      quoteNumber: retainedQuoteNumber,
+      quotationSequenceMonth: existing.quotationSequenceMonth || existing.data?.quotationSequenceMonth || quotationSequenceMonth,
+      quotationSequence: existing.quotationSequence || existing.data?.quotationSequence || parseQuotationNumber(retainedQuoteNumber),
+    }
+  }
+
+  const existingRecords = quotationRepository.listForActor
+    ? await quotationRepository.listForActor(actor, { companyWide: true })
+    : await quotationRepository.listAll()
+  const existingNumbers = new Set(
+    existingRecords
+      .map((record) => String(record.quoteNumber || record.data?.quotationNumber || '').trim())
+      .filter(Boolean)
+  )
+
+  if (requestedQuoteNumber && isUploadQuotationPayload(body) && !existingNumbers.has(requestedQuoteNumber)) {
+    return {
+      quoteNumber: requestedQuoteNumber,
+      quotationSequenceMonth,
+      quotationSequence: parseQuotationNumber(requestedQuoteNumber),
+    }
+  }
+
+  const counterKey = `quotations:${actor.companyId || 'default'}:${quotationSequenceMonth}`
+  const minimumSequence = getNextQuotationSequenceForMonth(existingRecords, quotationSequenceMonth) - 1
+  const quotationSequence = await getNextCounterSequence(counterKey, minimumSequence)
+  const quoteNumber = buildQuotationNumber(quotationSequence, referenceDate)
+
+  return {
+    quoteNumber,
+    quotationSequence,
+    quotationSequenceMonth,
+  }
+}
+
+// ── Duplicate detection ────────────────────────────────────────────────
+const normalizeText = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ')
+
+const roundCurrency = (value) => Math.round((Number(value) || 0) * 100) / 100
+
+const buildLineItemSignature = (items = []) => (
+  items
+    .map((item) => [
+      normalizeText(item.description),
+      String(item.quantity ?? '').trim(),
+      String(item.rate ?? item.price ?? '').trim(),
+    ].join('|'))
+    .sort()
+    .join('||')
+)
+
+const pickQuotationField = (record, ...keys) => {
+  for (const key of keys) {
+    const value = record?.[key] ?? record?.data?.[key]
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return value
+    }
+  }
+  return ''
+}
+
+const buildQuotationFingerprint = (record, candidateLineItems) => {
+  const lineItems = candidateLineItems
+    || (Array.isArray(record?.lineItems) ? record.lineItems : null)
+    || (Array.isArray(record?.data?.lineItems) ? record.data.lineItems : [])
+
+  return {
+    customer:    normalizeText(pickQuotationField(record, 'customerName', 'companyName', 'clientName')),
+    project:     normalizeText(pickQuotationField(record, 'projectName')),
+    architect:   normalizeText(pickQuotationField(record, 'architectName')),
+    pmc:         normalizeText(pickQuotationField(record, 'pmcName')),
+    title:       normalizeText(pickQuotationField(record, 'title', 'quotationSubject')),
+    total:       roundCurrency(pickQuotationField(record, 'totalAmount', 'amount')),
+    tax:         roundCurrency(pickQuotationField(record, 'taxAmount', 'gstAmount')),
+    discount:    roundCurrency(pickQuotationField(record, 'discountAmount', 'discount')),
+    lineItems:   buildLineItemSignature(lineItems),
+  }
+}
+
+const fingerprintsMatch = (a, b) => (
+  a.customer === b.customer
+  && a.project === b.project
+  && a.architect === b.architect
+  && a.pmc === b.pmc
+  && a.title === b.title
+  && a.total === b.total
+  && a.tax === b.tax
+  && a.discount === b.discount
+  && a.lineItems === b.lineItems
+  // Require at least one meaningful field to avoid blocking empty payloads
+  && (a.customer || a.project || a.title)
+  && a.lineItems
+)
+
+const findDuplicateQuotation = async (actor, candidate) => {
+  const existingRecords = quotationRepository.listForActor
+    ? await quotationRepository.listForActor(actor, { companyWide: true })
+    : await quotationRepository.listAll()
+  return existingRecords.find((record) => (
+    fingerprintsMatch(buildQuotationFingerprint(record), candidate)
+    && String(record.status || '').toLowerCase() !== 'cancelled'
+  )) || null
+}
+
+const buildPayload = async (body, actor, existing) => {
+  const requestedLineItems = Object.prototype.hasOwnProperty.call(body || {}, 'lineItems')
+    ? body.lineItems
+    : existing?.lineItems
+  const lineItems = normalizeLineItems(requestedLineItems || [])
+  const computed = computeTotals(lineItems)
+
+  const existingQuotations = quotationRepository.listAll
+    ? await quotationRepository.listAll()
+    : []
+
+  const candidateCustomerId = String(body.customerId ?? body.selectedAccountId ?? existing?.customerId ?? '').trim()
+  const candidateDealId = String(body.dealId ?? existing?.dealId ?? '').trim()
+  const candidateQuoteNumber = String(body.quoteNumber ?? body.quotationNumber ?? existing?.quoteNumber ?? '').trim()
+
+  const matchingQuotations = existingQuotations.filter((rec) => {
+    if (existing && String(rec.id) === String(existing.id)) return false
+    const recCustId = String(rec.customerId || rec.data?.selectedAccountId || '').trim()
+    const recDealId = String(rec.dealId || rec.data?.dealId || '').trim()
+    const recQuoteNo = String(rec.quoteNumber || rec.quotationNumber || rec.data?.quotationNumber || '').trim()
+
+    if (candidateQuoteNumber && recQuoteNo === candidateQuoteNumber) return true
+    if (candidateDealId && recDealId === candidateDealId) return true
+    if (candidateCustomerId && recCustId === candidateCustomerId) return true
+    return false
+  }).sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+
+  const isExplicitRevision = Boolean(body.isRevision || body.parentQuotationId || body.revisionCode)
+  const hasRevisionAmountChange = Boolean(
+    body.quotationRevisionAmounts ||
+    body.revisionAmountR1 || body.revisionAmountR2 || body.revisionAmountR3 ||
+    body.r1Amount || body.r2Amount || body.r3Amount ||
+    body.revisions
+  )
+  const isRevision = isExplicitRevision || hasRevisionAmountChange || (matchingQuotations.length > 0 && !existing)
+
+  let revisionNo = existing?.revisionNo || (matchingQuotations.length > 0 ? matchingQuotations.length + 1 : 1)
+  let revisionCode = existing?.revisionCode || (matchingQuotations.length > 0 ? `R${matchingQuotations.length + 1}` : 'R1')
+  if (revisionCode === 'Normal') revisionCode = 'R1'
+  let parentQuotationId = body.parentQuotationId || existing?.parentQuotationId || null
+
+  if (!existing && isRevision && matchingQuotations.length > 0) {
+    if (!parentQuotationId) {
+      parentQuotationId = matchingQuotations[0].id || matchingQuotations[0]._id
+    }
+  }
+
+  // Duplicate detection runs before quote-number allocation only if NOT a revision and NOT an upload payload
+  if (!existing && !isRevision && !isUploadQuotationPayload(body)) {
+    const candidateFingerprint = buildQuotationFingerprint({
+      customerName: body.customerName ?? body.companyName ?? body.clientName,
+      projectName: body.projectName,
+      architectName: body.architectName,
+      pmcName: body.pmcName,
+      title: body.title ?? body.quotationSubject,
+      totalAmount: body.totalAmount ?? body.amount ?? computed.total,
+      taxAmount: body.taxAmount ?? body.gstAmount ?? computed.tax,
+      discountAmount: body.discountAmount ?? body.discount ?? computed.discount,
+    }, lineItems)
+
+    const duplicate = await findDuplicateQuotation(actor, candidateFingerprint)
+    if (duplicate) {
+      const existingQuoteNumber = pickQuotationField(duplicate, 'quoteNumber', 'quotationNumber') || 'unknown'
+      const customerLabel = pickQuotationField(duplicate, 'customerName', 'companyName', 'clientName') || '-'
+      const projectLabel = pickQuotationField(duplicate, 'projectName') || pickQuotationField(duplicate, 'title') || '-'
+      const message = `Duplicate quotation found: Quotation No. ${existingQuoteNumber} already exists for ${customerLabel} / ${projectLabel}. Please change the title, project, or quotation details before generating again.`
+
+      const duplicateError = new AppError(message, 409, {
+        code: 'DUPLICATE_QUOTATION',
+        existingQuoteNumber,
+        existingQuotationId: duplicate.id,
+        customerName: customerLabel,
+        projectName: projectLabel,
+      })
+      duplicateError.code = 'DUPLICATE_QUOTATION'
+      throw duplicateError
+    }
+  }
+
+  const {
+    quoteNumber,
+    quotationSequence,
+    quotationSequenceMonth,
+  } = await resolveQuoteNumber(body, existing, actor)
+  const customerName = body.customerName
+    ?? body.companyName
+    ?? body.clientName
+    ?? existing?.customerName
+    ?? existing?.data?.companyName
+    ?? null
+  const customerId = body.customerId
+    ?? body.selectedAccountId
+    ?? existing?.customerId
+    ?? existing?.data?.selectedAccountId
+    ?? null
+  const totalAmount = body.totalAmount ?? body.amount ?? existing?.totalAmount ?? computed.total
+  const taxAmount = body.taxAmount ?? body.gstAmount ?? existing?.taxAmount ?? computed.tax
+  const discountAmount = body.discountAmount ?? body.discount ?? existing?.discountAmount ?? computed.discount
+  const notes = body.notes ?? body.quotationNotes ?? existing?.notes ?? existing?.data?.quotationNotes ?? ''
+
+  const revisionReason = body.revisionReason || existing?.revisionReason || ''
+
+  return {
+    quoteNumber,
+    quotationNumber: quoteNumber,
+    quotationSequence,
+    quotationSequenceMonth,
+    title: body.title ?? body.quotationSubject ?? body.projectName ?? existing?.title ?? 'Quotation',
+    customerName,
+    customerId,
+    dealId: body.dealId ?? existing?.dealId ?? null,
+    status: body.status ?? existing?.status ?? 'draft',
+    totalAmount,
+    taxAmount,
+    discountAmount,
+    currency: body.currency ?? existing?.currency ?? 'INR',
+    validUntil: body.validUntil ?? existing?.validUntil ?? null,
+    lineItems,
+    notes,
+    revisionNo,
+    revisionCode,
+    parentQuotationId,
+    revisionReason,
+    assignedTo: body.assignedTo ?? existing?.assignedTo ?? (actor.role === 'user' ? actor.id : null),
+    createdBy: existing?.createdBy ?? actor.id,
+    data: {
+      ...(existing?.data || {}),
+      ...body,
+      quoteNumber,
+      quotationNumber: quoteNumber,
+      quotationSequence,
+      quotationSequenceMonth,
+      customerName,
+      customerId,
+      amount: totalAmount,
+      totalAmount,
+      taxAmount,
+      discountAmount,
+      lineItems,
+      notes,
+      revisionNo,
+      revisionCode,
+      parentQuotationId,
+      revisionReason,
+      quotationNotes: body.quotationNotes ?? existing?.data?.quotationNotes ?? notes,
+      createdBy: existing?.createdBy ?? actor.id,
+      userId: body.userId ?? existing?.data?.userId ?? existing?.createdBy ?? actor.id,
+    },
+  }
+}
+
+const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
+  try {
+    const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
+    const Deal = getMongoModel('deals')
+    const quotationRepo = require('../repositories/quotationRepository')
+
+    const customerId = quotationRecord.customerId || quotationRecord.data?.selectedAccountId
+    const dealId = quotationRecord.dealId || quotationRecord.data?.dealId
+
+    const allQuotes = await quotationRepo.listAll()
+    const siblingQuotes = allQuotes.filter((q) => {
+      const qCust = String(q.customerId || q.data?.selectedAccountId || '').trim()
+      const qDeal = String(q.dealId || q.data?.dealId || '').trim()
+      const qNo = String(q.quoteNumber || q.quotationNumber || '').trim()
+      const thisNo = String(quotationRecord.quoteNumber || quotationRecord.quotationNumber || '').trim()
+
+      if (thisNo && qNo === thisNo) return true
+      if (dealId && qDeal === String(dealId).trim()) return true
+      if (customerId && qCust === String(customerId).trim()) return true
+      return false
+    }).sort((a, b) => (a.revisionNo || 0) - (b.revisionNo || 0))
+
+    const revisionAmounts = {}
+    siblingQuotes.forEach((sq) => {
+      const code = sq.revisionCode || (sq.revisionNo === 0 || sq.revisionNo === 1 ? 'R1' : `R${sq.revisionNo}`)
+      revisionAmounts[code] = sq.totalAmount || sq.amount || 0
+    })
+
+    const isApproved = String(quotationRecord.status || '').toLowerCase() === 'approved'
+
+    if (isApproved && siblingQuotes.length > 1) {
+      for (const sq of siblingQuotes) {
+        if (String(sq.id) !== String(quotationRecord.id)) {
+          try {
+            await quotationRepo.update(sq.id, { status: 'SUPERSEDED', data: { ...sq.data, status: 'SUPERSEDED' } })
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+    }
+
+    const syncPayload = {
+      latestQuotationNumber: quotationRecord.quotationNumber || quotationRecord.quoteNumber,
+      latestQuotationAmount: quotationRecord.totalAmount || quotationRecord.amount,
+      quotationRevisionCode: quotationRecord.revisionCode || 'R1',
+      quotationRevisionNo: quotationRecord.revisionNo || 1,
+      quotationRevisionAmounts: quotationRecord.quotationRevisionAmounts || revisionAmounts,
+      quotationStatus: quotationRecord.status || 'draft',
+      updatedAt: new Date().toISOString(),
+    }
+
+    if (customerId) {
+      await Lead.updateOne(
+        { $or: [{ id: customerId }, { _id: customerId }, { legacyId: customerId }] },
+        {
+          $set: {
+            'formData.latestQuotationNumber': syncPayload.latestQuotationNumber,
+            'formData.latestQuotationAmount': syncPayload.latestQuotationAmount,
+            'formData.quotationRevisionCode': syncPayload.quotationRevisionCode,
+            'formData.quotationRevisionNo': syncPayload.quotationRevisionNo,
+            'formData.quotationRevisionAmounts': syncPayload.quotationRevisionAmounts,
+            'formData.quotationStatus': syncPayload.quotationStatus,
+            latestQuotationNumber: syncPayload.latestQuotationNumber,
+            latestQuotationAmount: syncPayload.latestQuotationAmount,
+            quotationRevisionCode: syncPayload.quotationRevisionCode,
+            quotationStatus: syncPayload.quotationStatus,
+          }
+        }
+      )
+    }
+
+    if (dealId) {
+      await Deal.updateOne(
+        { $or: [{ id: dealId }, { _id: dealId }, { legacyId: dealId }] },
+        {
+          $set: {
+            'data.latestQuotationNumber': syncPayload.latestQuotationNumber,
+            'data.latestQuotationAmount': syncPayload.latestQuotationAmount,
+            'data.quotationRevisionCode': syncPayload.quotationRevisionCode,
+            'data.quotationRevisionNo': syncPayload.quotationRevisionNo,
+            'data.quotationRevisionAmounts': syncPayload.quotationRevisionAmounts,
+            'data.quotationStatus': syncPayload.quotationStatus,
+            latestQuotationNumber: syncPayload.latestQuotationNumber,
+            latestQuotationAmount: syncPayload.latestQuotationAmount,
+            quotationRevisionCode: syncPayload.quotationRevisionCode,
+            quotationStatus: syncPayload.quotationStatus,
+          }
+        }
+      )
+    }
+  } catch (syncErr) {
+    console.warn('Could not sync quotation revision to leads/deals collections:', syncErr)
+  }
+}
+
+const quotationService = createCrudService({
+  repository: quotationRepository,
+  entityLabel: 'Quotation',
+  entityType: 'quotation',
+  buildPayload,
+})
+
+const applyStrictIsolation = (actor) => {
+  const email = String(actor?.email || '').toLowerCase().trim()
+  if (email === 'keval@swatiswitchgears.com') return { ...actor, role: 'admin' }
+  return { ...actor, role: 'user' }
+}
+
+module.exports = {
+  ...quotationService,
+  create: async (actor, payload) => {
+    const allQuotes = await quotationRepository.listAll()
+    const targetCustId = String(payload.customerId || payload.selectedAccountId || payload.data?.selectedAccountId || '').trim()
+    const targetQuoteNo = String(payload.quoteNumber || payload.quotationNumber || payload.data?.quotationNumber || '').trim()
+    const targetDealId = String(payload.dealId || payload.data?.dealId || '').trim()
+
+    const existingMatch = allQuotes.find((q) => {
+      const qCust = String(q.customerId || q.data?.selectedAccountId || '').trim()
+      const qNo = String(q.quoteNumber || q.quotationNumber || '').trim()
+      const qDeal = String(q.dealId || q.data?.dealId || '').trim()
+      if (targetQuoteNo && qNo === targetQuoteNo) return true
+      if (targetDealId && qDeal === targetDealId) return true
+      if (targetCustId && qCust === targetCustId) return true
+      return false
+    })
+
+    if (existingMatch) {
+      const existingRevAmounts = existingMatch.quotationRevisionAmounts || existingMatch.data?.quotationRevisionAmounts || {}
+      const existingRevisions = Array.isArray(existingMatch.revisions)
+        ? existingMatch.revisions
+        : (Array.isArray(existingMatch.data?.revisions) ? existingMatch.data.revisions : [])
+
+      const currentRevNo = existingMatch.revisionNo || 1
+      const nextRevNo = currentRevNo + 1
+      const nextRevCode = `R${nextRevNo}`
+      const newAmount = payload.totalAmount || payload.amount || payload.data?.amount || 0
+
+      const r1Amt = existingMatch.revisionAmountR1 || existingRevAmounts.R1 || existingRevAmounts.Normal || existingMatch.totalAmount || existingMatch.amount || 0
+      const updatedRevAmounts = {
+        ...existingRevAmounts,
+        R1: r1Amt,
+        [nextRevCode]: newAmount,
+      }
+
+      const updatedRevisionsList = [...existingRevisions]
+      if (updatedRevisionsList.length === 0) {
+        updatedRevisionsList.push({
+          revisionCode: 'R1',
+          amount: r1Amt,
+          date: existingMatch.quotationDate || existingMatch.createdAt || new Date().toISOString().slice(0, 10),
+          status: existingMatch.status || 'Open',
+        })
+      }
+      updatedRevisionsList.push({
+        revisionCode: nextRevCode,
+        amount: newAmount,
+        date: new Date().toISOString().slice(0, 10),
+        status: 'Open',
+      })
+
+      const updatePayload = {
+        ...payload,
+        revisionCode: nextRevCode,
+        revisionNo: nextRevNo,
+        revisionAmountR1: r1Amt,
+        [`revisionAmount${nextRevCode}`]: newAmount,
+        quotationRevisionAmounts: updatedRevAmounts,
+        revisions: updatedRevisionsList,
+        status: 'Open',
+      }
+
+      const updatedResult = await quotationService.update(actor, existingMatch.id, updatePayload)
+      await syncQuotationToLeadsAndDeals(updatedResult)
+      return updatedResult
+    }
+
+    const initialAmount = payload.totalAmount || payload.amount || 0
+    const result = await quotationService.create(actor, {
+      ...payload,
+      revisionCode: payload.revisionCode || 'R1',
+      revisionNo: payload.revisionNo || 1,
+      revisionAmountR1: initialAmount,
+      quotationRevisionAmounts: payload.quotationRevisionAmounts || { R1: initialAmount },
+      revisions: payload.revisions || [{ revisionCode: 'R1', amount: initialAmount, date: new Date().toISOString().slice(0, 10), status: 'Open' }],
+    })
+    await syncQuotationToLeadsAndDeals(result)
+    try {
+      const { findUserById } = require('../repositories/userRepository')
+      const assignedUserId = result.assignedTo || actor.id
+      const userRecord = assignedUserId ? await findUserById(assignedUserId) : null
+      const ownerName = userRecord?.name || result.data?.selectedAccountOwner || result.data?.quotationOwner || ''
+      const ownerCode = userRecord?.ownerCode || result.ownerCode || result.data?.ownerCode || result.data?.customerOwnerCode || ''
+
+      const customerService = require('./customerService')
+      const customerPayload = {
+        name: result.customerName || result.companyName || result.title || 'Quotation Customer',
+        accountId: result.customerId || null,
+        email: result.data?.email || result.data?.organizationEmail || null,
+        phone: result.data?.telephone || result.data?.phone || result.data?.organizationPhone || null,
+        company: result.companyName || result.customerName || null,
+        assignedTo: assignedUserId,
+        customerOwner: ownerName,
+        customerOwnerName: ownerName,
+        customerOwnerDisplay: ownerName,
+        customerOwnerCode: ownerCode,
+        customerStatus: 'pending',
+        customerCategory: 'SWATI',
+        contacts: [],
+        documents: []
+      };
+      
+      delete customerPayload.data;
+      
+      await customerService.create(actor, customerPayload)
+    } catch (err) {
+      console.warn('Could not auto-create customer upon quotation generation', err)
+    }
+    return result
+  },
+  approveQuotation: async (actor, id, payload = {}) => {
+    const existing = await quotationService.get(actor, id)
+    if (!existing) {
+      throw new AppError('Quotation not found.', 404)
+    }
+
+    const targetRevCode = payload.revisionCode || existing.revisionCode || 'R1'
+    const updatedRevisions = Array.isArray(existing.revisions)
+      ? [...existing.revisions]
+      : (Array.isArray(existing.data?.revisions) ? [...existing.data.revisions] : [])
+
+    if (updatedRevisions.length > 0) {
+      updatedRevisions.forEach((rev) => {
+        if (rev.revisionCode === targetRevCode || (!payload.revisionCode && rev.revisionCode === existing.revisionCode)) {
+          rev.status = 'Approved'
+        }
+      })
+    } else {
+      updatedRevisions.push({
+        revisionCode: targetRevCode,
+        amount: existing.totalAmount || existing.amount || 0,
+        date: new Date().toISOString().slice(0, 10),
+        status: 'Approved',
+      })
+    }
+
+    const updateData = {
+      status: 'Approved',
+      revisionCode: targetRevCode,
+      revisions: updatedRevisions,
+      data: {
+        ...(existing.data || {}),
+        status: 'Approved',
+        revisionCode: targetRevCode,
+        revisions: updatedRevisions,
+      },
+      updatedAt: new Date().toISOString(),
+    }
+
+    const result = await quotationService.update(actor, id, updateData)
+    await syncQuotationToLeadsAndDeals(result)
+    return result
+  },
+  update: async (actor, id, payload) => {
+    const result = await quotationService.update(actor, id, payload)
+    await syncQuotationToLeadsAndDeals(result)
+    return result
+  },
+  list: (actor, filters = {}) => quotationService.list(applyStrictIsolation(actor), filters),
+  get: (actor, id) => quotationService.get(applyStrictIsolation(actor), id),
+  search: (actor, query) => quotationService.search(applyStrictIsolation(actor), query),
+}
+module.exports.normalizeLineItems = normalizeLineItems

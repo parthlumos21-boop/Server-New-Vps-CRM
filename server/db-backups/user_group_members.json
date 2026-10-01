@@ -1,0 +1,182 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7c4a54f4f8459049aa3185"
+    },
+    "legacyId": 11,
+    "groupId": {
+      "$oid": "6a7c4a54f4f8459049aa317d"
+    },
+    "userId": 22,
+    "member": {
+      "name": "Dev",
+      "email": "dev@swatiswitchgears.com"
+    },
+    "addedBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T10:26:28.634Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T10:26:28.639Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T10:26:28.639Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c4a54f4f8459049aa3186"
+    },
+    "legacyId": 12,
+    "groupId": {
+      "$oid": "6a7c4a54f4f8459049aa317d"
+    },
+    "userId": 13,
+    "member": {
+      "name": "Bhavesh Prajapati",
+      "email": "sales.brd5@swatiswitchgears.com"
+    },
+    "addedBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T10:26:28.637Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T10:26:28.640Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T10:26:28.640Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c52569aaf7975a1da4ca6"
+    },
+    "legacyId": 13,
+    "groupId": {
+      "$oid": "6a7c52569aaf7975a1da4ca1"
+    },
+    "userId": "16",
+    "member": {
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedBy": {
+      "userId": 1,
+      "name": "Admin",
+      "email": "admin@test.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T11:00:38.341Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T11:00:38.343Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T11:00:38.343Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c644e61573280d10c17ee"
+    },
+    "legacyId": 14,
+    "groupId": {
+      "$oid": "6a7c644e61573280d10c17e3"
+    },
+    "userId": "16",
+    "member": {
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T12:17:18.085Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c644e61573280d10c17ef"
+    },
+    "legacyId": 15,
+    "groupId": {
+      "$oid": "6a7c644e61573280d10c17e3"
+    },
+    "userId": "17",
+    "member": {
+      "name": "Parth Crm Support",
+      "email": "parth@support.com"
+    },
+    "addedBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T12:17:18.089Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a7c644e61573280d10c17f0"
+    },
+    "legacyId": 16,
+    "groupId": {
+      "$oid": "6a7c644e61573280d10c17e3"
+    },
+    "userId": "18",
+    "member": {
+      "name": "Rushabh Crm Support",
+      "email": "rushabh@support.com"
+    },
+    "addedBy": {
+      "userId": 16,
+      "name": "Keval V Shah",
+      "email": "keval@swatiswitchgears.com"
+    },
+    "addedAt": {
+      "$date": "2026-08-12T12:17:18.092Z"
+    },
+    "status": "active",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-12T12:17:18.094Z"
+    }
+  }
+]

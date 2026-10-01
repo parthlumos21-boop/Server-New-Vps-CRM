@@ -1,0 +1,281 @@
+.bu-page {
+  margin: -1rem -1.25rem 0;
+  min-height: 100%;
+  background: var(--surface-app);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.bu-header {
+  padding: 0.6rem 1.25rem;
+  background: var(--surface-card);
+  border-bottom: 2px solid var(--border-subtle);
+}
+
+.bu-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s;
+}
+.bu-back-btn:hover { color: var(--color-primary-hover); }
+
+.bu-back-icon {
+  font-size: 0.75rem;
+}
+
+/* ── Card Grid ──────────────────────────────────────────── */
+.bu-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.1rem;
+  padding: 1.5rem 1.25rem;
+  max-width: 1100px;
+}
+
+.bu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  padding: 2rem 1rem 1.75rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+  text-align: center;
+  min-height: 150px;
+}
+.bu-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  border-color: var(--border-subtle);
+  transform: translateY(-2px);
+}
+.bu-card:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.bu-card-icon {
+  font-size: 2.4rem;
+  flex-shrink: 0;
+}
+
+.bu-card-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+.bu-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  z-index: 2000;
+  animation: bu-toast-in 0.2s ease-out;
+}
+.bu-toast--success { background: var(--color-success); }
+.bu-toast--error   { background: var(--color-danger); }
+.bu-toast-icon { font-size: 0.95rem; flex-shrink: 0; }
+
+@keyframes bu-toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Modal ──────────────────────────────────────────────── */
+.bu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+}
+
+.bu-modal {
+  background: var(--surface-card);
+  border-radius: var(--radius-sm);
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+}
+
+.bu-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
+  color: #ffffff;
+}
+
+.bu-modal-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.bu-modal-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  padding: 0.1rem;
+  line-height: 1;
+}
+.bu-modal-close:hover { opacity: 1; }
+
+.bu-modal-body {
+  padding: 1.25rem 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ── Dropzone ───────────────────────────────────────────── */
+.bu-dropzone {
+  width: 100%;
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  background: var(--surface-card);
+  transition: border-color 0.15s, background 0.15s;
+  text-align: center;
+}
+.bu-dropzone:hover,
+.bu-dropzone--active {
+  border-color: var(--color-primary);
+  background: rgba(239, 243, 246, 0.98);
+}
+.bu-dropzone--has-file {
+  border-color: var(--color-success);
+  background: var(--surface-card);
+}
+
+.bu-dropzone-icon {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+.bu-dropzone-file-icon {
+  font-size: 2rem;
+  color: var(--color-success);
+}
+
+.bu-dropzone-hint {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.bu-dropzone-formats {
+  font-size: 0.76rem;
+  color: var(--text-primary);
+}
+
+.bu-dropzone-filename {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.bu-dropzone-size {
+  font-size: 0.76rem;
+  color: var(--text-primary);
+}
+
+.bu-clear-btn {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  align-self: flex-end;
+}
+.bu-clear-btn:hover { color: var(--color-danger); }
+
+/* ── Modal Footer ───────────────────────────────────────── */
+.bu-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.bu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+}
+.bu-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.bu-btn--primary {
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
+  border-color: var(--color-primary-strong);
+  color: #ffffff;
+}
+.bu-btn--primary:not(:disabled):hover { background: linear-gradient(180deg, var(--color-primary-hover) 0%, #405869 100%); }
+.bu-btn--gray {
+  background: var(--surface-app);
+  border-color:  var(--border-subtle);
+  color: var(--text-primary);
+}
+.bu-btn--gray:hover { background: var(--surface-muted); }
+
+.bu-btn-icon { font-size: 0.8rem; }
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .bu-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .bu-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 400px) {
+  .bu-grid { grid-template-columns: 1fr; }
+}

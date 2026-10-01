@@ -1,0 +1,44 @@
+{
+  "name": "crm-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node tools/start-stack.js",
+    "start": "node tools/start-stack.js",
+    "start:backend": "node tools/start-stack.js backend",
+    "build": "node tools/build.cjs",
+    "serve": "node tools/serve-frontend.js",
+    "server:start": "npm --prefix server start",
+    "server:dev": "npm --prefix server run dev",
+    "server:test": "npm --prefix server test",
+    "server:doctor": "npm --prefix server run doctor",
+    "db:create": "npm --prefix server run db:create",
+    "admin:create": "npm --prefix server run admin:create",
+    "users:seed-crm-image": "npm --prefix server run users:seed-crm-image"
+  },
+  "dependencies": {
+    "@heyputer/puter.js": "^2.5.4",
+    "@vitejs/plugin-react": "^4.7.0",
+    "axios": "^1.13.2",
+    "date-fns": "^3.6.0",
+    "dotenv": "^17.4.2",
+    "framer-motion": "^12.23.26",
+    "mongodb": "^7.5.0",
+    "qrcode-terminal": "^0.12.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.30.2",
+    "recharts": "^2.15.4",
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^4.3.1",
+    "vite": "^5.4.21",
+    "whatsapp-web.js": "^1.34.7",
+    "xlsx": "^0.18.5"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "puppeteer@24.38.0": true
+  }
+}

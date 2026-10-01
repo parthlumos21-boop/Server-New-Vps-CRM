@@ -1,0 +1,229 @@
+.outlook-mail-page {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+}
+
+.outlook-mail-header,
+.outlook-mail-meta,
+.outlook-mail-layout {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+}
+
+.outlook-mail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+}
+
+.outlook-mail-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.outlook-mail-title > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.outlook-mail-title h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.outlook-mail-title p {
+  margin: 4px 0 0;
+  color: var(--muted-text, #64748b);
+}
+
+.outlook-mail-status {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 700;
+}
+
+.outlook-mail-status--connected {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.outlook-mail-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+}
+
+.outlook-mail-meta div {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  background: var(--surface, #fff);
+}
+
+.outlook-mail-meta span {
+  color: var(--muted-text, #64748b);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.outlook-mail-meta strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outlook-mail-error {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.outlook-mail-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr) 320px;
+  min-height: 560px;
+  overflow: hidden;
+}
+
+.outlook-mail-sidebar,
+.outlook-compose-panel {
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.outlook-folder-tabs {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.outlook-folder-tabs button,
+.outlook-message-row,
+.outlook-search button {
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+}
+
+.outlook-folder-tabs button {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #334155;
+  font-weight: 700;
+  text-align: left;
+}
+
+.outlook-folder-tabs button.active {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.outlook-search {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.outlook-search input,
+.outlook-compose-panel input,
+.outlook-compose-panel textarea {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.outlook-message-list {
+  display: grid;
+  align-content: start;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+  overflow: auto;
+}
+
+.outlook-message-row {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+}
+
+.outlook-message-row.active {
+  background: #eff6ff;
+}
+
+.outlook-message-row strong,
+.outlook-message-row span,
+.outlook-message-row p {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outlook-message-row p,
+.outlook-message-row small {
+  color: #64748b;
+}
+
+.outlook-empty {
+  padding: 24px;
+  color: #64748b;
+}
+
+.outlook-compose-panel form {
+  display: grid;
+  gap: 10px;
+}
+
+.outlook-compose-panel h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.outlook-compose-panel input,
+.outlook-compose-panel textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #fff;
+  resize: vertical;
+}
+
+@media (max-width: 1024px) {
+  .outlook-mail-layout,
+  .outlook-mail-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .outlook-message-list {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+}

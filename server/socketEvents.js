@@ -1,0 +1,45 @@
+const SOCKET_EVENTS = {
+  CONNECT: 'connect',
+  DISCONNECT: 'disconnect',
+  USERS_ONLINE: 'users:online',
+  USER_ONLINE: 'userOnline',
+  USER_OFFLINE: 'userOffline',
+  NEW_LEAD: 'newLead',
+  LEAD_UPDATED: 'leadUpdated',
+  SEND_MESSAGE: 'sendMessage',
+  SEND_MESSAGE_LEGACY: 'message:send',
+  RECEIVE_MESSAGE: 'receiveMessage',
+  DASHBOARD_UPDATE: 'dashboardUpdate',
+  NOTIFICATION: 'notification',
+  ACTIVITY: 'activity',
+  DASHBOARD_TABS_UPDATE: 'dashboard-tabs:update',
+  ACCOUNT_CREATE: 'account:create',
+  ACCOUNT_UPDATE: 'account:update',
+  ACCOUNT_DELETE: 'account:delete',
+  DEAL_CREATE: 'deal:create',
+  DEAL_UPDATE: 'deal:update',
+  DEAL_DELETE: 'deal:delete',
+  DEAL_CREATED: 'deal:created',
+  DEAL_UPDATED: 'deal:updated',
+  DEAL_DELETED: 'deal:deleted',
+  TASK_CREATE: 'task:create',
+  TASK_UPDATE: 'task:update',
+  TASK_DELETE: 'task:delete',
+  TASK_CREATED: 'task:created',
+  TASK_UPDATED: 'task:updated',
+  TASK_DELETED: 'task:deleted',
+  SUPPORT_REQUEST_CREATE: 'support-request:create',
+  SUPPORT_REQUEST_UPDATE: 'support-request:update',
+  SUPPORT_REQUEST_CREATED: 'support-request:created',
+  SUPPORT_REQUEST_UPDATED: 'support-request:updated',
+}
+
+const SOCKET_ROOMS = {
+  USER_PREFIX: 'user:',
+  ROLE_PREFIX: 'role:',
+}
+
+module.exports = {
+  SOCKET_EVENTS,
+  SOCKET_ROOMS,
+}

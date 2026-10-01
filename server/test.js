@@ -1,0 +1,12 @@
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://127.0.0.1:27017/crm')
+  .then(() => mongoose.connection.db.collection('users').find({ $or: [{ownerCode: '1007'}, {ownerCode: 1007}] }).toArray())
+  .then(users => {
+    console.log(JSON.stringify(users, null, 2));
+    process.exit(0);
+  })
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  });

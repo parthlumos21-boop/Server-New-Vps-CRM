@@ -1,0 +1,154 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7470395e14b9bd5d5ef3f8"
+    },
+    "legacyId": 1,
+    "title": "Demo Cust reminder",
+    "description": "Reminder mode: Email",
+    "startAt": "2026-08-06T09:00:00",
+    "endAt": null,
+    "allDay": false,
+    "location": null,
+    "category": "Reminder",
+    "color": null,
+    "relatedEntityType": "customer",
+    "relatedEntityId": "1",
+    "assignedTo": 16,
+    "createdBy": 16,
+    "data": {
+      "title": "Demo Cust reminder",
+      "startAt": "2026-08-06T09:00:00",
+      "description": "Reminder mode: Email",
+      "category": "Reminder",
+      "relatedEntityType": "customer",
+      "relatedEntityId": "1",
+      "assignedTo": 16
+    },
+    "companyId": 1,
+    "ownerUserId": 16,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-06T11:30:01.727Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-06T11:30:01.727Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7d4f3578d2463bb813b2cf"
+    },
+    "legacyId": 2,
+    "title": "adani reminder",
+    "description": "Reminder mode: Email",
+    "startAt": "2026-08-13T09:00:00",
+    "endAt": null,
+    "allDay": false,
+    "location": null,
+    "category": "Reminder",
+    "color": null,
+    "relatedEntityType": "customer",
+    "relatedEntityId": "2",
+    "assignedTo": 16,
+    "createdBy": 16,
+    "data": {
+      "title": "adani reminder",
+      "startAt": "2026-08-13T09:00:00",
+      "description": "Reminder mode: Email",
+      "category": "Reminder",
+      "relatedEntityType": "customer",
+      "relatedEntityId": "2",
+      "assignedTo": 16
+    },
+    "companyId": 1,
+    "ownerUserId": 16,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-13T04:59:33.052Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T04:59:33.052Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7d9dd93f96abd09438d4a1"
+    },
+    "legacyId": 3,
+    "title": "abc reminder",
+    "description": "",
+    "startAt": "2026-08-13T09:00:00",
+    "endAt": null,
+    "allDay": false,
+    "location": null,
+    "category": "Reminder",
+    "color": null,
+    "relatedEntityType": "customer",
+    "relatedEntityId": "3",
+    "assignedTo": 13,
+    "createdBy": 13,
+    "data": {
+      "title": "abc reminder",
+      "startAt": "2026-08-13T09:00:00",
+      "description": null,
+      "category": "Reminder",
+      "relatedEntityType": "customer",
+      "relatedEntityId": "3",
+      "assignedTo": 13
+    },
+    "companyId": 1,
+    "ownerUserId": 13,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-13T10:35:05.788Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-13T10:35:05.788Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a7ef8747fee144c591f9431"
+    },
+    "legacyId": 4,
+    "title": "adani reminder",
+    "description": "",
+    "startAt": "2026-08-14T09:00:00",
+    "endAt": null,
+    "allDay": false,
+    "location": null,
+    "category": "Reminder",
+    "color": null,
+    "relatedEntityType": "customer",
+    "relatedEntityId": "4",
+    "assignedTo": 7,
+    "createdBy": 7,
+    "data": {
+      "title": "adani reminder",
+      "startAt": "2026-08-14T09:00:00",
+      "description": null,
+      "category": "Reminder",
+      "relatedEntityType": "customer",
+      "relatedEntityId": "4",
+      "assignedTo": 7
+    },
+    "companyId": 1,
+    "ownerUserId": 7,
+    "projectId": null,
+    "workflowId": null,
+    "createdAt": {
+      "$date": "2026-08-14T11:13:56.124Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-14T11:13:56.124Z"
+    },
+    "__v": 0
+  }
+]

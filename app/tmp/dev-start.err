@@ -1,0 +1,31 @@
+C:\Program : The term 'C:\Program' is not recognized as the name of a cmdlet, function, script file, or operable 
+program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:13
++ $env:Path = C:\Program Files\nodejs; + $env:Path; & C:\Program Files\ ...
++             ~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Program:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+Cannot convert value 
+"C:\Users\PARTH\.codex\tmp\arg0\codex-arg0Jay45B;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Program 
+Files\Python314\Scripts\;C:\Program Files\Python314\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS
+\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Users\PARTH\AppData\Local\Python\bin;C:\Program 
+Files\Warp\bin;C:\Program Files\Go\bin;C:\Program Files\Git\cmd;C:\Program Files\CMake\bin;C:\Users\PARTH\OneDrive\Desk
+top\Riddhi\Arisea-Inner-Glow\.local\node-v24.14.1-win-x64;C:\Users\PARTH\AppData\Local\Microsoft\WindowsApps;C:\Users\P
+ARTH\AppData\Local\Python\bin;C:\Users\PARTH\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\PARTH\AppData\Local\
+Python\bin;C:\Users\PARTH\go\bin;;c:\Users\PARTH\.vscode\extensions\openai.chatgpt-26.527.31454-win32-x64\bin\windows-x
+86_64" to type "System.Int32". Error: "Input string was not in a correct format."
+At line:1 char:38
++ $env:Path = C:\Program Files\nodejs; + $env:Path; & C:\Program Files\ ...
++                                      ~~~~~~~~~~~
+    + CategoryInfo          : InvalidArgument: (:) [], RuntimeException
+    + FullyQualifiedErrorId : InvalidCastFromStringToInteger
+ 
+& : The term 'C:\Program' is not recognized as the name of a cmdlet, function, script file, or operable program. Check 
+the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:1 char:53
++ ... env:Path = C:\Program Files\nodejs; + $env:Path; & C:\Program Files\n ...
++                                                        ~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Program:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 

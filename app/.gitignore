@@ -1,0 +1,15 @@
+node_modules
+server/node_modules
+cookies.txt
+crm2
+crm3
+crmwork1
+.env
+**/.env
+server/.wwebjs_auth
+server/.wwebjs_cache
+server/uploads
+cookies.txt
+crm2
+crm3
+crmwork1

@@ -1,0 +1,130 @@
+[
+  {
+    "key": "general",
+    "label": "General",
+    "description": "Core dashboard and notification access.",
+    "permissions": [
+      { "key": "manageEmailTemplate", "label": "Manage Email Template" },
+      { "key": "viewDashboard", "label": "View Dashboard" },
+      { "key": "manageNotifications", "label": "Manage Notifications" }
+    ]
+  },
+  {
+    "key": "account",
+    "label": "Account",
+    "description": "Account ownership and quote operations.",
+    "permissions": [
+      { "key": "addAccount", "label": "Add Account" },
+      { "key": "editAccount", "label": "Edit Account", "dependencies": ["account.addAccount"] },
+      { "key": "deleteAccount", "label": "Delete Account", "dependencies": ["account.editAccount"] },
+      { "key": "assignTeam", "label": "Assign Team" },
+      { "key": "globalSearch", "label": "Global Search" },
+      { "key": "convertToCustomer", "label": "Convert To Customer", "dependencies": ["account.addAccount"] },
+      { "key": "upload", "label": "Upload" },
+      { "key": "createView", "label": "Create View" },
+      { "key": "generateQuotes", "label": "Generate Quotes" },
+      { "key": "manageQuotes", "label": "Manage Quotes", "dependencies": ["account.generateQuotes"] }
+    ]
+  },
+  {
+    "key": "customer",
+    "label": "Customer",
+    "description": "Customer records, ownership, and search.",
+    "permissions": [
+      { "key": "addCustomer", "label": "Add Customer" },
+      { "key": "editCustomer", "label": "Edit Customer", "dependencies": ["customer.addCustomer"] },
+      { "key": "deleteCustomer", "label": "Delete Customer", "dependencies": ["customer.editCustomer"] },
+      { "key": "assignTeam", "label": "Assign Team" },
+      { "key": "customerOwnership", "label": "Customer Ownership" },
+      { "key": "category", "label": "Category" },
+      { "key": "source", "label": "Source" },
+      { "key": "globalSearch", "label": "Global Search" },
+      { "key": "createView", "label": "Create View" }
+    ]
+  },
+  {
+    "key": "supportRequest",
+    "label": "Support Request",
+    "description": "Support request lifecycle actions.",
+    "permissions": [
+      { "key": "addSR", "label": "Add SR" },
+      { "key": "editSR", "label": "Edit SR", "dependencies": ["supportRequest.addSR"] },
+      { "key": "closeSR", "label": "Close SR", "dependencies": ["supportRequest.editSR"] },
+      { "key": "reopenSR", "label": "Reopen SR", "dependencies": ["supportRequest.closeSR"] },
+      { "key": "deleteRemark", "label": "Delete Remark" },
+      { "key": "editType", "label": "Edit Type" }
+    ]
+  },
+  {
+    "key": "customerSupportRole",
+    "label": "Customer Support Role",
+    "description": "Support team role flags and SR actions.",
+    "permissions": [
+      { "key": "fieldStaff", "label": "Field Staff" },
+      { "key": "backOffice", "label": "Back Office" },
+      { "key": "addSR", "label": "Add SR" },
+      { "key": "editSR", "label": "Edit SR", "dependencies": ["customerSupportRole.addSR"] },
+      { "key": "closeSR", "label": "Close SR", "dependencies": ["customerSupportRole.editSR"] }
+    ]
+  },
+  {
+    "key": "deal",
+    "label": "Deal",
+    "description": "Deal lifecycle, quote, and assignment control.",
+    "permissions": [
+      { "key": "addDeal", "label": "Add Deal" },
+      { "key": "editDeal", "label": "Edit Deal", "dependencies": ["deal.addDeal"] },
+      { "key": "deleteDeal", "label": "Delete Deal", "dependencies": ["deal.editDeal"] },
+      { "key": "assignDeal", "label": "Assign Deal" },
+      { "key": "generateQuotes", "label": "Generate Quotes" },
+      { "key": "manageQuotes", "label": "Manage Quotes", "dependencies": ["deal.generateQuotes"] },
+      { "key": "dealTypeAccess", "label": "Deal Type Access" }
+    ]
+  },
+  {
+    "key": "product",
+    "label": "Product",
+    "description": "Product maintenance access.",
+    "permissions": [
+      { "key": "addProduct", "label": "Add Product" },
+      { "key": "editProduct", "label": "Edit Product", "dependencies": ["product.addProduct"] }
+    ]
+  },
+  {
+    "key": "reports",
+    "label": "Reports",
+    "description": "Reporting and data export.",
+    "permissions": [
+      { "key": "generateReports", "label": "Generate Reports" },
+      { "key": "downloadContacts", "label": "Download Contacts" }
+    ]
+  },
+  {
+    "key": "mobileAppAccess",
+    "label": "Mobile App Access",
+    "description": "Mobile presence and punch operations.",
+    "permissions": [
+      { "key": "enableGeoTracking", "label": "Enable Geo Tracking" },
+      { "key": "enableGeoLocation", "label": "Enable Geo Location" },
+      { "key": "punchIn", "label": "Punch In" },
+      { "key": "punchOut", "label": "Punch Out", "dependencies": ["mobileAppAccess.punchIn"] },
+      { "key": "configurePunchTime", "label": "Configure Punch Time", "dependencies": ["mobileAppAccess.punchIn", "mobileAppAccess.punchOut"] }
+    ]
+  },
+  {
+    "key": "newEmailAccess",
+    "label": "NEW EMAIL ACCESS",
+    "description": "Mailbox, inbox, template, and mail log access.",
+    "permissions": [
+      { "key": "enableMailModule", "label": "Enable Mail Module" },
+      { "key": "connectMailbox", "label": "Connect Mailbox", "dependencies": ["newEmailAccess.enableMailModule"] },
+      { "key": "viewInbox", "label": "View Inbox", "dependencies": ["newEmailAccess.enableMailModule"] },
+      { "key": "sendMail", "label": "Send Mail", "dependencies": ["newEmailAccess.enableMailModule", "newEmailAccess.connectMailbox"] },
+      { "key": "replyMail", "label": "Reply Mail", "dependencies": ["newEmailAccess.viewInbox", "newEmailAccess.sendMail"] },
+      { "key": "downloadAttachment", "label": "Download Attachment", "dependencies": ["newEmailAccess.viewInbox"] },
+      { "key": "manageTemplates", "label": "Manage Templates", "dependencies": ["newEmailAccess.enableMailModule"] },
+      { "key": "autoAssignment", "label": "Auto Assignment", "dependencies": ["newEmailAccess.enableMailModule"] },
+      { "key": "viewMailLogs", "label": "View Mail Logs", "dependencies": ["newEmailAccess.enableMailModule"] }
+    ]
+  }
+]

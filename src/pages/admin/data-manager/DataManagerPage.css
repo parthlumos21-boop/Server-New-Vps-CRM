@@ -1,0 +1,367 @@
+/* ── Data Manager Page Shell ─────────────────────────────── */
+.dm-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0.5rem 0 2rem 0;
+  box-sizing: border-box;
+}
+
+/* ── Data Manager Header ─────────────────────────────────── */
+.dm-header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2.75rem;
+  text-align: left;
+}
+
+.dm-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin-bottom: 0.6rem;
+}
+
+.dm-title {
+  margin: 0 0 0.4rem 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+.dm-title-highlight {
+  color: #c60016;
+}
+
+.dm-subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #64748B;
+  font-weight: 400;
+  line-height: 1.45;
+  max-width: 680px;
+}
+
+/* ── Container & Grid ────────────────────────────────────── */
+.dm-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  width: 100%;
+}
+
+.dm-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* ── Card Shell ─────────────────────────────────────────── */
+.dm-card {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1.15rem 1.15rem 1.15rem 1.35rem;
+  border: 1px solid rgba(241, 245, 249, 0.95);
+  box-shadow: 0 4px 14px -3px rgba(0, 0, 0, 0.03), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  min-height: 145px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+  box-sizing: border-box;
+  text-align: left;
+  width: 100%;
+}
+
+.dm-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.07), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  border-color: rgba(226, 232, 240, 0.9);
+}
+
+/* Card Left Content */
+.dm-card-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  max-width: 58%;
+  z-index: 2;
+}
+
+.dm-card-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 0.6rem;
+  transition: transform 0.25s ease;
+}
+
+.dm-card:hover .dm-card-badge {
+  transform: scale(1.05);
+}
+
+.dm-card-title {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.dm-card-description {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748B;
+  line-height: 1.35;
+}
+
+.dm-card-action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  margin-top: 0.75rem;
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.dm-card:hover .dm-card-action-btn {
+  transform: translateX(3px);
+}
+
+/* Themes */
+/* Orange Theme */
+.dm-card--orange .dm-card-badge {
+  background: #FFEDD5;
+  color: #EA580C;
+}
+
+.dm-card--orange .dm-card-action-btn {
+  background: #FFEDD5;
+  color: #EA580C;
+}
+
+/* Blue Theme */
+.dm-card--blue .dm-card-badge {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+.dm-card--blue .dm-card-action-btn {
+  background: #DBEAFE;
+  color: #2563EB;
+}
+
+/* Green Theme */
+.dm-card--green .dm-card-badge {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+.dm-card--green .dm-card-action-btn {
+  background: #DCFCE7;
+  color: #16A34A;
+}
+
+/* Purple Theme */
+.dm-card--purple .dm-card-badge {
+  background: #F3E8FF;
+  color: #9333EA;
+}
+
+.dm-card--purple .dm-card-action-btn {
+  background: #F3E8FF;
+  color: #9333EA;
+}
+
+/* Card Right Illustration */
+.dm-card-illustration {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dm-card-arc {
+  position: absolute;
+  right: -20%;
+  top: -20%;
+  bottom: -20%;
+  width: 120%;
+  border-radius: 50%;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.dm-card--orange .dm-card-arc {
+  background: radial-gradient(circle at 65% 50%, rgba(254, 215, 170, 0.6) 0%, rgba(255, 237, 213, 0.3) 55%, transparent 80%);
+}
+
+.dm-card--blue .dm-card-arc {
+  background: radial-gradient(circle at 65% 50%, rgba(191, 219, 254, 0.6) 0%, rgba(219, 234, 254, 0.3) 55%, transparent 80%);
+}
+
+.dm-card--green .dm-card-arc {
+  background: radial-gradient(circle at 65% 50%, rgba(187, 247, 208, 0.6) 0%, rgba(220, 252, 231, 0.3) 55%, transparent 80%);
+}
+
+.dm-card--purple .dm-card-arc {
+  background: radial-gradient(circle at 65% 50%, rgba(233, 213, 255, 0.6) 0%, rgba(243, 232, 255, 0.3) 55%, transparent 80%);
+}
+
+.dm-card-graphic {
+  position: relative;
+  z-index: 1;
+  width: 145px;
+  height: 130px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dm-card:hover .dm-card-graphic {
+  transform: scale(1.05) translateY(-2px);
+}
+
+/* High-specificity protection to prevent global CSS from tinting Data Manager SVG illustrations */
+.dm-page :is(.dm-card-graphic, .dm-header-bg-graphic) {
+  color: unset !important;
+}
+
+.dm-page :is(.dm-card-graphic, .dm-header-bg-graphic) :is(svg, path, circle, rect, line, polyline, polygon, ellipse, g) {
+  fill: revert !important;
+  stroke: revert !important;
+}
+
+
+
+
+/* ── Modal styles ────────────────────────────────────────– */
+.dm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dm-modal {
+  background: var(--surface-card, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--surface-app, #f1f5f9);
+}
+
+.dm-modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
+.dm-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dm-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.dm-modal-body {
+  padding: 2rem 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .dm-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .dm-page {
+    padding: 1.5rem 1rem;
+  }
+  .dm-title {
+    font-size: 2rem;
+  }
+  .dm-card {
+    padding: 1.75rem 1.5rem;
+    min-height: 200px;
+  }
+  .dm-card-left {
+    max-width: 65%;
+  }
+  .dm-card-graphic {
+    width: 125px;
+    height: 125px;
+  }
+}
+

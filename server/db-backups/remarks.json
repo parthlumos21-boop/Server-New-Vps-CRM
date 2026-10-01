@@ -1,0 +1,32 @@
+[
+  {
+    "_id": {
+      "$oid": "6a7abe55a34155e6d4b2ab88"
+    },
+    "legacyId": 1,
+    "createdAt": {
+      "$date": "2026-08-11T06:16:53.632Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-11T06:16:53.632Z"
+    },
+    "accountId": 1,
+    "category": "general",
+    "content": "teting and demo",
+    "createdBy": 16,
+    "companyId": 1,
+    "ownerUserId": 16,
+    "projectId": null,
+    "workflowId": null,
+    "assignmentMode": "type",
+    "assignedUserIds": [
+      "16",
+      "1"
+    ],
+    "assignedUserTypes": [
+      "Manager"
+    ],
+    "assignedUserGroups": [],
+    "__v": 0
+  }
+]

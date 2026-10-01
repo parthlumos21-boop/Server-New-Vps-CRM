@@ -1,0 +1,145 @@
+.sales-dashboard-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.sales-dashboard-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.sales-dashboard-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1f5a8f 100%);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+  transform: translateY(-2px);
+}
+
+.sales-dashboard-btn:active {
+  transform: translateY(0);
+}
+
+.sales-dashboard-icon {
+  font-size: 16px;
+}
+
+.sales-dashboard-chevron {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+  margin-left: 4px;
+}
+
+.sales-dashboard-chevron.active {
+  transform: rotate(180deg);
+}
+
+.sales-dashboard-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--surface-card);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  max-width: 350px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideDownMenu 0.2s ease;
+}
+
+@keyframes slideDownMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sales-dashboard-menu-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.sales-dashboard-menu-item:last-child {
+  border-bottom: none;
+}
+
+.sales-dashboard-menu-item:hover {
+  background-color: var(--surface-card);
+}
+
+.sales-dashboard-menu-item:active {
+  background-color: var(--surface-muted);
+}
+
+.sales-dashboard-menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-size: 18px;
+  min-width: 24px;
+  margin-top: 2px;
+}
+
+.sales-dashboard-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sales-dashboard-menu-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.sales-dashboard-menu-desc {
+  display: block;
+  font-size: 12px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sales-dashboard-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .sales-dashboard-menu {
+    min-width: 240px;
+  }
+
+  .sales-dashboard-menu-item {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+}

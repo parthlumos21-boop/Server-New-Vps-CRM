@@ -1,0 +1,546 @@
+/* User portal visual system.
+   Presentation-only overrides, deliberately scoped to .layout--user. */
+.layout--user {
+  --user-ink: #0f172a;
+  --user-muted: #64748b;
+  --user-border: #f0eae1;
+  --user-surface: #ffffff;
+  --user-primary: #c60016;
+  --user-primary-soft: #ffe4e6;
+  background: #FAF7F2 !important;
+  color: var(--user-ink);
+}
+
+.layout--user .layout-body {
+  gap: 20px;
+  padding-top: calc(var(--header-height) + 22px);
+}
+
+.layout--user .layout-column--sidebar {
+  border: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.layout--user .sidebar--user {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.layout--user .sidebar--user .sb-nav {
+  gap: 12px;
+  padding: 16px 14px 24px;
+}
+
+.layout--user .sidebar--user .sb-top-card {
+  min-height: 126px;
+  border: 1px solid var(--user-border) !important;
+  border-radius: 20px;
+  background: #ffffff !important;
+  box-shadow: 0 10px 24px rgba(198, 0, 22, 0.06) !important;
+}
+
+.layout--user .sidebar--user .sb-nav-section {
+  gap: 6px;
+  padding: 8px 4px;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.layout--user .sidebar--user .sb-link,
+.layout--user .sidebar--user .sb-plain-link,
+.layout--user .sidebar--user .sb-group-trigger {
+  min-height: 44px;
+  border-radius: 12px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.layout--user .sidebar--user .sb-link:hover,
+.layout--user .sidebar--user .sb-plain-link:hover,
+.layout--user .sidebar--user .sb-group-trigger:hover {
+  background: #fff5f5;
+  border-color: #f4c8cc;
+  color: #c60016;
+}
+
+.layout--user .sidebar--user .sb-link--active,
+.layout--user .sidebar--user .sb-plain-link--active,
+.layout--user .sidebar--user .sb-group-trigger--route-active {
+  background: #fff5f5 !important;
+  border-color: #c60016 !important;
+  color: #c60016 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 5px 14px rgba(220, 38, 38, 0.1) !important;
+}
+
+.layout--user .header--user {
+  padding: 10px 22px;
+  background: rgba(247, 248, 251, 0.88) !important;
+  border-bottom: 1px solid rgba(230, 234, 240, 0.9) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.layout--user .header--user .hdr-icon-btn,
+.layout--user .header--user .hdr-theme-toggle,
+.layout--user .header--user .hdr-user-btn {
+  border: 1px solid var(--user-border) !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  color: #526071 !important;
+  box-shadow: 0 4px 12px rgba(23, 32, 51, 0.04) !important;
+}
+
+.layout--user .layout-content-frame > * {
+  animation: user-page-in 0.28s ease-out both;
+}
+
+.layout--user :is(.ud-stat-card, .ud-card, .admin-panel, .admin-accounts-card, .deals-page, .quotations-page, .tasks-page, .reminders-page) {
+  border-color: var(--user-border) !important;
+  border-radius: 20px !important;
+  background: var(--user-surface) !important;
+  box-shadow: 0 10px 28px rgba(23, 32, 51, 0.055) !important;
+}
+
+.layout--user :not(.add-account-landscape-page) :is(input, select, textarea):not(.legacy-form-control) {
+  min-height: 42px;
+  border: 1px solid #dfe4eb !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: var(--user-ink) !important;
+}
+
+.layout--user :not(.add-account-landscape-page) :is(input, select, textarea):not(.legacy-form-control):focus {
+  border-color: #df7d87 !important;
+  box-shadow: 0 0 0 4px rgba(198, 0, 22, 0.08) !important;
+  outline: none;
+}
+
+@keyframes user-page-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 980px) {
+  .layout--user .layout-body { padding-top: calc(var(--header-height) + 12px); }
+  .layout--user .header--user { padding-inline: 12px; }
+}
+
+/* Unique Wizard Stepper Animations & Card Styling */
+.wizard-stepper:not(.add-account-landscape-stepper) {
+  position: relative;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.wizard-stepper:not(.add-account-landscape-stepper) .wizard-stepper__step {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.wizard-stepper:not(.add-account-landscape-stepper) .wizard-stepper__step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.wizard-stepper:not(.add-account-landscape-stepper) .wizard-stepper__step--active {
+  background: rgba(198, 0, 22, 0.05) !important;
+  border: 1px solid rgba(198, 0, 22, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.wizard-stepper__index {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes bounceShort {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.animate-bounce-short {
+  animation: bounceShort 1.5s ease-in-out infinite;
+}
+
+/* CREATIVE PROJECT DETAILS UI SYSTEM FOR ADMIN & USER PORTALS */
+.admin-accounts-placeholder-card,
+.project-details-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+  margin-bottom: 1.5rem !important;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.admin-accounts-placeholder-card:hover,
+.project-details-card:hover {
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-2px);
+}
+
+.admin-accounts-placeholder-card h1 {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  letter-spacing: -0.02em !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.admin-accounts-placeholder-card p {
+  color: #64748b !important;
+  font-size: 0.84rem !important;
+  font-weight: 500 !important;
+}
+
+/* Form Controls & Inputs inside Project Details */
+.project-details-card input,
+.project-details-card select {
+  width: 100% !important;
+  min-height: 2.45rem !important;
+  padding: 0.45rem 0.85rem !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.84rem !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.project-details-card input:hover,
+.project-details-card select:hover {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+}
+
+.project-details-card input:focus,
+.project-details-card select:focus {
+  border-color: #c60016 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(198, 0, 22, 0.12) !important;
+  outline: none !important;
+}
+
+/* ── Modern Account Details Drawer & Overlay for User Portal ── */
+.layout--user .admin-accounts-drawer-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1050 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: clamp(10px, 2.5vw, 24px) !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  animation: userDrawerOverlayFade 0.2s ease !important;
+}
+
+@keyframes userDrawerOverlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.layout--user .admin-accounts-workspace {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 1240px !important;
+  height: auto !important;
+  max-height: calc(100vh - 2.5rem) !important;
+  max-height: calc(100dvh - 2.5rem) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.28) !important;
+  border: 1px solid #f0eae1 !important;
+  overflow: hidden !important;
+  margin: auto !important;
+}
+
+.layout--user .admin-accounts-workspace-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 35 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.25rem !important;
+  padding: 1.1rem 1.6rem !important;
+  background: #faf7f2 !important;
+  border-bottom: 1px solid #f0eae1 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+}
+
+.layout--user .admin-accounts-workspace-title h2 {
+  color: #0f172a !important;
+  font-size: clamp(1.2rem, 1.6vw, 1.5rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 !important;
+}
+
+.layout--user .admin-accounts-workspace-header-facts {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-top: 0.45rem !important;
+}
+
+.layout--user .admin-accounts-workspace-header-facts span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  padding: 0.28rem 0.75rem !important;
+  border: 1px solid #e2d9cc !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+}
+
+.layout--user .admin-accounts-workspace-header-facts strong {
+  color: #0f172a !important;
+}
+
+.layout--user .admin-accounts-workspace-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  flex-shrink: 0 !important;
+}
+
+.layout--user .admin-accounts-actions-trigger {
+  min-height: 2.35rem !important;
+  padding: 0.4rem 0.95rem !important;
+  border-radius: 10px !important;
+  border: 1px solid #dc2626 !important;
+  background: #ffffff !important;
+  color: #dc2626 !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  transition: all 0.18s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+}
+
+.layout--user .admin-accounts-actions-trigger:hover {
+  background: #ffe4e6 !important;
+  color: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
+
+.layout--user .admin-accounts-workspace-close {
+  min-height: 2.35rem !important;
+  padding: 0.4rem 1.15rem !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  transition: all 0.18s ease !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25) !important;
+}
+
+.layout--user .admin-accounts-workspace-close:hover {
+  background: #b91c1c !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.32) !important;
+}
+
+.layout--user .admin-accounts-workspace-body {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  padding: 1.5rem 1.6rem 2.5rem !important;
+  background: #ffffff !important;
+}
+
+.layout--user .admin-accounts-workspace-flat-fields {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 1.1rem 1.15rem !important;
+  align-items: start !important;
+}
+
+.layout--user .admin-accounts-workspace-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.35rem !important;
+  padding: 0.8rem 1rem !important;
+  border: 1px solid #f0eae1 !important;
+  border-radius: 14px !important;
+  background: #faf7f2 !important;
+  transition: all 0.2s ease !important;
+  min-height: 80px !important;
+}
+
+.layout--user .admin-accounts-workspace-field:hover {
+  border-color: #e5dec9 !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(180, 160, 140, 0.08) !important;
+}
+
+.layout--user .admin-accounts-workspace-field--single-editing {
+  border-color: #dc2626 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+.layout--user .admin-accounts-workspace-field-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  color: #64748b !important;
+  font-size: 0.74rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.layout--user .admin-accounts-workspace-field-edit-btn {
+  border: none !important;
+  background: transparent !important;
+  color: #94a3b8 !important;
+  padding: 2px !important;
+  border-radius: 4px !important;
+  transition: color 0.15s ease !important;
+}
+
+.layout--user .admin-accounts-workspace-field-edit-btn:hover {
+  color: #dc2626 !important;
+}
+
+.layout--user .admin-accounts-workspace-field-value {
+  color: #0f172a !important;
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  word-break: break-word !important;
+}
+
+.layout--user .admin-accounts-workspace-field input,
+.layout--user .admin-accounts-workspace-field select,
+.layout--user .admin-accounts-workspace-field textarea {
+  width: 100% !important;
+  min-height: 2.5rem !important;
+  padding: 0.45rem 0.75rem !important;
+  border: 1px solid #f0eae1 !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+}
+
+.layout--user .admin-accounts-workspace-field input:focus,
+.layout--user .admin-accounts-workspace-field select:focus,
+.layout--user .admin-accounts-workspace-field textarea:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+  outline: none !important;
+}
+
+.layout--user .admin-accounts-workspace-field-wide {
+  grid-column: 1 / -1 !important;
+}
+
+.layout--user .admin-accounts-workspace-section {
+  margin-top: 2rem !important;
+  padding-top: 1.5rem !important;
+  border-top: 1px solid #f0eae1 !important;
+}
+
+.layout--user .admin-accounts-workspace-section-header h3 {
+  color: #0f172a !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+}
+
+.layout--user .admin-accounts-converted-deal-card {
+  background: #faf7f2 !important;
+  border: 1px solid #f0eae1 !important;
+  border-radius: 12px !important;
+  padding: 0.85rem 1.1rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.layout--user .admin-accounts-converted-deal-card:hover {
+  background: #ffffff !important;
+  border-color: #e5dec9 !important;
+  box-shadow: 0 6px 18px rgba(180, 160, 140, 0.1) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Modernized Account Action / Details Overlay Form Design */
+.layout--user .admin-accounts-action-form,
+.layout--user .admin-accounts-placeholder-card .admin-accounts-action-form {
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
+  padding: 1.5rem !important;
+  margin-top: 1.25rem !important;
+  gap: 1.25rem !important;
+}
+
+.layout--user .admin-accounts-action-form-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 1rem 1.25rem !important;
+}
+
+.layout--user .admin-accounts-action-form-grid--section {
+  padding: 1.2rem 1.25rem !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02) !important;
+}
+
+.layout--user .admin-accounts-bulk-field {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.4rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #334155 !important;
+}
+
+.layout--user .admin-accounts-bulk-field input,
+.layout--user .admin-accounts-bulk-field select,
+.layout--user .admin-accounts-bulk-field textarea {
+  width: 100% !important;
+  padding: 0.65rem 0.85rem !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.layout--user .admin-accounts-bulk-field input:focus,
+.layout--user .admin-accounts-bulk-field select:focus,
+.layout--user .admin-accounts-bulk-field textarea:focus {
+  border-color: #dc2626 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+  outline: none !important;
+}

@@ -1,0 +1,18 @@
+
+> crm-platform@1.0.0 start
+> node tools/start-stack.js
+
+========================================
+ CRM - Starting...
+========================================
+
+MongoDB mode: using MONGODB_URI/MONGO_URI or local mongodb://127.0.0.1:27017/crm.
+
+CRM Backend started with PID 31988.
+
+Building frontend assets...
+Running garbage collection to free PowerShell/.NET memory...
+
+> crm-platform@1.0.0 build
+> node tools/build.cjs
+
