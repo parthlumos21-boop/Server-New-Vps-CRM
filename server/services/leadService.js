@@ -178,6 +178,10 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
   }
 
   const hasReasonForLost = Object.prototype.hasOwnProperty.call(sanitizedPayload, 'reasonForLost') || Object.prototype.hasOwnProperty.call(sanitizedPayload, 'reasonForLostOrder')
+  const resolvedReasonForLost = hasReasonForLost
+    ? (sanitizedPayload.reasonForLost || sanitizedPayload.reasonForLostOrder || '')
+    : (existingLead?.reasonForLost || existingLead?.reasonForLostOrder || existingLead?.formData?.reasonForLost || existingLead?.formData?.reasonForLostOrder || '')
+
   const targetStatus = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending'))
   const targetAccountStatus = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending'))
   const targetAccountState = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending'))
@@ -193,7 +197,8 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     stage: isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'),
     accountStatus: targetAccountStatus,
     accountState: targetAccountState,
-    reasonForLost: hasReasonForLost ? sanitizedPayload.reasonForLost : (existingLead?.reasonForLost || existingLead?.formData?.reasonForLost || ''),
+    reasonForLost: resolvedReasonForLost,
+    reasonForLostOrder: resolvedReasonForLost,
     assignedTo: assignedUser?.id || existingLead?.assignedTo || null,
     createdBy: existingLead?.createdBy || actor.id,
     ownerName,
@@ -231,6 +236,8 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
       stage: isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'),
       accountStatus: targetAccountStatus,
       accountState: targetAccountState,
+      reasonForLost: resolvedReasonForLost,
+      reasonForLostOrder: resolvedReasonForLost,
     },
   }, existingLead)
 
@@ -543,6 +550,66 @@ const updateLead = async (actor, leadId, payload) => {
     ).catch(() => {})
   }
 
+  const isRejectedTarget = targetStage === 'rejected' || payload.stage === 'rejected' || payload.status === 'rejected' || Boolean(payload.reasonForLost) || Boolean(payload.reasonForLostOrder)
+  if (isRejectedTarget) {
+    const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
+    const Deal = getMongoModel('deals')
+    const Customer = getMongoModel('customers')
+    const reasonValue = payload.reasonForLost || payload.reasonForLostOrder || leadPayload.reasonForLost || ''
+    
+    await Lead.updateOne(
+      { legacyId: normalizeLeadId(leadId) },
+      {
+        $set: {
+          stage: 'rejected',
+          reasonForLost: reasonValue,
+          reasonForLostOrder: reasonValue,
+          'formData.stage': 'rejected',
+          'formData.reasonForLost': reasonValue,
+          'formData.reasonForLostOrder': reasonValue,
+          updatedAt: new Date().toISOString(),
+        },
+      }
+    ).catch(() => {})
+
+    await Deal.updateMany(
+      { accountId: normalizeLeadId(leadId), frontendDeleted: { $ne: true } },
+      {
+        $set: {
+          stage: 'rejected',
+          reasonForLost: reasonValue,
+          reasonForLostOrder: reasonValue,
+          updatedAt: new Date().toISOString(),
+          'data.stage': 'rejected',
+          'data.reasonForLost': reasonValue,
+          'data.reasonForLostOrder': reasonValue,
+          'formData.stage': 'rejected',
+          'formData.reasonForLost': reasonValue,
+          'formData.reasonForLostOrder': reasonValue,
+        },
+      }
+    ).catch(() => {})
+
+    await Customer.updateMany(
+      { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }] },
+      {
+        $set: {
+          customerStatus: 'rejected',
+          status: 'rejected',
+          accountState: 'rejected',
+          reasonForLost: reasonValue,
+          reasonForLostOrder: reasonValue,
+          updatedAt: new Date().toISOString(),
+          'data.customerStatus': 'rejected',
+          'data.reasonForLost': reasonValue,
+          'formData.reasonForLost': reasonValue,
+          'formData.reasonForLostOrder': reasonValue,
+        },
+      }
+    ).catch(() => {})
+  }
+
   // Create re-assignment To-Do task if owner has changed
   const newOwner = payload.assignedTo || payload.ownerId || payload.assignedUserId || payload.accountOwner
   if (newOwner && String(newOwner) !== String(existingLead.assignedTo)) {
@@ -572,39 +639,106 @@ const updateLead = async (actor, leadId, payload) => {
   const hasDealDetails = Boolean(payload.dealName || payload.dealValue || payload.dealDescription || payload.expectedClosureDate || payload.dealOwner)
   const isStatusConverted = payload.status === 'converted' || payload.stage === 'converted' || payload.accountState === 'converted' || payload.status === 'staged' || payload.stage === 'staged' || payload.accountState === 'staged' || payload.status === 'convert_to_po' || payload.stage === 'convert_to_po' || payload.accountState === 'convert_to_po' || Boolean(payload.poValue)
   
-  if (!updatedLead.isConverted && (hasDealDetails || isStatusConverted)) {
-    const { getMongoModel } = require('../models/mongoModels')
+  if (hasDealDetails || isStatusConverted || updatedLead.isConverted) {
+    const { getMongoModel, getNextLegacyId } = require('../models/mongoModels')
     const Deal = getMongoModel('deals')
+    const Customer = getMongoModel('customers')
     const existingDeal = await Deal.findOne({ accountId: normalizeLeadId(leadId), frontendDeleted: { $ne: true } }).lean()
     
     if (existingDeal) {
       const dealPayload = buildDealPayloadFromAccount(updatedLead, actor)
       const targetDealId = existingDeal.legacyId || existingDeal.id || existingDeal._id
-      await dealService.update(actor, targetDealId, dealPayload)
+      await dealService.update(actor, targetDealId, dealPayload).catch((err) => console.warn('Deal update sync warning:', err.message))
       
       const convertedAt = new Date().toISOString()
+      const targetState = (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : (updatedLead.status === 'staged' || updatedLead.stage === 'staged' ? 'staged' : (updatedLead.status || 'staged'))
       await leadRepository.updateLead(normalizeLeadId(leadId), {
         isConverted: true,
         convertedAt,
         convertedBy: actor.id,
         accountId: leadId,
         dealId: targetDealId,
-        status: (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
-        accountState: (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
+        status: targetState,
+        accountState: targetState,
         formData: {
           ...(updatedLead.formData || {}),
           isConverted: true,
           convertedAt,
           convertedBy: actor.id,
           dealId: targetDealId,
-          status: (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
-          accountState: (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
+          status: targetState,
+          accountState: targetState,
         }
       })
       updatedLead = await getLeadById(actor, leadId, { includeGroupScope: false })
-    } else {
-      await convertLeadToDeal(actor, leadId)
+    } else if (!updatedLead.isConverted) {
+      await convertLeadToDeal(actor, leadId).catch((err) => console.warn('Convert lead to deal warning:', err.message))
       updatedLead = await getLeadById(actor, leadId, { includeGroupScope: false })
+    }
+
+    // Multi-collection sync for MongoDB customers collection
+    const accountCustName = updatedLead.accountName || updatedLead.customerName || updatedLead.name || ''
+    const existingCustomer = await Customer.findOne({
+      $or: [
+        { accountId: normalizeLeadId(leadId) },
+        { accountId: String(leadId) },
+        ...(accountCustName ? [{ customerName: accountCustName }, { name: accountCustName }] : [])
+      ]
+    }).lean()
+
+    const targetCustomerStatus = (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : (updatedLead.status || updatedLead.stage || 'staged')
+    if (existingCustomer) {
+      await Customer.updateOne(
+        { _id: existingCustomer._id },
+        {
+          $set: {
+            customerStatus: targetCustomerStatus,
+            status: targetCustomerStatus,
+            accountState: targetCustomerStatus,
+            poValue: updatedLead.poValue || payload.poValue || 0,
+            gstin: updatedLead.gstin || payload.gstin || '',
+            jobNo: updatedLead.jobNo || payload.jobNo || '',
+            updatedAt: new Date().toISOString(),
+            'data.customerStatus': targetCustomerStatus,
+            'data.status': targetCustomerStatus,
+            'data.poValue': updatedLead.poValue || payload.poValue || 0,
+            'data.gstin': updatedLead.gstin || payload.gstin || '',
+            'data.jobNo': updatedLead.jobNo || payload.jobNo || '',
+          }
+        }
+      ).catch((err) => console.warn('Customer update sync warning:', err.message))
+    } else {
+      try {
+        const custLegacyId = await getNextLegacyId('customers')
+        await Customer.create({
+          legacyId: custLegacyId,
+          name: accountCustName || 'Account Customer',
+          customerName: accountCustName || 'Account Customer',
+          customerNumber: `CUST-${custLegacyId < 1001 ? custLegacyId + 1000 : custLegacyId}`,
+          accountId: normalizeLeadId(leadId),
+          customerStatus: targetCustomerStatus,
+          status: targetCustomerStatus,
+          accountState: targetCustomerStatus,
+          customerOwner: updatedLead.accountOwner || updatedLead.ownerName || actor.name || '',
+          customerCategory: updatedLead.accountCategory || updatedLead.customerCategory || 'SWATI',
+          poValue: updatedLead.poValue || payload.poValue || 0,
+          gstin: updatedLead.gstin || payload.gstin || '',
+          jobNo: updatedLead.jobNo || payload.jobNo || '',
+          createdBy: actor.id,
+          companyId: actor.companyId || 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          data: {
+            accountId: normalizeLeadId(leadId),
+            customerStatus: targetCustomerStatus,
+            poValue: updatedLead.poValue || payload.poValue || 0,
+            gstin: updatedLead.gstin || payload.gstin || '',
+            jobNo: updatedLead.jobNo || payload.jobNo || '',
+          }
+        })
+      } catch (custErr) {
+        console.warn('Customer create sync warning:', custErr.message)
+      }
     }
   }
 

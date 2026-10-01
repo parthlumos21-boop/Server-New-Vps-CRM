@@ -214,7 +214,8 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
   if (typeof accountNameVal === 'string' && /Report Filter/i.test(accountNameVal)) {
     return null
   }
-  const projectNameVal = account.projectName || account.company || formData['Project Name'] || formData.projectName || formData.company || account.raw?.projectName || account.raw?.company || account.raw?.formData?.['Project Name'] || account.raw?.formData?.projectName || titleize(account.productCategory || formData['Product Category']) || 'General Enquiry'
+  const dealNameVal = account.dealName || formData['Deal Name'] || formData.dealName || account.raw?.dealName || account.raw?.formData?.dealName || accountNameVal
+  const projectNameVal = account.dealName || formData['Deal Name'] || formData.dealName || account.raw?.dealName || account.raw?.formData?.dealName || account.projectName || account.company || formData['Project Name'] || formData.projectName || formData.company || account.raw?.projectName || account.raw?.company || account.raw?.formData?.['Project Name'] || account.raw?.formData?.projectName || titleize(account.productCategory || formData['Product Category']) || 'General Enquiry'
   const primaryEmailVal = primaryEmail || formData['Email'] || formData.email || formData['Alternate Email'] || account.raw?.email || account.raw?.contactEmail || ''
   const primaryPhoneVal = primaryPhone || formData['Phone'] || formData.phone || formData['Alternate Phone'] || account.raw?.phone || account.raw?.contactPhone || ''
   const contactPersonVal = account.contactPerson || formData['Contact Person'] || formData.contactPerson || primaryContact.name || account.raw?.contactPerson || account.raw?.formData?.['Contact Person'] || ''
@@ -233,6 +234,7 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
     name: accountNameVal,
     accountName: accountNameVal,
     accountCategory: parsedAccountCategory,
+    dealName: dealNameVal,
     projectName: projectNameVal,
     reasonForLost,
     accountDate: account.accountDate || formData['Account Date'] || fallbackDate,

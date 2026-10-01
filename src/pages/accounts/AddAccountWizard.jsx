@@ -232,6 +232,49 @@ const AddAccountWizard = () => {
   }, [])
 
   useEffect(() => {
+    if (!user || !Array.isArray(ownerOptions) || ownerOptions.length === 0) return
+
+    const userNames = [
+      user.name,
+      user.ownerDisplayName,
+      user.username,
+      user.email,
+    ].map(v => String(v || '').trim().toLowerCase()).filter(Boolean)
+
+    const userOwnerCode = String(user.ownerCode || user.employeeId || '').trim()
+
+    const matchedOwner = ownerOptions.find((owner) => {
+      const ownerName = String(owner.name || owner.username || '').trim().toLowerCase()
+      const ownerCode = String(owner.ownerCode || owner.employeeId || '').trim()
+      const ownerEmail = String(owner.email || '').trim().toLowerCase()
+
+      const nameMatch = userNames.some(n => n && (n === ownerName || ownerName.includes(n) || n.includes(ownerName)))
+      const codeMatch = Boolean(userOwnerCode && ownerCode && userOwnerCode === ownerCode)
+      const emailMatch = Boolean(ownerEmail && userNames.some(n => n === ownerEmail))
+
+      return nameMatch || codeMatch || emailMatch
+    })
+
+    const defaultOwnerName = matchedOwner?.name || user.name || user.username || ''
+
+    if (defaultOwnerName) {
+      setFormData((prev) => {
+        let changed = false
+        const next = { ...prev }
+        if (!next.accountOwner) {
+          next.accountOwner = defaultOwnerName
+          changed = true
+        }
+        if (!next.dealOwner) {
+          next.dealOwner = defaultOwnerName
+          changed = true
+        }
+        return changed ? next : prev
+      })
+    }
+  }, [user, ownerOptions])
+
+  useEffect(() => {
     const unsubscribe = customerService.subscribe((nextCustomers) => {
       setCustomers([...nextCustomers])
     })

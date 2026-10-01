@@ -58,6 +58,7 @@ const AccountActionPlaceholderPage = () => {
   const [reminderTime, setReminderTime] = useState('09:00')
   const [reminderMode, setReminderMode] = useState(reminderModes[0])
   const [reminderNote, setReminderNote] = useState('')
+  const [reasonForLost, setReasonForLost] = useState('')
   const [stage, setStage] = useState(ACCOUNT_CHANGE_STATUS_OPTIONS[0]?.value || 'new')
   const [statusNote, setStatusNote] = useState('')
   const [poValue, setPoValue] = useState('')
@@ -128,6 +129,7 @@ const AccountActionPlaceholderPage = () => {
     setStage(getAllowedActionStatusOption(selectedAccount.status || selectedAccount.stage)?.value || ACTION_CHANGE_STATUS_OPTIONS[0]?.value || 'new')
     setStatusNote('')
     setPoValue(selectedAccount.poValue || '')
+    setReasonForLost(selectedAccount.reasonForLost || selectedAccount.reasonForLostOrder || '')
     setOrderReceivedStatus(selectedAccount.statusAsPerOrderReceived || '')
     setQuotationGivenStatus(selectedAccount.statusAsPerQuotationGiven || '')
     setGstin(selectedAccount.gstin || '')
@@ -227,6 +229,7 @@ const AccountActionPlaceholderPage = () => {
         accountStatus: isNotQuoted ? 'not_quoted' : 'Pending',
         accountState: isNotQuoted ? 'not_quoted' : (accountState || selectedStatusLabel),
         latestRemark: statusNote.trim() || selectedAccount.latestRemark,
+        ...(stage === 'rejected' ? { reasonForLost: reasonForLost.trim(), reasonForLostOrder: reasonForLost.trim() } : {}),
       }
 
       if (shouldShowAccountPoDetails(stage)) {
@@ -406,6 +409,23 @@ const AccountActionPlaceholderPage = () => {
                 {ACTION_CHANGE_STATUS_OPTIONS.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}
               </select>
             </label>
+            {stage === 'rejected' ? (
+              <label className="admin-accounts-bulk-field">
+                Reason For Lost
+                <select value={reasonForLost} onChange={(event) => setReasonForLost(event.target.value)}>
+                  <option value="">Choose Reason For Lost</option>
+                  {[
+                    'Intense Competition',
+                    'On Hold',
+                    'Payment Terms not matching',
+                    'Delivery not matching',
+                    'Budgetory Offer',
+                  ].map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
             <label className="admin-accounts-bulk-field admin-accounts-action-field-full">
               Status Note {isNotQuotedSelected ? <span style={{ color: '#dc2626' }}>* (Mandatory for Not Quoted)</span> : null}
               <textarea value={statusNote} onChange={(event) => setStatusNote(event.target.value)} placeholder="Add status note..." />

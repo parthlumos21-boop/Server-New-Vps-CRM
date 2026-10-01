@@ -8,8 +8,17 @@ const createLeadNotificationMessage = ({ actorName, recordName, action }) => {
   return `${actorName} updated ${recordName} Account.`
 }
 
-const { Expo } = require('expo-server-sdk')
-const expo = new Expo()
+let Expo
+let expo
+try {
+  const expoModule = require('expo-server-sdk')
+  Expo = expoModule.Expo
+  if (Expo) {
+    expo = new Expo()
+  }
+} catch (expoErr) {
+  console.warn('[NOTIFICATION] expo-server-sdk not available in environment:', expoErr.message)
+}
 const userDeviceRepository = require('../repositories/userDeviceRepository')
 const userRepository = require('../repositories/userRepository')
 

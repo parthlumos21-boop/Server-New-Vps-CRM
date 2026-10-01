@@ -696,6 +696,15 @@ const AccountDetailsDrawer = ({
                             return
                           }
 
+                          if (action.key === 'view-quotations') {
+                            const isAdminPortal = window.location.pathname.startsWith('/admin')
+                            const targetPath = isAdminPortal ? '/admin/quotation-manager/view' : '/quotation-manager/view'
+                            const accNo = encodeURIComponent(account.accountNumber || account.accountNo || '')
+                            const accName = encodeURIComponent(account.name || account.customerName || '')
+                            navigate(`${targetPath}?tab=accounts&accountNo=${accNo}&accountName=${accName}&accountId=${encodeURIComponent(account.id || '')}`)
+                            return
+                          }
+
                           if (action.key === 'send-mail' || action.key === 'converted-deal') {
                             window.location.href = buildAdminAccountActionUrl(action.route, account.id, boardStateQuery)
                             return

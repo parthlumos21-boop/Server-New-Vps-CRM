@@ -2036,6 +2036,17 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
       case 'manage': handleManageDeal(deal); return
       case 'linkedAccount': handleOpenLinkedAccountFromMenu(deal); return
       case 'generateQuotation': handleGenerateQuotationForDeal(deal); return
+      case 'viewQuotation': {
+        const basePath = location.pathname.startsWith('/admin') ? '/admin/quotation-manager/view' : '/quotation-manager/view'
+        const query = new URLSearchParams({
+          tab: 'deals',
+          accountId: deal.accountId || deal.id || '',
+          accountName: deal.accountName || deal.customerName || deal.title || '',
+          accountNo: deal.accountNumber || deal.dealNumber || '',
+        })
+        navigate(`${basePath}?${query.toString()}`)
+        return
+      }
       case 'uploadQuotation':
         handleOpenDealActionPage('upload-deal-quotation', deal)
         return
@@ -5406,6 +5417,10 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                       <button type="button" className="deals-board-card-action-item" onClick={() => handleBoardActionMenuItem('uploadQuotation', deal)}>
                                         <FaFileAlt />
                                         <span>Upload Quotation</span>
+                                      </button>
+                                      <button type="button" className="deals-board-card-action-item deals-board-card-action-item-blue" onClick={() => handleBoardActionMenuItem('viewQuotation', deal)}>
+                                        <FaFileAlt />
+                                        <span>View Quotation</span>
                                       </button>
                                       <button type="button" className="deals-board-card-action-item deals-board-card-action-item-green" onClick={() => handleBoardActionMenuItem('reassign', deal)}>
                                         <FaUser />

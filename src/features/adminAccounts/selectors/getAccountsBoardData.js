@@ -104,8 +104,8 @@ export const getAccountsBoardData = (accounts = []) => {
     // Add to its primary stage
     addToStage(record.stage)
 
-    // Also display converted records in the 'new' tab so they remain visible
-    if ((record.isConverted || record.stage === 'converted') && record.stage !== 'new') {
+    // Also display converted and rejected records in the 'new' tab so they remain visible
+    if ((record.isConverted || record.stage === 'converted' || record.stage === 'rejected') && record.stage !== 'new') {
       addToStage('new')
     }
   })

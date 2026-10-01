@@ -97,17 +97,43 @@ const mapReminder = (reminder) => {
 const mapRemark = async (remark) => {
   if (!remark) return null
   const createdBy = remark.createdBy ?? remark.created_by
-  const user = createdBy ? await User.findOne(byLegacyId(createdBy)).lean() : null
+  const user = createdBy ? await User.findOne(byLegacyId(createdBy)).lean().catch(() => null) : null
 
   return {
     ...remark,
     id: remark.legacyId ?? remark.id,
     account_id: remark.accountId,
     accountId: remark.accountId,
+    deal_id: remark.dealId,
+    dealId: remark.dealId,
     created_by: createdBy,
     createdBy,
-    created_by_name: user?.name || user?.username || '',
-    createdByName: user?.name || user?.username || '',
+    created_by_name: remark.createdByName || user?.name || user?.username || '',
+    createdByName: remark.createdByName || user?.name || user?.username || '',
+    created_by_email: remark.createdByEmail || user?.email || '',
+    createdByEmail: remark.createdByEmail || user?.email || '',
+    account_owner_id: remark.accountOwnerId,
+    accountOwnerId: remark.accountOwnerId,
+    account_owner_name: remark.accountOwnerName || '',
+    accountOwnerName: remark.accountOwnerName || '',
+    account_owner_email: remark.accountOwnerEmail || '',
+    accountOwnerEmail: remark.accountOwnerEmail || '',
+    account_created_by_id: remark.accountCreatedById,
+    accountCreatedById: remark.accountCreatedById,
+    account_created_by_name: remark.accountCreatedByName || '',
+    accountCreatedByName: remark.accountCreatedByName || '',
+    account_created_by_email: remark.accountCreatedByEmail || '',
+    accountCreatedByEmail: remark.accountCreatedByEmail || '',
+    deal_owner_id: remark.dealOwnerId,
+    dealOwnerId: remark.dealOwnerId,
+    deal_owner_name: remark.dealOwnerName || '',
+    dealOwnerName: remark.dealOwnerName || '',
+    deal_owner_email: remark.dealOwnerEmail || '',
+    dealOwnerEmail: remark.dealOwnerEmail || '',
+    account_name: remark.accountName || '',
+    accountName: remark.accountName || '',
+    deal_name: remark.dealName || '',
+    dealName: remark.dealName || '',
     company_id: remark.companyId,
     companyId: remark.companyId,
     owner_user_id: remark.ownerUserId,
@@ -124,6 +150,112 @@ const mapRemark = async (remark) => {
 }
 
 class RemarkService {
+  async resolveRemarkUserTrackingDetails(actor, lead, deal) {
+    // 1. Creator info
+    const creatorId = actor?.id ? toNumber(actor.id) : null
+    let creatorUser = creatorId ? await User.findOne(byLegacyId(creatorId)).lean().catch(() => null) : null
+    if (!creatorUser && actor?.email) {
+      creatorUser = await User.findOne({ email: actor.email }).lean().catch(() => null)
+    }
+    const createdBy = creatorId || actor?.id || null
+    const createdByName = creatorUser?.name || creatorUser?.username || actor?.name || actor?.username || ''
+    const createdByEmail = creatorUser?.email || actor?.email || ''
+
+    // 2. Account owner info (from lead or account context)
+    const rawAccountOwnerName = lead?.accountOwner || lead?.ownerName || lead?.addedBy || lead?.accountOwnerName || ''
+    const accountOwnerCode = lead?.accountOwnerCode || lead?.ownerCode || lead?.employeeId || null
+    const accountName = lead?.accountName || lead?.customerName || lead?.name || ''
+    
+    let accountOwnerUser = null
+    const accountOwnerSearchConditions = []
+    if (rawAccountOwnerName) {
+      accountOwnerSearchConditions.push(
+        { name: rawAccountOwnerName },
+        { ownerDisplayName: rawAccountOwnerName },
+        { username: rawAccountOwnerName }
+      )
+    }
+    if (accountOwnerCode) {
+      const numericCode = toNumber(accountOwnerCode)
+      if (numericCode !== null) {
+        accountOwnerSearchConditions.push({ ownerCode: numericCode }, { owner_code: numericCode })
+      }
+      accountOwnerSearchConditions.push({ ownerCode: String(accountOwnerCode) }, { employeeId: String(accountOwnerCode) })
+    }
+
+    if (accountOwnerSearchConditions.length > 0) {
+      accountOwnerUser = await User.findOne({ $or: accountOwnerSearchConditions }).lean().catch(() => null)
+    }
+
+    const accountOwnerId = accountOwnerUser?.legacyId || accountOwnerUser?.id || lead?.assignedTo || lead?.ownerUserId || lead?.ownerId || null
+    const accountOwnerName = accountOwnerUser?.name || rawAccountOwnerName || lead?.accountOwner || ''
+    const accountOwnerEmail = accountOwnerUser?.email || lead?.userEmail || lead?.createdUserBy || lead?.email || lead?.formData?.userEmail || lead?.formData?.createdUserBy || ''
+
+    // Account Created By info
+    const rawAccountCreatedByName = lead?.createdByUserName || lead?.createdUserBy || ''
+    const rawAccountCreatedByUserId = lead?.createdByUserId || lead?.createdBy || null
+    let accountCreatedUser = rawAccountCreatedByUserId ? await User.findOne(byLegacyId(rawAccountCreatedByUserId)).lean().catch(() => null) : null
+    if (!accountCreatedUser && rawAccountCreatedByName) {
+      accountCreatedUser = await User.findOne({ $or: [{ name: rawAccountCreatedByName }, { username: rawAccountCreatedByName }, { email: rawAccountCreatedByName }] }).lean().catch(() => null)
+    }
+    const accountCreatedById = accountCreatedUser?.legacyId || accountCreatedUser?.id || rawAccountCreatedByUserId || null
+    const accountCreatedByName = accountCreatedUser?.name || rawAccountCreatedByName || accountOwnerName
+    const accountCreatedByEmail = accountCreatedUser?.email || lead?.createdUserBy || lead?.userEmail || accountOwnerEmail
+
+    // 3. Deal Owner info (from deal context if provided)
+    let dealOwnerId = null
+    let dealOwnerName = ''
+    let dealOwnerEmail = ''
+    let dealCreatedById = null
+    let dealCreatedByName = ''
+    let dealCreatedByEmail = ''
+    let dealName = ''
+
+    if (deal) {
+      dealName = deal.title || deal.dealName || deal.name || lead?.dealName || ''
+      const rawDealOwnerName = deal.dealOwner || deal.ownerName || deal.data?.dealOwner || deal.data?.ownerName || accountOwnerName
+      let dealOwnerUser = null
+      if (rawDealOwnerName) {
+        dealOwnerUser = await User.findOne({
+          $or: [
+            { name: rawDealOwnerName },
+            { ownerDisplayName: rawDealOwnerName },
+            { username: rawDealOwnerName },
+          ],
+        }).lean().catch(() => null)
+      }
+      dealOwnerId = dealOwnerUser?.legacyId || dealOwnerUser?.id || deal.assignedTo || deal.ownerUserId || deal.createdBy || accountOwnerId
+      dealOwnerName = dealOwnerUser?.name || rawDealOwnerName || accountOwnerName
+      dealOwnerEmail = dealOwnerUser?.email || deal.contactEmail || deal.email || deal.data?.contactEmail || deal.data?.email || accountOwnerEmail
+
+      const rawDealCreatedById = deal.createdBy || deal.ownerUserId || null
+      let dealCreatedUser = rawDealCreatedById ? await User.findOne(byLegacyId(rawDealCreatedById)).lean().catch(() => null) : null
+      dealCreatedById = dealCreatedUser?.legacyId || dealCreatedUser?.id || rawDealCreatedById
+      dealCreatedByName = dealCreatedUser?.name || dealCreatedUser?.username || dealOwnerName
+      dealCreatedByEmail = dealCreatedUser?.email || dealOwnerEmail
+    }
+
+    return {
+      createdBy,
+      createdByName,
+      createdByEmail,
+      accountOwnerId: accountOwnerId ? toNumber(accountOwnerId) : null,
+      accountOwnerName,
+      accountOwnerEmail,
+      accountCreatedById: accountCreatedById ? toNumber(accountCreatedById) : null,
+      accountCreatedByName,
+      accountCreatedByEmail,
+      dealOwnerId: dealOwnerId ? toNumber(dealOwnerId) : null,
+      dealOwnerName,
+      dealOwnerEmail,
+      dealCreatedById: dealCreatedById ? toNumber(dealCreatedById) : null,
+      dealCreatedByName,
+      dealCreatedByEmail,
+      accountName,
+      dealName,
+    }
+  }
+
   async getAccessibleLead(accountId, actor) {
     const lead = leadRepository.findLeadByIdForActor
       ? await leadRepository.findLeadByIdForActor(accountId, actor, { companyWide: isPrivilegedRole(actor?.role) })
@@ -200,9 +332,13 @@ class RemarkService {
       throw new AppError('Account ID or Deal ID and content are required', 400)
     }
 
+    const Deal = getMongoModel('deals')
     const lead = accountId ? await this.getAccessibleLead(accountId, actor).catch(() => null) : null
+    const deal = dealId ? await Deal.findOne(byLegacyId(dealId)).lean().catch(() => null) : null
+    const trackingDetails = await this.resolveRemarkUserTrackingDetails(actor, lead, deal)
+
     const legacyId = await getNextLegacyId('remarks')
-    const companyId = actor.companyId || lead?.companyId || 1
+    const companyId = actor.companyId || lead?.companyId || deal?.companyId || 1
     const now = new Date()
 
     const remark = await Remark.create({
@@ -217,7 +353,8 @@ class RemarkService {
       endTime: endTime || null,
       remarkDate: remarkDate || null,
       callLogTime: callLogTime || null,
-      createdBy,
+      ...trackingDetails,
+      createdBy: trackingDetails.createdBy || createdBy || actor.id,
       companyId,
       ownerUserId: actor.id,
       projectId: lead?.projectId || null,

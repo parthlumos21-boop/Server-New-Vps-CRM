@@ -1148,18 +1148,27 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const profile = getProfileByValue(profileValue)
     const quotationDate = getTodayInputValue()
 
-    const targetDealId = account?.sourceDealId || account?.source_deal_id || account?.dealId
-    const targetAccountId = account?.id || account?.selectedAccountId || account?.accountNumber
+    const targetDealId = String(account?.sourceDealId || account?.source_deal_id || account?.dealId || '').trim()
+    const targetAccountId = String(account?.id || account?.selectedAccountId || '').trim()
+    const targetAccNum = String(account?.accountNumber || '').trim()
 
     const existingMatchingQuotes = (Array.isArray(quotations) ? quotations : []).filter((q) => {
-      const qDealId = q.dealId || q.raw?.dealId || q.raw?.sourceDealId || q.raw?.source_deal_id || q.raw?.id
-      if (targetDealId && qDealId && String(qDealId) === String(targetDealId)) return true
-      const qAccId = q.selectedAccountId || q.raw?.selectedAccountId || q.customerId || q.raw?.customerId
-      if (targetAccountId && qAccId && String(qAccId) === String(targetAccountId)) return true
-      const qAccNum = q.clientAccountNumber || q.raw?.clientAccountNumber
-      if (account?.accountNumber && qAccNum && String(qAccNum).trim() === String(account.accountNumber).trim()) return true
+      const qDealId = String(q.dealId || q.raw?.dealId || q.raw?.sourceDealId || q.raw?.source_deal_id || '').trim()
+      const qAccId = String(q.selectedAccountId || q.raw?.selectedAccountId || q.customerId || q.raw?.customerId || '').trim()
+      const qAccNum = String(q.clientAccountNumber || q.raw?.clientAccountNumber || '').trim()
+
+      if (account?.quotationContext === 'deal') {
+        if (targetDealId && qDealId && qDealId === targetDealId) return true
+        return false
+      }
+
+      if (targetAccountId && qAccId && qAccId === targetAccountId) return true
+      if (targetAccNum && qAccNum && qAccNum === targetAccNum) return true
       return false
     })
+
+    const latestQuote = existingMatchingQuotes.length > 0 ? existingMatchingQuotes[existingMatchingQuotes.length - 1] : null
+    const storedRevs = account?.quotationRevisionAmounts || account?.data?.quotationRevisionAmounts || account?.formData?.quotationRevisionAmounts || {}
 
     let computedQuoteNumber = nextQuotationNumber
     let savedR0 = ''
@@ -1173,24 +1182,37 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       computedQuoteNumber = `${baseClean}-R${existingMatchingQuotes.length}`
 
       existingMatchingQuotes.forEach((q) => {
+        const revCode = String(q.revisionCode || (q.revisionNo === 0 ? 'R0' : q.revisionNo ? `R${q.revisionNo}` : '')).toUpperCase()
+        const amt = q.totalAmount || q.amount || 0
         const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
-        if (revs.R0 || q.revisionAmountR0 || q.r0Amount) savedR0 = revs.R0 || q.revisionAmountR0 || q.r0Amount
-        if (revs.R1 || q.revisionAmountR1 || q.r1Amount) savedR1 = revs.R1 || q.revisionAmountR1 || q.r1Amount
-        if (revs.R2 || q.revisionAmountR2 || q.r2Amount) savedR2 = revs.R2 || q.revisionAmountR2 || q.r2Amount
-        if (revs.R3 || q.revisionAmountR3 || q.r3Amount) savedR3 = revs.R3 || q.revisionAmountR3 || q.r3Amount
-        if (!savedR0 && (q.revisionNo === 0 || q.revisionCode === 'R0')) {
-          savedR0 = q.amount || q.totalAmount
-        }
+
+        if (revCode === 'R0' || q.revisionNo === 0) savedR0 = amt || revs.R0 || q.revisionAmountR0 || q.r0Amount || savedR0
+        if (revCode === 'R1' || q.revisionNo === 1) savedR1 = amt || revs.R1 || q.revisionAmountR1 || q.r1Amount || savedR1
+        if (revCode === 'R2' || q.revisionNo === 2) savedR2 = amt || revs.R2 || q.revisionAmountR2 || q.r2Amount || savedR2
+        if (revCode === 'R3' || q.revisionNo === 3) savedR3 = amt || revs.R3 || q.revisionAmountR3 || q.r3Amount || savedR3
       })
     } else {
       const baseClean = nextQuotationNumber.replace(/-R\d+$/i, '')
       computedQuoteNumber = `${baseClean}-R0`
     }
 
+    if (!savedR0 && storedRevs.R0) savedR0 = storedRevs.R0
+
     const hasR0 = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
     const hasR1 = Boolean(savedR1 !== '' && savedR1 !== null && savedR1 !== undefined && savedR1 !== 0 && savedR1 !== '0')
     const hasR2 = Boolean(savedR2 !== '' && savedR2 !== null && savedR2 !== undefined && savedR2 !== 0 && savedR2 !== '0')
     const hasR3 = Boolean(savedR3 !== '' && savedR3 !== null && savedR3 !== undefined && savedR3 !== 0 && savedR3 !== '0')
+
+    const autofillProjectName = latestQuote?.projectName || latestQuote?.data?.projectName || account?.projectName || account?.name || ''
+    const autofillArchitectName = latestQuote?.architectName || latestQuote?.data?.architectName || account?.architectName || ''
+    const autofillPmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || account?.pmcName || ''
+    const autofillProductName = latestQuote?.productName || latestQuote?.product || account?.productName || account?.productCategory || account?.product || ''
+    const autofillProductGroup = latestQuote?.productGroup || account?.productGroup || 'Non TTA'
+    const autofillHsn = latestQuote?.hsn || account?.hsn || ''
+
+    const autofillLineItems = (Array.isArray(latestQuote?.lineItems) && latestQuote.lineItems.length > 0)
+      ? latestQuote.lineItems.map((item) => ({ ...item, id: generateId('QLI') }))
+      : [createEmptyLineItem()]
 
     return {
       ...createInitialQuotationForm(),
@@ -1216,13 +1238,15 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       organizationStateCode: profile?.organizationStateCode || '',
       website: profile?.website || '',
       organizationTagline: profile?.organizationTagline || '',
-      projectName: account?.projectName || account?.name || '',
-      architectName: account?.architectName || '',
-      pmcName: account?.pmcName || '',
-      quotationSubject: account?.projectName || account?.name || '',
+      projectName: autofillProjectName,
+      architectName: autofillArchitectName,
+      pmcName: autofillPmcName,
+      quotationSubject: autofillProjectName || account?.projectName || account?.name || '',
       quotationNotes: account?.latestRemark || account?.remark || '',
       customerReferenceDate: quotationDate,
-      productGroup: 'Non TTA',
+      productGroup: autofillProductGroup,
+      productName: autofillProductName,
+      hsn: autofillHsn,
       r0Amount: hasR0 ? String(savedR0) : '',
       r1Amount: hasR1 ? String(savedR1) : '',
       r2Amount: hasR2 ? String(savedR2) : '',
@@ -1235,14 +1259,16 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       savedR2InDb: hasR2,
       isR3Locked: hasR3,
       savedR3InDb: hasR3,
-      product: account?.productCategory || '',
+      product: autofillProductName,
       selectedAccountId: account?.quotationContext === 'deal' ? '' : account?.id || '',
       selectedAccountOwner: account?.accountOwnerName || account?.accountOwner || '',
+      lineItems: autofillLineItems,
     }
   }
 
-  const openQuotationBuilder = (profileValue, account) => {
-    setQuotationForm(buildQuotationDraft(profileValue, account))
+  const openQuotationBuilder = async (profileValue, account) => {
+    const draft = buildQuotationDraft(profileValue, account)
+    setQuotationForm(draft)
     setBuilderError('')
     setBuilderMessage('')
     setAdditionalSections([])
@@ -1250,6 +1276,56 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     setIsAccountListOpen(false)
     setIsGenerateOpen(false)
     open()
+
+    try {
+      const contextParams = {
+        accountId: account?.id || account?.selectedAccountId || '',
+        dealId: account?.sourceDealId || account?.source_deal_id || account?.dealId || '',
+        quotationContext: account?.quotationContext || (account?.sourceDealId || account?.dealId ? 'deal' : 'account'),
+      }
+
+      if (contextParams.accountId || contextParams.dealId) {
+        const dbDetails = await quotationApi.getContextDetails(contextParams)
+        if (dbDetails) {
+          const { savedRevisions = {}, locks = {}, autofill = {} } = dbDetails
+
+          const hasR0 = Boolean(savedRevisions.R0 !== '' && savedRevisions.R0 !== null && savedRevisions.R0 !== undefined && savedRevisions.R0 !== 0 && savedRevisions.R0 !== '0')
+          const hasR1 = Boolean(savedRevisions.R1 !== '' && savedRevisions.R1 !== null && savedRevisions.R1 !== undefined && savedRevisions.R1 !== 0 && savedRevisions.R1 !== '0')
+          const hasR2 = Boolean(savedRevisions.R2 !== '' && savedRevisions.R2 !== null && savedRevisions.R2 !== undefined && savedRevisions.R2 !== 0 && savedRevisions.R2 !== '0')
+          const hasR3 = Boolean(savedRevisions.R3 !== '' && savedRevisions.R3 !== null && savedRevisions.R3 !== undefined && savedRevisions.R3 !== 0 && savedRevisions.R3 !== '0')
+
+          setQuotationForm((current) => ({
+            ...current,
+            projectName: autofill.projectName || current.projectName,
+            architectName: autofill.architectName || current.architectName,
+            pmcName: autofill.pmcName || current.pmcName,
+            productName: autofill.productName || current.productName,
+            productGroup: autofill.productGroup || current.productGroup,
+            hsn: autofill.hsn || current.hsn,
+            companyName: autofill.companyName || current.companyName,
+            contactPerson: autofill.contactPerson || current.contactPerson,
+            telephone: autofill.telephone || current.telephone,
+            email: autofill.email || current.email,
+            gstin: autofill.gstin || current.gstin,
+            stateCode: autofill.stateCode || current.stateCode,
+            r0Amount: hasR0 ? String(savedRevisions.R0) : current.r0Amount,
+            r1Amount: hasR1 ? String(savedRevisions.R1) : '',
+            r2Amount: hasR2 ? String(savedRevisions.R2) : '',
+            r3Amount: hasR3 ? String(savedRevisions.R3) : '',
+            isR0Locked: locks.isR0Locked ?? hasR0,
+            savedR0InDb: hasR0,
+            isR1Locked: locks.isR1Locked ?? hasR1,
+            savedR1InDb: hasR1,
+            isR2Locked: locks.isR2Locked ?? hasR2,
+            savedR2InDb: hasR2,
+            isR3Locked: locks.isR3Locked ?? hasR3,
+            savedR3InDb: hasR3,
+          }))
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch quotation context details from backend:', err)
+    }
   }
 
   const handleOpenAccountList = () => {

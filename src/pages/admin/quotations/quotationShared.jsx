@@ -548,17 +548,38 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
   const brandKey = resolvedProfileFallback.brandKey || (isSwatiDocument ? 'swati' : isLumosDocument ? 'lumos' : 'swati')
   const logoSource = getBrandLogoSource(brandKey)
   const lineItems = buildLineItems(quotation)
-  const subtotal = lineItems.reduce((sum, item) => sum + toNumber(item.amount), 0)
-  const cgst = toNumber(quotation.cgstAmount || quotation.cgst || 0)
-  const sgst = toNumber(quotation.sgstAmount || quotation.sgst || 0)
-  const igst = toNumber(quotation.igstAmount || quotation.igst || 0)
-  const otherTax = toNumber(quotation.taxAmount || 0)
   const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
-  const latestRevisionAmount = revAmounts.R3 || revAmounts.R2 || revAmounts.R1 || revAmounts.R0
+  const activeRevCode = quotation.revisionCode || (quotation.revisionNo === 0 ? 'R0' : quotation.revisionNo ? `R${quotation.revisionNo}` : null)
+  const codeAmount = activeRevCode && revAmounts[activeRevCode] ? revAmounts[activeRevCode] : null
+
+  const latestRevisionAmount = codeAmount
+    || revAmounts.R3 || revAmounts.R2 || revAmounts.R1 || revAmounts.R0
     || quotation.revisionAmountR3 || quotation.revisionAmountR2 || quotation.revisionAmountR1 || quotation.revisionAmountR0
     || quotation.r3Amount || quotation.r2Amount || quotation.r1Amount || quotation.r0Amount
 
   const storedAmount = toNumber(latestRevisionAmount || quotation.amount || quotation.totalAmount)
+  const productNameLabel = quotation.productName || quotation.product || quotation.data?.productName || linkedAccount?.productCategory || linkedAccount?.productName || ''
+
+  const displayLineItems = lineItems.map((item) => {
+    const isSingleDefaultItem = lineItems.length === 1
+    const description = (isSingleDefaultItem && productNameLabel)
+      ? (productNameLabel.includes(quotation.ttaOrg || '') || !quotation.ttaOrg ? productNameLabel : `${productNameLabel} (${quotation.ttaOrg})`)
+      : (item.description || productNameLabel || '-')
+    const amountVal = (isSingleDefaultItem && storedAmount > 0) ? storedAmount : toNumber(item.amount)
+    const rateVal = (isSingleDefaultItem && storedAmount > 0) ? storedAmount : (toNumber(item.rate) || amountVal)
+    return {
+      ...item,
+      description,
+      rate: rateVal,
+      amount: amountVal,
+    }
+  })
+
+  const subtotal = displayLineItems.reduce((sum, item) => sum + toNumber(item.amount), 0)
+  const cgst = toNumber(quotation.cgstAmount || quotation.cgst || 0)
+  const sgst = toNumber(quotation.sgstAmount || quotation.sgst || 0)
+  const igst = toNumber(quotation.igstAmount || quotation.igst || 0)
+  const otherTax = toNumber(quotation.taxAmount || 0)
   const calculatedTotal = subtotal + cgst + sgst + igst + otherTax
   const total = storedAmount > 0 ? storedAmount : calculatedTotal
   const logoType = quotation.logoType || profileFallback.logoType || (isImageProfile(quotation) ? 'image' : 'text')
@@ -640,7 +661,7 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
     warrantyTerms: quotation.warrantyTerms || '-',
     quotationNotes: quotation.quotationNotes || '-',
     rejectionReason: quotation.rejectionReason || '',
-    lineItems,
+    lineItems: displayLineItems,
     subtotal,
     cgst,
     sgst,
@@ -1834,8 +1855,8 @@ export function RevisionsListModal({
         })
       })
     } else {
-      let revCode = q.raw?.revisionCode || (q.raw?.revisionNo === 0 || q.raw?.revisionNo === 1 ? 'R1' : q.raw?.revisionNo ? `R${q.raw.revisionNo}` : 'R1')
-      if (revCode === 'Normal') revCode = 'R1'
+      let revCode = q.raw?.revisionCode || (q.raw?.revisionNo === 0 ? 'R0' : q.raw?.revisionNo ? `R${q.raw.revisionNo}` : 'R0')
+      if (revCode === 'Normal') revCode = 'R0'
       const formattedNum = (q.num || q.quoteNumber || q.quotationNumber || '').includes('-R')
         ? (q.num || q.quoteNumber || q.quotationNumber)
         : `${rawBaseQuoteNo}-${revCode}`
@@ -1860,22 +1881,23 @@ export function RevisionsListModal({
     }
   })
 
-  const revisionRowsList = Array.from(revisionRowsMap.values()).sort((a, b) => {
-    const numA = Number(a.revisionCode.replace(/\D/g, '')) || 1
-    const numB = Number(b.revisionCode.replace(/\D/g, '')) || 1
-    return numA - numB
-  })
+  const parseRevNum = (code) => {
+    const num = parseInt(String(code || '').replace(/\D/g, ''), 10)
+    return Number.isNaN(num) ? 0 : num
+  }
+
+  const revisionRowsList = Array.from(revisionRowsMap.values()).sort((a, b) => (
+    parseRevNum(a.revisionCode) - parseRevNum(b.revisionCode)
+  ))
 
   const allRevisionCodes = Array.from(
     new Set(revisionRowsList.map((r) => r.revisionCode))
-  ).sort((a, b) => {
-    const numA = Number(a.replace(/\D/g, '')) || 1
-    const numB = Number(b.replace(/\D/g, '')) || 1
-    return numA - numB
-  })
+  ).sort((a, b) => (
+    parseRevNum(a) - parseRevNum(b)
+  ))
 
   if (allRevisionCodes.length === 0) {
-    allRevisionCodes.push('R1')
+    allRevisionCodes.push('R0')
   }
 
   return (

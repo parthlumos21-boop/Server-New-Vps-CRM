@@ -15,10 +15,12 @@ import {
   FaThLarge,
   FaUser,
   FaUsers,
+  FaComments,
 } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import apiClient from '../../services/apiClient'
+import { remarkApi } from '../../services/remarkApi'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import './UserDashboardPage.css'
 import AnalyticsSection from '../../components/dashboard/AnalyticsSection'
@@ -49,6 +51,7 @@ const UserDashboardPage = () => {
     updateReminder,
   } = useData()
   const [todoReplies, setTodoReplies] = useState([])
+  const [communicationRemarks, setCommunicationRemarks] = useState([])
 
   const fetchTodoReplies = useCallback(async () => {
     try {
@@ -61,6 +64,13 @@ const UserDashboardPage = () => {
 
   useEffect(() => {
     fetchTodoReplies()
+    let isMounted = true
+    remarkApi.getAllRemarks({ limit: 10 }).then((res) => {
+      if (isMounted && Array.isArray(res)) {
+        setCommunicationRemarks(res)
+      }
+    }).catch(() => {})
+    return () => { isMounted = false }
   }, [fetchTodoReplies])
 
   const stats = useMemo(() => {
@@ -452,6 +462,68 @@ const UserDashboardPage = () => {
               <span className="ud-live-time-chip">{currentFormattedDateTime}</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Communication Activity Section */}
+      <div className="ud-card ud-communication-card" style={{ marginTop: '1.25rem', marginBottom: '1.5rem' }}>
+        <div className="ud-card-header">
+          <div className="ud-card-header-left">
+            <FaComments className="ud-card-header-icon" style={{ color: '#740a03' }} />
+            <h3>Communication Activity</h3>
+          </div>
+          <button
+            type="button"
+            className="ud-link-btn"
+            onClick={() => navigate('/communication-activities')}
+          >
+            View All &rarr;
+          </button>
+        </div>
+        <div className="ud-card-body" style={{ padding: '1.25rem' }}>
+          <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 1rem 0' }}>
+            Track all recent calls, general remarks, feedback notes, and discussion threads across Accounts and Deals.
+          </p>
+
+          {communicationRemarks.length === 0 ? (
+            <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', color: '#94a3b8', fontSize: '0.875rem', textAlign: 'center' }}>
+              No recent communication activities found.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+              {communicationRemarks.slice(0, 5).map((rmk) => (
+                <div
+                  key={rmk.id || rmk._id}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #740a03',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.35rem',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: '#740a03', letterSpacing: '0.5px' }}>
+                      {String(rmk.category || 'General').toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      {rmk.createdAt ? new Date(rmk.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#1e293b', fontWeight: '500', lineHeight: '1.4' }}>
+                    {rmk.content || '-'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', fontSize: '0.75rem', color: '#64748b', marginTop: '0.125rem' }}>
+                    <span><strong>Account/Deal:</strong> {rmk.accountName || rmk.dealName || `ID: ${rmk.accountId || rmk.dealId || '-'}`}</span>
+                    <span><strong>By:</strong> {rmk.createdByName || 'User'} ({rmk.createdByEmail || rmk.accountOwnerEmail || '-'})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

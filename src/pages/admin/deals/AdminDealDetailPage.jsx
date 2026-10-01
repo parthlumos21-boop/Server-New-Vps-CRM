@@ -512,10 +512,22 @@ const AdminDealDetailPage = () => {
     addNotification('success', 'Change Type', `Deal type changed to ${nextDealType}.`)
   }
 
+  const handleViewQuotation = () => {
+    const basePath = location.pathname.startsWith('/admin') ? '/admin/quotation-manager/view' : '/quotation-manager/view'
+    const query = new URLSearchParams({
+      tab: 'deals',
+      accountId: deal.accountId || deal.id || '',
+      accountName: deal.accountName || deal.customerName || deal.title || '',
+      accountNo: deal.accountNumber || deal.dealNumber || '',
+    })
+    navigate(`${basePath}?${query.toString()}`)
+  }
+
   const actionsMenuItems = [
     { key: 'reminder', label: 'Add Reminder', icon: <FaBell />, accent: 'orange', onSelect: () => setIsReminderOpen(true) },
     { key: 'generateQuotation', label: 'Generate Quotation', icon: <FaFileAlt />, accent: 'green', onSelect: handleGenerateQuotation },
     { key: 'uploadQuotation', label: 'Upload Quotation', icon: <FaFileUpload />, accent: 'blue', onSelect: handleUploadQuotation },
+    { key: 'viewQuotation', label: 'View Quotation', icon: <FaFileAlt />, accent: 'blue', onSelect: handleViewQuotation },
     { key: 'changeType', label: 'Change Type', icon: <FaExchangeAlt />, accent: 'green', onSelect: handleOpenChangeType },
     { key: 'reassign', label: 'Re-Assign Deal', icon: <FaUserCog />, accent: 'slate', onSelect: handleReassignDeal },
     { key: 'sendMail', label: 'Send Mail', icon: <FaEnvelope />, accent: 'blue', onSelect: handleSendMail },

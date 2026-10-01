@@ -242,6 +242,70 @@ module.exports = {
       emitConvertedDealRealtime('created', convertedDeal, actor)
     }
 
+    // Multi-Collection Sync to MongoDB customers collection
+    try {
+      const { getMongoModel, getNextLegacyId } = require('../models/mongoModels')
+      const Customer = getMongoModel('customers')
+      const custName = createdDeal.customerName || createdDeal.accountName || createdDeal.title || ''
+      if (custName || createdDeal.accountId) {
+        const existingCust = await Customer.findOne({
+          $or: [
+            ...(createdDeal.accountId ? [{ accountId: createdDeal.accountId }, { accountId: String(createdDeal.accountId) }] : []),
+            ...(custName ? [{ customerName: custName }, { name: custName }] : [])
+          ]
+        }).lean()
+
+        const targetCustStatus = createdDeal.stage || createdDeal.status || 'staged'
+        if (existingCust) {
+          await Customer.updateOne(
+            { _id: existingCust._id },
+            {
+              $set: {
+                customerStatus: targetCustStatus,
+                status: targetCustStatus,
+                poValue: createdDeal.poValue || 0,
+                gstin: createdDeal.gstin || '',
+                jobNo: createdDeal.jobNo || '',
+                updatedAt: new Date().toISOString(),
+                'data.customerStatus': targetCustStatus,
+                'data.poValue': createdDeal.poValue || 0,
+                'data.gstin': createdDeal.gstin || '',
+                'data.jobNo': createdDeal.jobNo || '',
+              }
+            }
+          ).catch(() => {})
+        } else {
+          const custLegacyId = await getNextLegacyId('customers')
+          await Customer.create({
+            legacyId: custLegacyId,
+            name: custName || 'Deal Customer',
+            customerName: custName || 'Deal Customer',
+            customerNumber: `CUST-${custLegacyId < 1001 ? custLegacyId + 1000 : custLegacyId}`,
+            accountId: createdDeal.accountId || null,
+            customerStatus: targetCustStatus,
+            status: targetCustStatus,
+            customerOwner: createdDeal.dealOwner || createdDeal.ownerName || actor.name || '',
+            poValue: createdDeal.poValue || 0,
+            gstin: createdDeal.gstin || '',
+            jobNo: createdDeal.jobNo || '',
+            createdBy: actor.id,
+            companyId: actor.companyId || 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            data: {
+              accountId: createdDeal.accountId || null,
+              customerStatus: targetCustStatus,
+              poValue: createdDeal.poValue || 0,
+              gstin: createdDeal.gstin || '',
+              jobNo: createdDeal.jobNo || '',
+            }
+          }).catch(() => {})
+        }
+      }
+    } catch (err) {
+      console.warn('Customer sync warning on deal creation:', err.message)
+    }
+
     return createdDeal
   },
   update: async (actor, id, body = {}) => {
@@ -266,6 +330,40 @@ module.exports = {
     if (isConvertedDealRecord(updatedDeal) || isConvertedDealRecord(existing)) {
       const convertedDeal = await convertedDealRepository.syncFromDeal(updatedDeal)
       emitConvertedDealRealtime('updated', convertedDeal, actor)
+    }
+
+    // Multi-Collection Sync to MongoDB customers collection
+    try {
+      const { getMongoModel } = require('../models/mongoModels')
+      const Customer = getMongoModel('customers')
+      const custName = updatedDeal.customerName || updatedDeal.accountName || updatedDeal.title || ''
+      if (custName || updatedDeal.accountId) {
+        const targetCustStatus = updatedDeal.stage || updatedDeal.status || 'staged'
+        await Customer.updateMany(
+          {
+            $or: [
+              ...(updatedDeal.accountId ? [{ accountId: updatedDeal.accountId }, { accountId: String(updatedDeal.accountId) }] : []),
+              ...(custName ? [{ customerName: custName }, { name: custName }] : [])
+            ]
+          },
+          {
+            $set: {
+              customerStatus: targetCustStatus,
+              status: targetCustStatus,
+              poValue: updatedDeal.poValue || 0,
+              gstin: updatedDeal.gstin || '',
+              jobNo: updatedDeal.jobNo || '',
+              updatedAt: new Date().toISOString(),
+              'data.customerStatus': targetCustStatus,
+              'data.poValue': updatedDeal.poValue || 0,
+              'data.gstin': updatedDeal.gstin || '',
+              'data.jobNo': updatedDeal.jobNo || '',
+            }
+          }
+        ).catch(() => {})
+      }
+    } catch (err) {
+      console.warn('Customer sync warning on deal update:', err.message)
     }
 
     return updatedDeal

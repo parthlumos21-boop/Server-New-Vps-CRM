@@ -13,7 +13,7 @@ export const ADMIN_ACCOUNTS_BOARD_VIEWS = {
     exportKind: 'csv',
     exportButtonLabel: 'Export CSV',
     defaultStage: 'new',
-    hiddenStageKeys: ['rejected'],
+    hiddenStageKeys: [],
     showStageTabs: false,
     rowActionMenuEnabled: false,
     rowActions: [
@@ -82,7 +82,7 @@ export const ADMIN_ACCOUNTS_BOARD_VIEWS = {
     exportKind: 'excel',
     exportButtonLabel: 'Export Excel',
     defaultStage: 'new',
-    hiddenStageKeys: ['rejected'],
+    hiddenStageKeys: [],
     showStageTabs: false,
     showRefreshButton: false,
     showExportButton: false,

@@ -39,9 +39,9 @@ const AccountsBoardPagination = ({
           type="button"
           className="admin-accounts-pag-btn"
           disabled={currentPage <= 1}
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => onPageChange(1)}
         >
-          prev
+          First
         </button>
 
         {pages.map((page) => (
@@ -59,9 +59,9 @@ const AccountsBoardPagination = ({
           type="button"
           className="admin-accounts-pag-btn"
           disabled={currentPage >= totalPages}
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => onPageChange(totalPages)}
         >
-          next
+          Last
         </button>
       </div>
     </div>

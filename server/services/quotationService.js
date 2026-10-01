@@ -436,12 +436,22 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
       if (dealId && qDeal === String(dealId).trim()) return true
       if (customerId && qCust === String(customerId).trim()) return true
       return false
-    }).sort((a, b) => (a.revisionNo || 0) - (b.revisionNo || 0))
+    }).sort((a, b) => (a.revisionNo ?? 0) - (b.revisionNo ?? 0))
 
     const revisionAmounts = {}
+    const revisionHistory = []
+
     siblingQuotes.forEach((sq) => {
-      const code = sq.revisionCode || (sq.revisionNo === 0 || sq.revisionNo === 1 ? 'R1' : `R${sq.revisionNo}`)
-      revisionAmounts[code] = sq.totalAmount || sq.amount || 0
+      const code = sq.revisionCode || (sq.revisionNo === 0 ? 'R0' : sq.revisionNo ? `R${sq.revisionNo}` : 'R0')
+      const amt = sq.totalAmount || sq.amount || 0
+      revisionAmounts[code] = amt
+      revisionHistory.push({
+        revisionCode: code,
+        revisionNo: sq.revisionNo ?? (parseInt(code.replace(/\D/g, ''), 10) || 0),
+        amount: amt,
+        date: sq.quotationDate || sq.createdAt || new Date().toISOString().slice(0, 10),
+        status: sq.status || 'draft',
+      })
     })
 
     const isApproved = String(quotationRecord.status || '').toLowerCase() === 'approved'
@@ -458,13 +468,27 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
       }
     }
 
+    const productName = quotationRecord.productName || quotationRecord.product || quotationRecord.data?.productName || quotationRecord.data?.product || ''
+    const productGroup = quotationRecord.productGroup || quotationRecord.data?.productGroup || ''
+    const hsn = quotationRecord.hsn || quotationRecord.data?.hsn || ''
+    const projectName = quotationRecord.projectName || quotationRecord.data?.projectName || ''
+    const architectName = quotationRecord.architectName || quotationRecord.data?.architectName || ''
+    const pmcName = quotationRecord.pmcName || quotationRecord.data?.pmcName || ''
+
     const syncPayload = {
       latestQuotationNumber: quotationRecord.quotationNumber || quotationRecord.quoteNumber,
       latestQuotationAmount: quotationRecord.totalAmount || quotationRecord.amount,
-      quotationRevisionCode: quotationRecord.revisionCode || 'R1',
-      quotationRevisionNo: quotationRecord.revisionNo || 1,
+      quotationRevisionCode: quotationRecord.revisionCode || 'R0',
+      quotationRevisionNo: quotationRecord.revisionNo ?? 0,
       quotationRevisionAmounts: quotationRecord.quotationRevisionAmounts || revisionAmounts,
+      quotationRevisionHistory: quotationRecord.revisions || revisionHistory,
       quotationStatus: quotationRecord.status || 'draft',
+      productName,
+      productGroup,
+      hsn,
+      projectName,
+      architectName,
+      pmcName,
       updatedAt: new Date().toISOString(),
     }
 
@@ -478,10 +502,19 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
             'formData.quotationRevisionCode': syncPayload.quotationRevisionCode,
             'formData.quotationRevisionNo': syncPayload.quotationRevisionNo,
             'formData.quotationRevisionAmounts': syncPayload.quotationRevisionAmounts,
+            'formData.quotationRevisionHistory': syncPayload.quotationRevisionHistory,
             'formData.quotationStatus': syncPayload.quotationStatus,
+            ...(productName ? { 'formData.productName': productName, productName, productCategory: productGroup || productName } : {}),
+            ...(productGroup ? { 'formData.productGroup': productGroup, productGroup } : {}),
+            ...(hsn ? { 'formData.hsn': hsn, hsn } : {}),
+            ...(projectName ? { 'formData.projectName': projectName, projectName } : {}),
+            ...(architectName ? { 'formData.architectName': architectName, architectName } : {}),
+            ...(pmcName ? { 'formData.pmcName': pmcName, pmcName } : {}),
             latestQuotationNumber: syncPayload.latestQuotationNumber,
             latestQuotationAmount: syncPayload.latestQuotationAmount,
             quotationRevisionCode: syncPayload.quotationRevisionCode,
+            quotationRevisionAmounts: syncPayload.quotationRevisionAmounts,
+            quotationRevisionHistory: syncPayload.quotationRevisionHistory,
             quotationStatus: syncPayload.quotationStatus,
           }
         }
@@ -498,10 +531,19 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
             'data.quotationRevisionCode': syncPayload.quotationRevisionCode,
             'data.quotationRevisionNo': syncPayload.quotationRevisionNo,
             'data.quotationRevisionAmounts': syncPayload.quotationRevisionAmounts,
+            'data.quotationRevisionHistory': syncPayload.quotationRevisionHistory,
             'data.quotationStatus': syncPayload.quotationStatus,
+            ...(productName ? { 'data.productName': productName, productName } : {}),
+            ...(productGroup ? { 'data.productGroup': productGroup, productGroup } : {}),
+            ...(hsn ? { 'data.hsn': hsn, hsn } : {}),
+            ...(projectName ? { 'data.projectName': projectName, projectName } : {}),
+            ...(architectName ? { 'data.architectName': architectName, architectName } : {}),
+            ...(pmcName ? { 'data.pmcName': pmcName, pmcName } : {}),
             latestQuotationNumber: syncPayload.latestQuotationNumber,
             latestQuotationAmount: syncPayload.latestQuotationAmount,
             quotationRevisionCode: syncPayload.quotationRevisionCode,
+            quotationRevisionAmounts: syncPayload.quotationRevisionAmounts,
+            quotationRevisionHistory: syncPayload.quotationRevisionHistory,
             quotationStatus: syncPayload.quotationStatus,
           }
         }
@@ -549,23 +591,23 @@ module.exports = {
         ? existingMatch.revisions
         : (Array.isArray(existingMatch.data?.revisions) ? existingMatch.data.revisions : [])
 
-      const currentRevNo = existingMatch.revisionNo || 1
+      const currentRevNo = existingMatch.revisionNo ?? 0
       const nextRevNo = currentRevNo + 1
       const nextRevCode = `R${nextRevNo}`
       const newAmount = payload.totalAmount || payload.amount || payload.data?.amount || 0
 
-      const r1Amt = existingMatch.revisionAmountR1 || existingRevAmounts.R1 || existingRevAmounts.Normal || existingMatch.totalAmount || existingMatch.amount || 0
+      const r0Amt = existingMatch.revisionAmountR0 || existingRevAmounts.R0 || existingMatch.totalAmount || existingMatch.amount || 0
       const updatedRevAmounts = {
         ...existingRevAmounts,
-        R1: r1Amt,
+        R0: existingRevAmounts.R0 || r0Amt,
         [nextRevCode]: newAmount,
       }
 
       const updatedRevisionsList = [...existingRevisions]
       if (updatedRevisionsList.length === 0) {
         updatedRevisionsList.push({
-          revisionCode: 'R1',
-          amount: r1Amt,
+          revisionCode: existingMatch.revisionCode || 'R0',
+          amount: r0Amt,
           date: existingMatch.quotationDate || existingMatch.createdAt || new Date().toISOString().slice(0, 10),
           status: existingMatch.status || 'Open',
         })
@@ -581,7 +623,6 @@ module.exports = {
         ...payload,
         revisionCode: nextRevCode,
         revisionNo: nextRevNo,
-        revisionAmountR1: r1Amt,
         [`revisionAmount${nextRevCode}`]: newAmount,
         quotationRevisionAmounts: updatedRevAmounts,
         revisions: updatedRevisionsList,
@@ -594,13 +635,15 @@ module.exports = {
     }
 
     const initialAmount = payload.totalAmount || payload.amount || 0
+    const initialRevCode = payload.revisionCode || 'R0'
+    const initialRevNo = payload.revisionNo ?? 0
     const result = await quotationService.create(actor, {
       ...payload,
-      revisionCode: payload.revisionCode || 'R1',
-      revisionNo: payload.revisionNo || 1,
-      revisionAmountR1: initialAmount,
-      quotationRevisionAmounts: payload.quotationRevisionAmounts || { R1: initialAmount },
-      revisions: payload.revisions || [{ revisionCode: 'R1', amount: initialAmount, date: new Date().toISOString().slice(0, 10), status: 'Open' }],
+      revisionCode: initialRevCode,
+      revisionNo: initialRevNo,
+      revisionAmountR0: payload.revisionAmountR0 ?? (initialRevCode === 'R0' ? initialAmount : 0),
+      quotationRevisionAmounts: payload.quotationRevisionAmounts || { [initialRevCode]: initialAmount },
+      revisions: payload.revisions || [{ revisionCode: initialRevCode, amount: initialAmount, date: new Date().toISOString().slice(0, 10), status: 'Open' }],
     })
     await syncQuotationToLeadsAndDeals(result)
     try {
@@ -687,5 +730,118 @@ module.exports = {
   list: (actor, filters = {}) => quotationService.list(applyStrictIsolation(actor), filters),
   get: (actor, id) => quotationService.get(applyStrictIsolation(actor), id),
   search: (actor, query) => quotationService.search(applyStrictIsolation(actor), query),
+  getQuotationContextDetails: async (actor, queryParams = {}) => {
+    const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
+    const Deal = getMongoModel('deals')
+    const quotationRepo = require('../repositories/quotationRepository')
+
+    const targetAccountId = String(queryParams.accountId || queryParams.selectedAccountId || '').trim()
+    const targetDealId = String(queryParams.dealId || '').trim()
+    const context = queryParams.quotationContext || (targetDealId ? 'deal' : 'account')
+
+    let accountDoc = null
+    if (targetAccountId) {
+      accountDoc = await Lead.findOne({
+        $or: [{ id: targetAccountId }, { _id: targetAccountId }, { legacyId: targetAccountId }]
+      }).lean()
+    }
+
+    let dealDoc = null
+    if (targetDealId) {
+      dealDoc = await Deal.findOne({
+        $or: [{ id: targetDealId }, { _id: targetDealId }, { legacyId: targetDealId }]
+      }).lean()
+    }
+
+    if (!accountDoc && dealDoc) {
+      const linkedAccId = dealDoc.accountId || dealDoc.data?.accountId || dealDoc.customerId || dealDoc.data?.customerId
+      if (linkedAccId) {
+        accountDoc = await Lead.findOne({
+          $or: [{ id: linkedAccId }, { _id: linkedAccId }, { legacyId: linkedAccId }]
+        }).lean()
+      }
+    }
+
+    const accNum = accountDoc?.accountNumber || accountDoc?.formData?.accountNumber || ''
+
+    const allQuotes = await quotationRepo.listAll()
+    const matchingQuotes = allQuotes.filter((q) => {
+      const qDealId = String(q.dealId || q.data?.dealId || q.raw?.dealId || '').trim()
+      const qAccId = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || '').trim()
+      const qAccNum = String(q.clientAccountNumber || q.data?.clientAccountNumber || '').trim()
+
+      if (context === 'deal') {
+        if (targetDealId && qDealId && qDealId === targetDealId) return true
+        return false
+      }
+
+      if (targetAccountId && qAccId && qAccId === targetAccountId) return true
+      if (accNum && qAccNum && qAccNum === accNum) return true
+      return false
+    }).sort((a, b) => (a.revisionNo ?? 0) - (b.revisionNo ?? 0))
+
+    let savedR0 = ''
+    let savedR1 = ''
+    let savedR2 = ''
+    let savedR3 = ''
+
+    matchingQuotes.forEach((q) => {
+      const revCode = String(q.revisionCode || (q.revisionNo === 0 ? 'R0' : q.revisionNo ? `R${q.revisionNo}` : '')).toUpperCase()
+      const amt = q.totalAmount || q.amount || 0
+      const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
+
+      if (revCode === 'R0' || q.revisionNo === 0) savedR0 = amt || revs.R0 || q.revisionAmountR0 || q.r0Amount || savedR0
+      if (revCode === 'R1' || q.revisionNo === 1) savedR1 = amt || revs.R1 || q.revisionAmountR1 || q.r1Amount || savedR1
+      if (revCode === 'R2' || q.revisionNo === 2) savedR2 = amt || revs.R2 || q.revisionAmountR2 || q.r2Amount || savedR2
+      if (revCode === 'R3' || q.revisionNo === 3) savedR3 = amt || revs.R3 || q.revisionAmountR3 || q.r3Amount || savedR3
+    })
+
+    const isR0Locked = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
+    const isR1Locked = Boolean(savedR1 !== '' && savedR1 !== null && savedR1 !== undefined && savedR1 !== 0 && savedR1 !== '0')
+    const isR2Locked = Boolean(savedR2 !== '' && savedR2 !== null && savedR2 !== undefined && savedR2 !== 0 && savedR2 !== '0')
+    const isR3Locked = Boolean(savedR3 !== '' && savedR3 !== null && savedR3 !== undefined && savedR3 !== 0 && savedR3 !== '0')
+
+    const latestQuote = matchingQuotes.length > 0 ? matchingQuotes[matchingQuotes.length - 1] : null
+
+    const productName = latestQuote?.productName || latestQuote?.data?.productName || dealDoc?.productName || dealDoc?.data?.productName || accountDoc?.productName || accountDoc?.formData?.productName || accountDoc?.productCategory || ''
+    const productGroup = latestQuote?.productGroup || latestQuote?.data?.productGroup || dealDoc?.productGroup || dealDoc?.data?.productGroup || accountDoc?.productGroup || accountDoc?.formData?.productGroup || 'Non TTA'
+    const hsn = latestQuote?.hsn || latestQuote?.data?.hsn || dealDoc?.hsn || dealDoc?.data?.hsn || accountDoc?.hsn || accountDoc?.formData?.hsn || ''
+    const projectName = latestQuote?.projectName || latestQuote?.data?.projectName || dealDoc?.projectName || dealDoc?.data?.projectName || accountDoc?.projectName || accountDoc?.formData?.projectName || accountDoc?.name || ''
+    const architectName = latestQuote?.architectName || latestQuote?.data?.architectName || dealDoc?.architectName || dealDoc?.data?.architectName || accountDoc?.architectName || accountDoc?.formData?.architectName || ''
+    const pmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || dealDoc?.pmcName || dealDoc?.data?.pmcName || accountDoc?.pmcName || accountDoc?.formData?.pmcName || ''
+
+    return {
+      savedRevisions: {
+        R0: savedR0,
+        R1: savedR1,
+        R2: savedR2,
+        R3: savedR3,
+      },
+      locks: {
+        isR0Locked,
+        isR1Locked,
+        isR2Locked,
+        isR3Locked,
+      },
+      autofill: {
+        productName,
+        productGroup,
+        hsn,
+        projectName,
+        architectName,
+        pmcName,
+        clientAccountNumber: accountDoc?.accountNumber || accountDoc?.formData?.accountNumber || '',
+        companyName: accountDoc?.name || accountDoc?.company || accountDoc?.formData?.name || '',
+        contactPerson: accountDoc?.contactPerson || accountDoc?.formData?.contactPerson || '',
+        telephone: accountDoc?.contactMobile || accountDoc?.contactPhone || accountDoc?.phone || accountDoc?.formData?.phone || '',
+        email: accountDoc?.contactEmail || accountDoc?.email || accountDoc?.formData?.email || '',
+        gstin: accountDoc?.gstin || accountDoc?.formData?.gstin || '',
+        stateCode: accountDoc?.stateCode || accountDoc?.formData?.stateCode || '',
+      },
+      existingQuotesCount: matchingQuotes.length,
+      nextRevisionCode: isR2Locked ? 'R3' : (isR1Locked ? 'R2' : (isR0Locked ? 'R1' : 'R0')),
+    }
+  },
 }
 module.exports.normalizeLineItems = normalizeLineItems

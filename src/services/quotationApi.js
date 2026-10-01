@@ -121,4 +121,9 @@ export const quotationApi = {
     const response = await apiClient.patch(`/quotations/${encodeURIComponent(id)}/frontend-delete`)
     return response.data
   },
+
+  async getContextDetails(params = {}) {
+    const response = await apiClient.get('/quotations/context-details', { params })
+    return response.data?.data || response.data
+  },
 }

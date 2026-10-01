@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FaUsers,
@@ -36,6 +36,7 @@ import {
 import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
+import { remarkApi } from '../../services/remarkApi'
 import './Dashboard.css'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -76,6 +77,17 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { accounts, deals, tasks, reminders = [] } = useData()
   const { user } = useAuth()
+  const [communicationRemarks, setCommunicationRemarks] = useState([])
+
+  useEffect(() => {
+    let mounted = true
+    remarkApi.getAllRemarks({ limit: 10 }).then((res) => {
+      if (mounted && Array.isArray(res)) {
+        setCommunicationRemarks(res)
+      }
+    }).catch(() => {})
+    return () => { mounted = false }
+  }, [])
 
   const stats = useMemo(() => ({
     totalAccounts: accounts.length,
@@ -448,9 +460,48 @@ const Dashboard = () => {
             </button>
           </div>
           <div className="md-communication-content">
-            <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 0.75rem 0' }}>
               Track all recent calls, general remarks, feedback notes, and discussion threads across Accounts and Deals.
             </p>
+
+            {communicationRemarks.length === 0 ? (
+              <div style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '8px', color: '#94a3b8', fontSize: '0.875rem', textAlign: 'center' }}>
+                No recent communication activities found.
+              </div>
+            ) : (
+              <div className="md-communication-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {communicationRemarks.slice(0, 5).map((rmk) => (
+                  <div
+                    key={rmk.id || rmk._id}
+                    style={{
+                      padding: '0.625rem 0.875rem',
+                      background: '#f8fafc',
+                      borderRadius: '8px',
+                      borderLeft: '4px solid #740a03',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.25rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: '#740a03' }}>
+                        {String(rmk.category || 'General').toUpperCase()}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                        {rmk.createdAt ? new Date(rmk.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#1e293b', fontWeight: '500' }}>
+                      {rmk.content || '-'}
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#64748b', marginTop: '0.125rem' }}>
+                      <span><strong>Account/Deal:</strong> {rmk.accountName || rmk.dealName || `ID: ${rmk.accountId || rmk.dealId || '-'}`}</span>
+                      <span><strong>By:</strong> {rmk.createdByName || 'User'} ({rmk.createdByEmail || rmk.accountOwnerEmail || '-'})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -54,6 +54,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
   const [documentFile, setDocumentFile] = useState(null)
   const [emailSubject, setEmailSubject] = useState('')
   const [emailMessage, setEmailMessage] = useState('')
+  const [reasonForLost, setReasonForLost] = useState('')
   const [formError, setFormError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [ownerOptions, setOwnerOptions] = useState(getCachedAccountOwnerOptions)
@@ -80,6 +81,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
     setStage(getAllowedActionStatusOption(account.status || account.stage)?.value || ACTION_CHANGE_STATUS_OPTIONS[0]?.value || 'new')
     setStatusNote('')
     setPoValue(account.poValue || '')
+    setReasonForLost(account.reasonForLost || account.reasonForLostOrder || '')
     setOrderReceivedStatus(account.statusAsPerOrderReceived || '')
     setQuotationGivenStatus(account.statusAsPerQuotationGiven || '')
     setGstin(account.gstin || '')
@@ -209,6 +211,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
         accountStatus: isNotQuoted ? 'not_quoted' : (targetStage === 'convert_to_po' ? 'convert_to_po' : 'Pending'),
         accountState: isNotQuoted ? 'not_quoted' : (targetStage === 'convert_to_po' ? 'convert_to_po' : (accountState || selectedStatusLabel)),
         latestRemark: statusNote.trim() || account.latestRemark,
+        ...(targetStage === 'rejected' ? { reasonForLost: reasonForLost.trim(), reasonForLostOrder: reasonForLost.trim() } : {}),
       }
 
       if (showPoDetails || actionKey === 'converted-deal') {
@@ -333,6 +336,30 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
                   {ACTION_CHANGE_STATUS_OPTIONS.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}
                 </select>
               </label>
+              {stage === 'rejected' ? (
+                <label className="admin-accounts-bulk-field">
+                  Reason For Lost
+                  <select
+                    value={reasonForLost}
+                    onChange={(event) => {
+                      const selectedReason = event.target.value
+                      setReasonForLost(selectedReason)
+                      setStage('rejected')
+                    }}
+                  >
+                    <option value="">Choose Reason For Lost</option>
+                    {[
+                      'Intense Competition',
+                      'On Hold',
+                      'Payment Terms not matching',
+                      'Delivery not matching',
+                      'Budgetory Offer',
+                    ].map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
               <label className="admin-accounts-bulk-field admin-accounts-action-field-full">
                 Status Note {isNotQuotedSelected ? <span style={{ color: '#dc2626' }}>* (Mandatory for Not Quoted)</span> : null}
                 <textarea value={statusNote} onChange={(event) => setStatusNote(event.target.value)} placeholder="Add status note..." />
