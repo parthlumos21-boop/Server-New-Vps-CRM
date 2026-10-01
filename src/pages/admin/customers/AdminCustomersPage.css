@@ -2752,3 +2752,15 @@ html:not([data-theme="dark"]) body #root :is(.layout--admin, .layout--user) .adm
 .admin-customers-search-input:focus {
   border-color: var(--color-primary, #3b82f6);
 }
+
+/* Enforce bold white text color for Customer Number badges on /customers/search */
+html body #root :is(.admin-customers-page, .admin-customers-search-page, .customers-page, .customers-search-page) .admin-customers-grid-number-cell .admin-customers-grid-number-button,
+html body #root :is(.admin-customers-page, .admin-customers-search-page, .customers-page, .customers-search-page) .admin-customers-grid-number-cell .admin-customers-grid-number-button *,
+html body #root :is(.admin-customers-page, .admin-customers-search-page, .customers-page, .customers-search-page) .admin-customers-grid-number-cell .admin-customers-grid-number-button span {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}

@@ -1445,9 +1445,9 @@ html:not([data-theme="dark"]) .layout--admin :where(
   align-items: center !important;
   visibility: visible !important;
   opacity: 1 !important;
-  border-color: var(--admin-red-border, #b91c1c) !important;
-  background: var(--admin-red, #dc2626) !important;
-  background-color: var(--admin-red, #dc2626) !important;
+  border-color: var(--admin-red-border, #a80012) !important;
+  background: var(--admin-red, #c60016) !important;
+  background-color: var(--admin-red, #c60016) !important;
   background-image: none !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;

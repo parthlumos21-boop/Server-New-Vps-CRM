@@ -6,15 +6,80 @@
   z-index: 12;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  border: none !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+}
+
+.ap-tabbar-items {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ap-header-item-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.35rem;
+  padding: 0.5rem 0.9rem;
+  border: 1.5px solid rgba(198, 0, 22, 0.2) !important;
+  border-radius: 14px !important;
+  background: rgba(198, 0, 22, 0.05) !important;
+  color: #c60016 !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease !important;
+}
+
+.ap-header-item-btn:hover {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  border-color: #c60016 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(198, 0, 22, 0.22) !important;
+}
+
+.ap-header-item-btn .ap-header-item-icon {
+  font-size: 0.85rem;
+  color: inherit;
+}
+
+.ap-tab-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.35rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid #990011 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #c60016 0%, #990011 100%) !important;
+  color: #ffffff !important;
+  font-size: 0.8rem !important;
+  font-weight: 800 !important;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(198, 0, 22, 0.25) !important;
+  transition: all 0.2s ease !important;
+}
+
+.ap-tab-add:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(198, 0, 22, 0.38) !important;
+}
+
+.ap-tab-add svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  fill: #ffffff !important;
 }
 
 .ap-home-tab {
@@ -458,31 +523,31 @@
   justify-content: center;
   width: 2.1rem;
   height: 2.1rem;
-  border: 1px solid var(--admin-red-border, #b91c1c);
-  border-radius: 14px;
-  background: #ffffff;
-  color: var(--admin-red, #dc2626);
-  font-size: 0.8rem;
+  border: 1px solid #c60016 !important;
+  border-radius: 12px;
+  background: #c60016 !important;
+  color: #ffffff !important;
+  font-size: 0.85rem;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .ap-todo-btn:hover {
-  background: #ffffff;
-  color: var(--admin-red-hover, #b91c1c);
-  border-color: var(--admin-red-hover, #b91c1c);
+  background: #a80012 !important;
+  color: #ffffff !important;
+  border-color: #a80012 !important;
 }
 
-.ap-todo-btn:first-of-type {
-  color: var(--admin-red, #dc2626);
-}
-
+.ap-todo-btn:first-of-type,
 .ap-todo-btn--green {
-  color: var(--admin-red, #dc2626);
+  background: #c60016 !important;
+  color: #ffffff !important;
+  border-color: #c60016 !important;
 }
 
 .ap-todo-btn svg {
-  color: currentColor !important;
-  fill: currentColor;
+  color: #ffffff !important;
+  fill: #ffffff !important;
 }
 
 .ap-todo-empty {
@@ -1498,26 +1563,16 @@ html:not([data-theme="dark"]) select.ap-performance-select option {
   border-radius: 14px;
   font-size: 1.25rem;
   flex-shrink: 0;
+  background: #c60016 !important;
+  color: #ffffff !important;
 }
 
-.ap-kpi-icon--red {
-  color: #dc2626;
-  background: #fef2f2;
-}
-
-.ap-kpi-icon--blue {
-  color: #0284c7;
-  background: #f0f9ff;
-}
-
-.ap-kpi-icon--green {
-  color: #16a34a;
-  background: #f0fdf4;
-}
-
+.ap-kpi-icon--red,
+.ap-kpi-icon--blue,
+.ap-kpi-icon--green,
 .ap-kpi-icon--orange {
-  color: #ea580c;
-  background: #fff7ed;
+  color: #ffffff !important;
+  background: #c60016 !important;
 }
 
 .ap-kpi-main {
@@ -3211,4 +3266,70 @@ html:not([data-theme="dark"]) select.ap-performance-select option {
   border: 1px solid #dcfce7;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN MONITORING DASHBOARD ICON STYLING (#c60016 Background & #ffffff Icons)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.admin-panel :is(
+  .ap-kpi-icon-wrap,
+  .ap-integ-icon-box,
+  .ap-integ-icon-box--blue,
+  .ap-integ-icon-box--red,
+  .ap-todo-btn,
+  .ap-stat-icon,
+  .ap-quick-dot,
+  .ap-integ-arrow,
+  .ap-mycrm-card-icon,
+  .ap-header-icon-box,
+  .ap-card-title-icon,
+  .ap-title-icon,
+  .ap-todo-empty-icon
+) {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  border-color: #c60016 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+
+.admin-panel :is(
+  .ap-kpi-icon-wrap svg,
+  .ap-integ-icon-box svg,
+  .ap-todo-btn svg,
+  .ap-stat-icon svg,
+  .ap-quick-item svg,
+  .ap-dashboard-card-title svg,
+  .ap-mycrm-summary-title svg,
+  .ap-card-icon svg,
+  .ap-section-icon svg,
+  .ap-integ-arrow svg,
+  .ap-home-tab svg,
+  .ap-tab svg,
+  .ap-title-icon svg
+) {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* Standalone SVG icons inside monitoring cards */
+.admin-panel :is(.ap-dashboard-card-title, .ap-mycrm-summary-title, .ap-todo-title) > svg {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  fill: #ffffff !important;
+  border-radius: 6px !important;
+  padding: 4px !important;
+  font-size: 1.1rem !important;
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
 }

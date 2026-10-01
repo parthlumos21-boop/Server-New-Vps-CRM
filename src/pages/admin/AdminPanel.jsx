@@ -1419,59 +1419,63 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-panel">
-      {activeSection !== 'home' && (
-        <div className="ap-tabbar">
-          <button
-            type="button"
-            className={`ap-home-tab ${activeSection === 'home' ? 'ap-home-tab--active' : ''}`}
-            onClick={handleSelectHome}
-          >
-            <FaHome />
-            <span>Home</span>
-          </button>
+      <div className="ap-tabbar">
+        <button
+          type="button"
+          className={`ap-home-tab ${activeSection === 'home' ? 'ap-home-tab--active' : ''}`}
+          onClick={handleSelectHome}
+        >
+          <FaHome />
+          <span>Monitoring Home</span>
+        </button>
 
-          <div className="ap-tabs">
-            {dashboardTabs.map((tab, index) => {
-              const isActive = activeSection === tab.id
+        <div className="ap-tabs">
+          {dashboardTabs.map((tab) => {
+            const isActive = activeSection === tab.id
 
-              return (
-                <div
-                  key={tab.id}
-                  className={`ap-tab-wrap ${isActive ? 'ap-tab-wrap--active' : ''}`}
+            return (
+              <div
+                key={tab.id}
+                className={`ap-tab-wrap ${isActive ? 'ap-tab-wrap--active' : ''}`}
+              >
+                <button
+                  type="button"
+                  className={`ap-tab ${isActive ? 'ap-tab--active' : ''}`}
+                  onClick={() => handleSelectTab(tab.id)}
                 >
+                  <span className="ap-tab-icon">{tab.viewKey === 'myCrm' ? MY_CRM_ICON : TAB_ICON}</span>
+                  <span>{tab.name}</span>
+                </button>
+
+                {isAdmin ? (
                   <button
                     type="button"
-                    className={`ap-tab ${isActive ? 'ap-tab--active' : ''}`}
-                    onClick={() => handleSelectTab(tab.id)}
+                    className={`ap-tab-caret ${isActive || openMenuState?.id === tab.id ? 'ap-tab-caret--active' : ''}`}
+                    onClick={(event) => handleToggleTabMenu(tab, event)}
+                    aria-label={`Open ${tab.name} tab menu`}
+                    aria-haspopup="menu"
+                    aria-expanded={openMenuState?.id === tab.id}
                   >
-                    <span className="ap-tab-icon">{tab.viewKey === 'myCrm' ? MY_CRM_ICON : TAB_ICON}</span>
-                    <span>{tab.name}</span>
+                    <FiChevronDown />
                   </button>
+                ) : null}
+              </div>
+            )
+          })}
 
-                  {isAdmin ? (
-                    <button
-                      type="button"
-                      className={`ap-tab-caret ${isActive || openMenuState?.id === tab.id ? 'ap-tab-caret--active' : ''}`}
-                      onClick={(event) => handleToggleTabMenu(tab, event)}
-                      aria-label={`Open ${tab.name} tab menu`}
-                      aria-haspopup="menu"
-                      aria-expanded={openMenuState?.id === tab.id}
-                    >
-                      <FiChevronDown />
-                    </button>
-                  ) : null}
-                </div>
-              )
-            })}
-
-            {isAdmin ? (
-              <button type="button" className="ap-tab-add" title="Add tab" onClick={handleOpenAddModal}>
-                <FiPlus />
-              </button>
-            ) : null}
-          </div>
+          {isAdmin ? (
+            <button
+              type="button"
+              className="ap-tab-add"
+              title="Add New Monitoring Tab"
+              onClick={handleOpenAddModal}
+            >
+              <FiPlus />
+              <span>Add Tab</span>
+            </button>
+          ) : null}
         </div>
-      )}
+      </div>
 
       {isAdmin && openMenuTab && openMenuState ? createPortal(
         (

@@ -3482,21 +3482,30 @@
   color: #c7dae6;
 }
 
-/* Force quotation table column search row and inputs background to be #c7475e */
+/* Force quotation table column search row and inputs to have clear, high-contrast text */
 html body #root .aqp-search-row,
-html body #root .aqp-search-th,
-html body #root .aqp-search-input {
+html body #root .aqp-search-th {
   background: #c7475e !important;
   background-color: #c7475e !important;
 }
 html body #root .aqp-search-input {
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.38) !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
 }
 html body #root .aqp-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.72) !important;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.72) !important;
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  font-weight: 400 !important;
+}
+html body #root .aqp-search-input:focus {
+  border-color: #c60016 !important;
+  box-shadow: 0 0 0 2px rgba(198, 0, 22, 0.25) !important;
 }
 
 /* Compact red quotation document table */

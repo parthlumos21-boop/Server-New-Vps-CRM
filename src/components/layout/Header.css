@@ -38,27 +38,38 @@
   width: calc(50% - 100px);
 }
 
-.header-panel {
+.header-panel,
+.header-panel--brand,
+.header-panel--actions,
+.header-panel--center,
+.header-action-cluster {
   position: relative;
   display: flex;
   align-items: center;
   width: auto;
   max-width: none;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
   box-sizing: border-box;
 }
 
 .header-panel::before,
-.header-panel::after {
-  display: none;
+.header-panel::after,
+.header-panel--brand::before,
+.header-panel--brand::after,
+.header-action-cluster::before,
+.header-action-cluster::after {
+  display: none !important;
+  content: none !important;
 }
 
 .header-panel::before {
@@ -1563,19 +1574,30 @@ html:not([data-theme="dark"]) .header.header--admin .header-action-cluster > .hd
 .hdr-search-pill-bar {
   display: flex !important;
   align-items: center !important;
-  gap: 0.65rem !important;
+  gap: 0.6rem !important;
+  height: 38px !important;
+  width: clamp(260px, 24vw, 420px) !important;
+  min-width: 240px !important;
+  max-width: 100% !important;
   background: #ffffff !important;
-  border: 1px solid rgba(229, 231, 235, 0.9) !important;
+  border: 1.5px solid #cbd5e1 !important;
   border-radius: 9999px !important;
-  padding: 0.45rem 1.1rem !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
-  width: 220px !important;
-  min-width: 200px !important;
+  padding: 0 1rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  box-sizing: border-box !important;
+}
+
+.hdr-search-pill-bar:hover,
+.hdr-search-pill-bar:focus-within {
+  border-color: #c60016 !important;
+  box-shadow: 0 4px 14px rgba(198, 0, 22, 0.14) !important;
+  background: #ffffff !important;
 }
 
 .hdr-search-pill-icon {
-  color: #9ca3af !important;
-  font-size: 0.95rem !important;
+  color: #c60016 !important;
+  font-size: 0.92rem !important;
   flex-shrink: 0 !important;
 }
 
@@ -1584,13 +1606,17 @@ html:not([data-theme="dark"]) .header.header--admin .header-action-cluster > .hd
   background: transparent !important;
   outline: none !important;
   font-size: 0.85rem !important;
-  color: #111827 !important;
+  font-weight: 500 !important;
+  color: #0f172a !important;
   width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .hdr-search-pill-input::placeholder {
-  color: #9ca3af !important;
-  font-size: 0.82rem !important;
+  color: #64748b !important;
+  font-size: 0.84rem !important;
 }
 
 /* Action Circle Buttons */

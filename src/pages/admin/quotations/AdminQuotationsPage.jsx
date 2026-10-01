@@ -141,6 +141,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
   const [uploadQuotationErrors, setUploadQuotationErrors] = useState({})
   const [uploadQuotationMessage, setUploadQuotationMessage] = useState('')
   const [uploadQuotationSaving, setUploadQuotationSaving] = useState(false)
+  const [hasUploadedQuotation, setHasUploadedQuotation] = useState(false)
   const [accountFilters, setAccountFilters] = useState(INITIAL_ACCOUNT_FILTERS)
   const [accountListPage, setAccountListPage] = useState(1)
   const [previewRow, setPreviewRow] = useState(null)
@@ -575,6 +576,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
     }
 
     addNotification('success', 'Success', 'Quotation uploaded successfully.')
+    setHasUploadedQuotation(true)
     setActiveTab('account')
     setPage(1)
     setFilters(INITIAL_FILTERS)
@@ -1128,10 +1130,12 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
               },
             ]}
           />
-          <button type="button" className="aqp-btn aqp-btn--gray" onClick={openUploadQuotationModal}>
-            <FaUpload className="aqp-btn-icon" />
-            Upload Quotation
-          </button>
+          {!hasUploadedQuotation && (
+            <button type="button" className="aqp-btn aqp-btn--gray" onClick={openUploadQuotationModal}>
+              <FaUpload className="aqp-btn-icon" />
+              Upload Quotation
+            </button>
+          )}
           <button type="button" className="aqp-btn aqp-btn--red aqp-btn--generate" onClick={() => navigate(generatorPath, { state: { openGenerator: true } })}>
             <FaPlus className="aqp-btn-icon" />
             Generate Quotation

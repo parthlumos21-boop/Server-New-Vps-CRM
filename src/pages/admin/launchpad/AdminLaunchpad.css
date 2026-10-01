@@ -26,6 +26,11 @@
   background: transparent;
 }
 
+/* Move Integrations Live and Recent Activity downwards on LaunchPad page only */
+.lp-body .right-panel {
+  padding-top: calc(var(--header-height, 56px) + 32px) !important;
+}
+
 .lp-main {
   position: relative;
   flex: 1;

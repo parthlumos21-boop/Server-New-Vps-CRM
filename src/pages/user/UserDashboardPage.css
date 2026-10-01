@@ -91,12 +91,23 @@
   border-radius: 14px;
   font-size: 1.35rem;
   flex-shrink: 0;
+  background: #c60016 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(198, 0, 22, 0.25) !important;
 }
 
-.ud-stat-icon-wrapper--red { background: #ffe4e6; color: #c60016; }
-.ud-stat-icon-wrapper--blue { background: #e0f2fe; color: #0284c7; }
-.ud-stat-icon-wrapper--green { background: #dcfce7; color: #16a34a; }
-.ud-stat-icon-wrapper--orange { background: #ffedd5; color: #ea580c; }
+.ud-stat-icon-wrapper svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+
+.ud-stat-icon-wrapper--red,
+.ud-stat-icon-wrapper--blue,
+.ud-stat-icon-wrapper--green,
+.ud-stat-icon-wrapper--orange {
+  background: #c60016 !important;
+  color: #ffffff !important;
+}
 
 .ud-stat-content {
   display: flex;
@@ -187,10 +198,16 @@
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 12px;
-  background: #fee2e2;
-  color: #c60016;
+  background: #c60016 !important;
+  color: #ffffff !important;
   font-size: 1.25rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(198, 0, 22, 0.22) !important;
+}
+
+.ud-todo-header-icon-box svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
 }
 
 .ud-todo-title-row {
@@ -323,25 +340,24 @@
   font-size: 1.15rem;
   flex-shrink: 0;
   transition: transform 0.2s ease;
+  background: #c60016 !important;
+  color: #ffffff !important;
+}
+
+.ud-todo-icon-box svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
 }
 
 .ud-todo-row:hover .ud-todo-icon-box {
   transform: scale(1.06);
 }
 
-.ud-todo-icon-box--reminder {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.ud-todo-icon-box--task {
-  background: #fef3c7;
-  color: #d97706;
-}
-
+.ud-todo-icon-box--reminder,
+.ud-todo-icon-box--task,
 .ud-todo-icon-box--reply {
-  background: #d1fae5;
-  color: #059669;
+  background: #c60016 !important;
+  color: #ffffff !important;
 }
 
 .ud-todo-body {

@@ -457,14 +457,6 @@ const CustomerPickerModal = ({ isOpen, customerRows, onClose, onSelect }) => {
           </button>
         </div>
 
-        <div className="sr-customer-modal-note">
-          <FiInfo />
-          <span>Note: Please double click on the customer to select a customer.</span>
-          <button type="button" className="sr-customer-modal-note-close" onClick={onClose} aria-label="Close customer note">
-            <FiX />
-          </button>
-        </div>
-
         <div className="sr-customer-table-shell">
           <table className="sr-customer-table">
             <thead>

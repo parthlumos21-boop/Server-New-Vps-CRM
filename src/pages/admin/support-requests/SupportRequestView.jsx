@@ -32,12 +32,12 @@ import {
 import './SupportRequestView.css'
 
 const STATUS_COLUMNS = [
-  { key: 'active', label: 'Active', aliases: ['active', 'open', 'new'], color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
-  { key: 'attending', label: 'Attending', aliases: ['attending'], color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
-  { key: 'on-site', label: 'On Site', aliases: ['on site', 'on-site', 'onsite'], color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
-  { key: 'in-progress', label: 'In Progress', aliases: ['in progress', 'in-progress', 'progress'], color: '#059669', bg: '#ecfdf5', border: '#a7f3d0' },
-  { key: 'on-hold', label: 'On Hold', aliases: ['on hold', 'on-hold', 'hold'], color: '#ea580c', bg: '#fff7ed', border: '#fed7aa' },
-  { key: 'postponed', label: 'Postponed', aliases: ['postponed'], color: '#64748b', bg: '#f8fafc', border: '#cbd5e1' },
+  { key: 'active', label: 'Active', aliases: ['active', 'open', 'new'], color: '#ffffff', bg: '#1d4ed8', border: '#1e40af' },
+  { key: 'attending', label: 'Attending', aliases: ['attending'], color: '#ffffff', bg: '#6d28d9', border: '#5b21b6' },
+  { key: 'on-site', label: 'On Site', aliases: ['on site', 'on-site', 'onsite'], color: '#ffffff', bg: '#b45309', border: '#92400e' },
+  { key: 'in-progress', label: 'In Progress', aliases: ['in progress', 'in-progress', 'progress'], color: '#ffffff', bg: '#047857', border: '#065f46' },
+  { key: 'on-hold', label: 'On Hold', aliases: ['on hold', 'on-hold', 'hold'], color: '#ffffff', bg: '#c2410c', border: '#9a3412' },
+  { key: 'postponed', label: 'Postponed', aliases: ['postponed'], color: '#ffffff', bg: '#475569', border: '#334155' },
 ]
 
 const normalizeValue = (value) => String(value || '').trim().toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ')

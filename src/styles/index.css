@@ -211,16 +211,16 @@ html.is-admin .sidebar--admin .sb-today-section {
   /* Brand — Corporate Red (#c60016) & Charcoal Premium Theme */
   --admin-red: #c60016;
   --admin-red-border: #a80012;
-  --color-primary: #111827;
-  --color-primary-hover: #1f2937;
-  --color-primary-soft: rgba(198, 0, 22, 0.06);
-  --color-primary-border: rgba(198, 0, 22, 0.2);
-  --color-primary-strong: #000000;
+  --color-primary: #c60016;
+  --color-primary-hover: #a80012;
+  --color-primary-soft: rgba(198, 0, 22, 0.08);
+  --color-primary-border: rgba(198, 0, 22, 0.25);
+  --color-primary-strong: #c60016;
 
   --color-accent-admin: #c60016;
-  --color-accent-admin-soft: #fff5f5;
+  --color-accent-admin-soft: rgba(198, 0, 22, 0.08);
   --color-accent-user: #c60016;
-  --color-accent-user-soft: #fff5f5;
+  --color-accent-user-soft: rgba(198, 0, 22, 0.08);
 
   /* Status */
   --color-success: #16a34a;
@@ -2084,13 +2084,15 @@ html.is-user[data-theme="dark"] *::after {
   border-radius: var(--radius-lg);
 }
 
-.layout :where(.header, .header-panel, .header-action-cluster) {
+.layout :where(.header, .header-panel, .header-panel--brand, .header-panel--actions, .header-panel--center, .header-action-cluster) {
   background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
   border: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border-radius: 0;
+  border-radius: 0 !important;
 }
 
 @media (max-width: 980px) {
@@ -2670,7 +2672,6 @@ html.is-user:not([data-theme="dark"]) .layout--user :where(
   .reminders-page,
   .custom-reports-page,
   .support-requests-page,
-  .team-view-page,
   .data-manager-page,
   .board-card,
   .grid-card
@@ -2779,11 +2780,18 @@ html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user {
 }
 
 html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-top-card,
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-view-toolbar,
 html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-today-section {
   border-color: #DCE3E8 !important;
   background: #FFFFFF !important;
   background-color: #FFFFFF !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .sb-view-toolbar {
+  border: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-section-label,
@@ -3017,7 +3025,6 @@ html.is-user:not([data-theme="dark"]) .layout--user :is(
 }
 
 html.is-user:not([data-theme="dark"]) .layout--user .mga-titlebar,
-html.is-user:not([data-theme="dark"]) .layout--user .admin-accounts-board-card,
 html.is-user:not([data-theme="dark"]) .layout--user .admin-customers-card,
 html.is-user:not([data-theme="dark"]) .layout--user .admin-customers-wizard-card,
 html.is-user:not([data-theme="dark"]) .layout--user .admin-customers-search-card,
@@ -6851,15 +6858,26 @@ html body #root :is(.layout--admin, .layout--user) :is(
 html body #root :is(.layout--admin, .layout--user) :is(
   .tasks-page,
   .cr-list-page,
-  .summary-reports-page
+  .summary-reports-page,
+  .team-view-page,
+  .team-view-shell,
+  .team-view-panel,
+  .team-view-body,
+  .cl-page,
+  .cl-body,
+  .cl-main,
+  .cl-content-panel,
+  .admin-accounts-board-card,
+  .admin-accounts-board-card--compact,
+  .admin-accounts-board-card--with-tabs
 ) {
   background: transparent !important;
+  background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
 
 html body #root :is(.layout--admin, .layout--user) :is(
-  .team-view-shell,
   .active-reminders-shell,
   .admin-my-reminders-shell,
   .aqp-page,
@@ -6873,7 +6891,6 @@ html body #root :is(.layout--admin, .layout--user) :is(
 }
 
 [data-theme="dark"] html body #root :is(.layout--admin, .layout--user) :is(
-  .team-view-shell,
   .active-reminders-shell,
   .admin-my-reminders-shell,
   .aqp-page,
@@ -7057,7 +7074,9 @@ html body #root :is(.layout--admin, .layout--user) :is(
   .support-request-legacy-table,
   .quotations-table,
   .qsr-table,
-  .qsr-results-table
+  .qsr-results-table,
+  .analytics-card table,
+  .analytics-table-wrap table
 ) thead :is(tr, th, .aqp-thead-row, .aqp-th) {
   background: #c60016 !important;
   background-color: #c60016 !important;
@@ -7076,11 +7095,66 @@ html body #root :is(.layout--admin, .layout--user) :is(
   .support-request-legacy-table,
   .quotations-table,
   .qsr-table,
-  .qsr-results-table
+  .qsr-results-table,
+  .analytics-card table,
+  .analytics-table-wrap table
 ) thead :is(tr, th, .aqp-thead-row, .aqp-th) :is(*, span, strong, button, svg, path, .aqp-sort-icon, .qsr-sort-icon) {
   color: #ffffff !important;
   fill: #ffffff !important;
   stroke: currentColor !important;
   -webkit-text-fill-color: #ffffff !important;
   opacity: 1 !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .analytics-card td {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  background: #ffffff !important;
+}
+
+/* Column-wise table search bar light mode black text visibility override for Admin and Users */
+html:not([data-theme="dark"]) body #root :is(
+  .search-input,
+  .table-search-input,
+  .deals-search-input,
+  .deals-crm-search-input,
+  .admin-accounts-toolbar-search-input,
+  .admin-customers-search-input,
+  th.search-th input,
+  tr.search-row input,
+  .search-row input,
+  .aqp-search-input,
+  .comm-activities-search-input,
+  .sr-list-search-input
+) {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+}
+
+html:not([data-theme="dark"]) body #root :is(
+  .search-input,
+  .table-search-input,
+  .deals-search-input,
+  .deals-crm-search-input,
+  .admin-accounts-toolbar-search-input,
+  .admin-customers-search-input,
+  th.search-th input,
+  tr.search-row input,
+  .search-row input,
+  .aqp-search-input,
+  .comm-activities-search-input,
+  .sr-list-search-input
+)::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  font-weight: 400 !important;
 }

@@ -597,17 +597,6 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
               )}
             </div>
 
-            <button
-              type="button"
-              className={`hdr-icon-btn hdr-icon-btn--circle ${isDark ? 'hdr-theme-toggle--night' : 'hdr-theme-toggle--day'}`}
-              onClick={toggleTheme}
-              title={isDark ? 'Switch to Light' : 'Switch to Dark'}
-              aria-label={isDark ? 'Switch to Light mode' : 'Switch to Dark mode'}
-              aria-pressed={isDark}
-            >
-              {isDark ? <FaMoon /> : <FaSun />}
-            </button>
-
             <div className="hdr-user-menu-wrap" ref={menuWrapRef}>
               <button className="hdr-user-btn" onClick={() => setMenuOpen((previous) => !previous)}>
                 <span className="hdr-user-avatar-pill">

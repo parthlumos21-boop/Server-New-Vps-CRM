@@ -350,9 +350,13 @@
 }
 
 /* ── Board card ──────────────────────────────────────────── */
-.admin-accounts-board-card {
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
+.admin-accounts-board-card,
+.admin-accounts-board-card--compact,
+.admin-accounts-board-card--with-tabs {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -396,6 +400,10 @@
 
 .admin-accounts-board-card--compact {
   margin-top: 0.2rem;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .admin-accounts-board-toolbar {

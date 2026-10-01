@@ -326,9 +326,11 @@ const createInitialQuotationForm = () => ({
   ttaOrg: 'Abp',
   productName: '',
   hsn: '',
+  r0Amount: '',
   r1Amount: '',
   r2Amount: '',
   r3Amount: '',
+  isR0Locked: false,
   isR1Locked: false,
   isR2Locked: false,
   isR3Locked: false,
@@ -354,10 +356,12 @@ const buildQuotationFormFromExisting = (quotation = {}, nextQuotationNumber = ''
     : [createEmptyLineItem()]
 
   const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
+  const r0Val = revAmounts.R0 ?? (quotation.revisionCategory === 'R0' ? quotation.revisionAmount : (quotation.data?.revisionAmountR0 ?? (quotation.revisionNo === 0 ? quotation.amount : '')))
   const r1Val = revAmounts.R1 ?? (quotation.revisionCategory === 'R1' ? quotation.revisionAmount : (quotation.data?.revisionAmountR1 ?? (quotation.revisionNo === 1 ? quotation.amount : '')))
   const r2Val = revAmounts.R2 ?? (quotation.revisionCategory === 'R2' ? quotation.revisionAmount : (quotation.data?.revisionAmountR2 ?? ''))
   const r3Val = revAmounts.R3 ?? (quotation.revisionCategory === 'R3' ? quotation.revisionAmount : (quotation.data?.revisionAmountR3 ?? ''))
 
+  const hasR0 = r0Val !== undefined && r0Val !== null && r0Val !== '' && r0Val !== 0 && r0Val !== '0'
   const hasR1 = r1Val !== undefined && r1Val !== null && r1Val !== '' && r1Val !== 0 && r1Val !== '0'
   const hasR2 = r2Val !== undefined && r2Val !== null && r2Val !== '' && r2Val !== 0 && r2Val !== '0'
   const hasR3 = r3Val !== undefined && r3Val !== null && r3Val !== '' && r3Val !== 0 && r3Val !== '0'
@@ -373,9 +377,11 @@ const buildQuotationFormFromExisting = (quotation = {}, nextQuotationNumber = ''
     ttaOrg: quotation.ttaOrg || 'Abp',
     productName: quotation.productName || quotation.product || '',
     hsn: quotation.hsn || '',
+    r0Amount: hasR0 ? String(r0Val) : '',
     r1Amount: hasR1 ? String(r1Val) : '',
     r2Amount: hasR2 ? String(r2Val) : '',
     r3Amount: hasR3 ? String(r3Val) : '',
+    isR0Locked: hasR0,
     isR1Locked: hasR1,
     isR2Locked: hasR2,
     isR3Locked: hasR3,
@@ -1156,6 +1162,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     })
 
     let computedQuoteNumber = nextQuotationNumber
+    let savedR0 = ''
     let savedR1 = ''
     let savedR2 = ''
     let savedR3 = ''
@@ -1163,19 +1170,24 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     if (existingMatchingQuotes.length > 0) {
       const baseQuote = existingMatchingQuotes[0].quotationNumber || existingMatchingQuotes[0].quoteNumber || nextQuotationNumber
       const baseClean = baseQuote.replace(/-R\d+$/i, '')
-      computedQuoteNumber = `${baseClean}-R${existingMatchingQuotes.length + 1}`
+      computedQuoteNumber = `${baseClean}-R${existingMatchingQuotes.length}`
 
       existingMatchingQuotes.forEach((q) => {
         const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
-        if (revs.R1 || q.revisionAmountR1) savedR1 = revs.R1 || q.revisionAmountR1
-        if (revs.R2 || q.revisionAmountR2) savedR2 = revs.R2 || q.revisionAmountR2
-        if (revs.R3 || q.revisionAmountR3) savedR3 = revs.R3 || q.revisionAmountR3
+        if (revs.R0 || q.revisionAmountR0 || q.r0Amount) savedR0 = revs.R0 || q.revisionAmountR0 || q.r0Amount
+        if (revs.R1 || q.revisionAmountR1 || q.r1Amount) savedR1 = revs.R1 || q.revisionAmountR1 || q.r1Amount
+        if (revs.R2 || q.revisionAmountR2 || q.r2Amount) savedR2 = revs.R2 || q.revisionAmountR2 || q.r2Amount
+        if (revs.R3 || q.revisionAmountR3 || q.r3Amount) savedR3 = revs.R3 || q.revisionAmountR3 || q.r3Amount
+        if (!savedR0 && (q.revisionNo === 0 || q.revisionCode === 'R0')) {
+          savedR0 = q.amount || q.totalAmount
+        }
       })
     } else {
       const baseClean = nextQuotationNumber.replace(/-R\d+$/i, '')
-      computedQuoteNumber = `${baseClean}-R1`
+      computedQuoteNumber = `${baseClean}-R0`
     }
 
+    const hasR0 = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
     const hasR1 = Boolean(savedR1 !== '' && savedR1 !== null && savedR1 !== undefined && savedR1 !== 0 && savedR1 !== '0')
     const hasR2 = Boolean(savedR2 !== '' && savedR2 !== null && savedR2 !== undefined && savedR2 !== 0 && savedR2 !== '0')
     const hasR3 = Boolean(savedR3 !== '' && savedR3 !== null && savedR3 !== undefined && savedR3 !== 0 && savedR3 !== '0')
@@ -1211,9 +1223,12 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       quotationNotes: account?.latestRemark || account?.remark || '',
       customerReferenceDate: quotationDate,
       productGroup: 'Non TTA',
+      r0Amount: hasR0 ? String(savedR0) : '',
       r1Amount: hasR1 ? String(savedR1) : '',
       r2Amount: hasR2 ? String(savedR2) : '',
       r3Amount: hasR3 ? String(savedR3) : '',
+      isR0Locked: hasR0,
+      savedR0InDb: hasR0,
       isR1Locked: hasR1,
       savedR1InDb: hasR1,
       isR2Locked: hasR2,
@@ -1438,11 +1453,34 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const persistedLineItems = sanitizeLineItems(quotationForm.lineItems)
 
     const lineItemsSum = persistedLineItems.reduce((total, lineItem) => total + lineItem.amount, 0)
+    const r0Num = Number(quotationForm.r0Amount) || 0
     const r1Num = Number(quotationForm.r1Amount) || 0
     const r2Num = Number(quotationForm.r2Amount) || 0
     const r3Num = Number(quotationForm.r3Amount) || 0
-    const totalRevSum = r1Num + r2Num + r3Num
-    const grandTotal = lineItemsSum + totalRevSum
+
+    let latestRevNum = 0
+    let revisionCodeVal = 'R0'
+    let revisionNoVal = 0
+
+    if (quotationForm.r3Amount && Number(quotationForm.r3Amount) > 0) {
+      latestRevNum = r3Num
+      revisionCodeVal = 'R3'
+      revisionNoVal = 3
+    } else if (quotationForm.r2Amount && Number(quotationForm.r2Amount) > 0) {
+      latestRevNum = r2Num
+      revisionCodeVal = 'R2'
+      revisionNoVal = 2
+    } else if (quotationForm.r1Amount && Number(quotationForm.r1Amount) > 0) {
+      latestRevNum = r1Num
+      revisionCodeVal = 'R1'
+      revisionNoVal = 1
+    } else if (quotationForm.r0Amount && Number(quotationForm.r0Amount) > 0) {
+      latestRevNum = r0Num
+      revisionCodeVal = 'R0'
+      revisionNoVal = 0
+    }
+
+    const grandTotal = latestRevNum > 0 ? latestRevNum : lineItemsSum
 
     const payload = {
       quotationNumber: quotationForm.quotationNumber.trim() || nextQuotationNumber,
@@ -1493,7 +1531,18 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       ttaOrg: quotationForm.productGroup === 'TTA' ? (quotationForm.ttaOrg || 'Abp') : '',
       productName: quotationForm.productName || quotationForm.product || '',
       hsn: quotationForm.hsn || '',
+      revisionCode: revisionCodeVal,
+      revisionNo: revisionNoVal,
+      r0Amount: quotationForm.r0Amount,
+      r1Amount: quotationForm.r1Amount,
+      r2Amount: quotationForm.r2Amount,
+      r3Amount: quotationForm.r3Amount,
+      revisionAmountR0: r0Num,
+      revisionAmountR1: r1Num,
+      revisionAmountR2: r2Num,
+      revisionAmountR3: r3Num,
       quotationRevisionAmounts: {
+        ...(r0Num ? { R0: r0Num } : {}),
         ...(r1Num ? { R1: r1Num } : {}),
         ...(r2Num ? { R2: r2Num } : {}),
         ...(r3Num ? { R3: r3Num } : {}),
@@ -2723,15 +2772,27 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     />
                   </label>
                   <label className="quotation-builder-field">
-                    <span>R1 Amount (₹)</span>
+                    <span>R0 Amount (₹)</span>
                     <input
                       type="number"
-                      value={quotationForm.r1Amount || ''}
-                      onChange={(event) => handleBuilderFieldChange('r1Amount', event.target.value)}
-                      placeholder="R1 Amount"
-                      readOnly={Boolean(quotationForm.isR1Locked || quotationForm.savedR1InDb)}
+                      value={quotationForm.r0Amount || ''}
+                      onChange={(event) => handleBuilderFieldChange('r0Amount', event.target.value)}
+                      placeholder="R0 Amount"
+                      readOnly={Boolean(quotationForm.isR0Locked || quotationForm.savedR0InDb)}
                     />
                   </label>
+                  {Boolean(quotationForm.isR0Locked || quotationForm.savedR0InDb) && (
+                    <label className="quotation-builder-field">
+                      <span>R1 Amount (₹)</span>
+                      <input
+                        type="number"
+                        value={quotationForm.r1Amount || ''}
+                        onChange={(event) => handleBuilderFieldChange('r1Amount', event.target.value)}
+                        placeholder="R1 Amount"
+                        readOnly={Boolean(quotationForm.isR1Locked || quotationForm.savedR1InDb)}
+                      />
+                    </label>
+                  )}
                   {Boolean(quotationForm.isR1Locked || quotationForm.savedR1InDb) && (
                     <label className="quotation-builder-field">
                       <span>R2 Amount (₹)</span>

@@ -553,9 +553,14 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
   const sgst = toNumber(quotation.sgstAmount || quotation.sgst || 0)
   const igst = toNumber(quotation.igstAmount || quotation.igst || 0)
   const otherTax = toNumber(quotation.taxAmount || 0)
-  const storedAmount = toNumber(quotation.amount)
+  const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
+  const latestRevisionAmount = revAmounts.R3 || revAmounts.R2 || revAmounts.R1 || revAmounts.R0
+    || quotation.revisionAmountR3 || quotation.revisionAmountR2 || quotation.revisionAmountR1 || quotation.revisionAmountR0
+    || quotation.r3Amount || quotation.r2Amount || quotation.r1Amount || quotation.r0Amount
+
+  const storedAmount = toNumber(latestRevisionAmount || quotation.amount || quotation.totalAmount)
   const calculatedTotal = subtotal + cgst + sgst + igst + otherTax
-  const total = storedAmount > 0 ? Math.max(storedAmount, calculatedTotal) : calculatedTotal
+  const total = storedAmount > 0 ? storedAmount : calculatedTotal
   const logoType = quotation.logoType || profileFallback.logoType || (isImageProfile(quotation) ? 'image' : 'text')
   const clientAddressDetails = quotation.clientAddressDetails
     || buildAddress(linkedAccount?.address, linkedAccount?.location, linkedAccount?.state)
@@ -624,8 +629,8 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
     projectName: quotation.projectName || '-',
     clientAddressDetails,
     clientAddressLines: splitDisplayLines(clientAddressDetails === '-' ? '' : clientAddressDetails),
-    revisionCode: quotation.revisionCode || (quotation.revisionNo === 0 || quotation.revisionNo === 1 ? 'R1' : quotation.revisionNo ? `R${quotation.revisionNo}` : 'R1'),
-    revisionNo: quotation.revisionNo || 0,
+    revisionCode: quotation.revisionCode || (quotation.revisionNo === 0 ? 'R0' : quotation.revisionNo ? `R${quotation.revisionNo}` : 'R0'),
+    revisionNo: quotation.revisionNo ?? 0,
     quotationRevisionAmounts: quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {},
     product: quotation.product || '-',
     otherProduct: quotation.otherProduct || '-',
@@ -2020,11 +2025,11 @@ export function SequentialRevisionSummaryCard({
   }, [allQuotations, targetAccountId, targetDealId])
 
   const existingRevisionCount = siblingQuotes.length
-  const nextRevisionCode = existingRevisionCount === 0 ? 'R1' : `R${existingRevisionCount + 1}`
+  const nextRevisionCode = existingRevisionCount === 0 ? 'R0' : `R${existingRevisionCount}`
 
   const revisionAmounts = {}
   siblingQuotes.forEach((q) => {
-    const code = q.raw?.revisionCode || (q.raw?.revisionNo === 0 || q.raw?.revisionNo === 1 ? 'R1' : `R${q.raw?.revisionNo}`)
+    const code = q.raw?.revisionCode || (q.raw?.revisionNo === 0 ? 'R0' : `R${q.raw?.revisionNo}`)
     const amt = q.raw?.totalAmount || q.raw?.amount || q.amount || 0
     revisionAmounts[code] = amt
   })
@@ -2057,7 +2062,7 @@ export function SequentialRevisionSummaryCard({
         </div>
       ) : (
         <div style={{ fontSize: '0.85rem', color: '#15803d' }}>
-          This will be generated as the initial <strong>R1</strong> quotation.
+          This will be generated as the initial <strong>R0</strong> quotation.
         </div>
       )}
     </div>

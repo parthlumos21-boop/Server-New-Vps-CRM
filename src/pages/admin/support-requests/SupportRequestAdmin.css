@@ -1322,8 +1322,9 @@
 
 .support-request-legacy-page {
   min-height: 100%;
-  border: 1px solid var(--border-subtle);
-  background: var(--surface-card);
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .support-request-legacy-header {
@@ -1332,8 +1333,8 @@
   justify-content: space-between;
   gap: 1rem;
   padding: 0.95rem 1.2rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: var(--surface-app);
+  border-bottom: none !important;
+  background: transparent !important;
 }
 
 .support-request-legacy-header h1 {

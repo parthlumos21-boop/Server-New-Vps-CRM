@@ -341,7 +341,7 @@ const Sidebar = ({ isAdmin = false }) => {
           </div>
 
           <div className="sb-nav-section">
-            <SectionLabel isCollapsed={isSidebarCollapsed}>Primary routes</SectionLabel>
+            <SectionLabel isCollapsed={isSidebarCollapsed}>Monitoring</SectionLabel>
             {USER_SIDEBAR_PRIMARY_LINKS.map((link) => {
               const Icon = link.icon
 
@@ -360,7 +360,7 @@ const Sidebar = ({ isAdmin = false }) => {
           </div>
 
           <div className="sb-nav-section">
-            <SectionLabel isCollapsed={isSidebarCollapsed}>MODULES</SectionLabel>
+            <SectionLabel isCollapsed={isSidebarCollapsed}>Sales</SectionLabel>
 
             <SidebarGroup
               icon={<FaUsers />}
@@ -380,37 +380,92 @@ const Sidebar = ({ isAdmin = false }) => {
               ))}
             </SidebarGroup>
 
-            {USER_SIDEBAR_GROUPS.map((group) => {
-              if (group.key === 'accounts') return null
-              const [isOpen, setIsOpen] = userGroupState[group.key]
-              const Icon = group.icon
-              const isActive = location.pathname.startsWith(group.routePrefix)
+            <SidebarGroup
+              icon={<FaUserTie />}
+              label="Customers"
+              isActive={isUserCustomersRoute}
+              isOpen={userCustomersOpen}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserCustomersOpen((previous) => !previous)}
+            >
+              <SubLink to="/customers/search" label="Search Customer" />
+              <SubLink to="/customers/my-customers" label="My Customers" />
+            </SidebarGroup>
 
-              return (
-                <SidebarGroup
-                  key={group.key}
-                  icon={<Icon />}
-                  label={group.label}
-                  isActive={isActive}
-                  isOpen={isOpen}
-                  isCollapsed={isSidebarCollapsed}
-                  onToggle={() => setIsOpen((previous) => !previous)}
-                >
-                  {group.items.map((item) => (
-                    <SubLink
-                      key={item.to}
-                      to={item.to}
-                      label={item.label}
-                      end={item.to === '/accounts' || item.to === '/deals' || item.to === '/reports'}
-                    />
-                  ))}
-                </SidebarGroup>
-              )
-            })}
+            <SidebarGroup
+              icon={<FaClipboardList />}
+              label="Quotation Manager"
+              isActive={isUserQuotationRoute}
+              isOpen={userQuotationManagerOpen}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserQuotationManagerOpen((previous) => !previous)}
+            >
+              <SubLink to="/quotation-manager/view" label="View Quotations" />
+              <SubLink to="/reports/quotation-summary" label="Summary Report" />
+            </SidebarGroup>
           </div>
 
           <div className="sb-nav-section">
-            <SectionLabel isCollapsed={isSidebarCollapsed}>Utilities</SectionLabel>
+            <SectionLabel isCollapsed={isSidebarCollapsed}>CRM Support</SectionLabel>
+            <SidebarGroup
+              icon={<FaHeadset />}
+              label="Support Requests"
+              isActive={isUserSupportRequestsRoute}
+              isOpen={userSupportRequestsOpen}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserSupportRequestsOpen((previous) => !previous)}
+            >
+              <SubLink to="/support-requests/add" label="Add SR" />
+              <SubLink to="/support-requests/list" label="SR List" />
+              <SubLink to="/support-requests/view" label="SR View" />
+              <SubLink to="/support-requests/search" label="Search SR" />
+              <SubLink to="/support-requests/closed" label="Closed SR" />
+            </SidebarGroup>
+          </div>
+
+          <div className="sb-nav-section">
+            <SectionLabel isCollapsed={isSidebarCollapsed}>Tasks</SectionLabel>
+            <SidebarGroup
+              icon={<FaTasks />}
+              label="Tasks"
+              isActive={isUserTasksRoute}
+              isOpen={userTasksOpen && !isSidebarCollapsed}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserTasksOpen(!userTasksOpen)}
+            >
+              <SubLink to="/tasks?add=true" label="Add Tasks" isActiveMatch={() => location.pathname === '/tasks' && location.search.includes('add=true')} />
+              <SubLink to="/tasks" label="View Tasks" isActiveMatch={() => location.pathname === '/tasks' && !location.search.includes('add=true')} />
+            </SidebarGroup>
+
+            <SidebarGroup
+              icon={<FaBell />}
+              label="Reminders"
+              isActive={isUserRemindersRoute}
+              isOpen={userRemindersOpen && !isSidebarCollapsed}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserRemindersOpen(!userRemindersOpen)}
+            >
+              <SubLink to="/reminders/my" label="My Reminders" />
+              <SubLink to="/reminders/active" label="Active Reminders" />
+              <SubLink to="/reminders/closed" label="Closed Reminders" />
+            </SidebarGroup>
+          </div>
+
+          <div className="sb-nav-section">
+            <SectionLabel isCollapsed={isSidebarCollapsed}>Tools</SectionLabel>
+            <SidebarGroup
+              icon={<FaListAlt />}
+              label="Reports"
+              isActive={isUserReportsRoute}
+              isOpen={userReportsOpen}
+              isCollapsed={isSidebarCollapsed}
+              onToggle={() => setUserReportsOpen((previous) => !previous)}
+            >
+              <SubLink to="/reports/custom" label="Custom Reports" />
+              <SubLink to="/reports/summary" label="Summary Reports" />
+              <SubLink to="/reports/customer-map" label="Customer Map View" />
+            </SidebarGroup>
+
             {USER_SIDEBAR_PLAIN_LINKS.map((link) => {
               const Icon = link.icon
 
@@ -459,7 +514,7 @@ const Sidebar = ({ isAdmin = false }) => {
         </div>
 
         <div className="sb-nav-section">
-          <SectionLabel isCollapsed={isSidebarCollapsed}>Primary routes</SectionLabel>
+          <SectionLabel isCollapsed={isSidebarCollapsed}>Monitoring</SectionLabel>
           <NavLink
             to="/admin/monitoring"
             className={({ isActive }) => `sb-link sb-link--team ${isActive ? 'sb-link--active' : ''}`}
@@ -490,7 +545,7 @@ const Sidebar = ({ isAdmin = false }) => {
         </div>
 
         <div className="sb-nav-section">
-          <SectionLabel isCollapsed={isSidebarCollapsed}>MODULES</SectionLabel>
+          <SectionLabel isCollapsed={isSidebarCollapsed}>Sales</SectionLabel>
           <SidebarGroup
             icon={<FaUsers />}
             label="Accounts"
@@ -518,11 +573,25 @@ const Sidebar = ({ isAdmin = false }) => {
             isCollapsed={isSidebarCollapsed}
             onToggle={() => setCustomersOpen((previous) => !previous)}
           >
-
             <SubLink to="/admin/customers/search" label="Search Customer" />
             <SubLink to="/admin/customers/my-customers" label="My Customers" />
           </SidebarGroup>
 
+          <SidebarGroup
+            icon={<FaClipboardList />}
+            label="Quotation Manager"
+            isActive={isQuotationRoute}
+            isOpen={quotationManagerOpen}
+            isCollapsed={isSidebarCollapsed}
+            onToggle={() => setQuotationManagerOpen((previous) => !previous)}
+          >
+            <SubLink to="/admin/quotation-manager/view" label="View Quotations" />
+            <SubLink to="/admin/reports/quotation-summary" label="Summary Report" />
+          </SidebarGroup>
+        </div>
+
+        <div className="sb-nav-section">
+          <SectionLabel isCollapsed={isSidebarCollapsed}>CRM Support</SectionLabel>
           <SidebarGroup
             icon={<FaHeadset />}
             label="Support Requests"
@@ -540,20 +609,10 @@ const Sidebar = ({ isAdmin = false }) => {
               />
             ))}
           </SidebarGroup>
+        </div>
 
-          <SidebarGroup
-            icon={<FaBell />}
-            label="Reminders"
-            isActive={isRemindersRoute}
-            isOpen={remindersOpen && !isSidebarCollapsed}
-            isCollapsed={isSidebarCollapsed}
-            onToggle={() => setRemindersOpen(!remindersOpen)}
-          >
-            {remindersMenuItems.map((item) => (
-              <SubLink key={item.label} to={item.to} label={item.label} />
-            ))}
-          </SidebarGroup>
-
+        <div className="sb-nav-section">
+          <SectionLabel isCollapsed={isSidebarCollapsed}>Tasks</SectionLabel>
           <SidebarGroup
             icon={<FaTasks />}
             label="Tasks"
@@ -568,6 +627,22 @@ const Sidebar = ({ isAdmin = false }) => {
           </SidebarGroup>
 
           <SidebarGroup
+            icon={<FaBell />}
+            label="Reminders"
+            isActive={isRemindersRoute}
+            isOpen={remindersOpen && !isSidebarCollapsed}
+            isCollapsed={isSidebarCollapsed}
+            onToggle={() => setRemindersOpen(!remindersOpen)}
+          >
+            {remindersMenuItems.map((item) => (
+              <SubLink key={item.label} to={item.to} label={item.label} />
+            ))}
+          </SidebarGroup>
+        </div>
+
+        <div className="sb-nav-section">
+          <SectionLabel isCollapsed={isSidebarCollapsed}>Tools</SectionLabel>
+          <SidebarGroup
             icon={<FaListAlt />}
             label="Reports"
             isActive={isReportsRoute}
@@ -579,10 +654,7 @@ const Sidebar = ({ isAdmin = false }) => {
               <SubLink key={item.to} to={item.to} label={item.label} />
             ))}
           </SidebarGroup>
-        </div>
 
-        <div className="sb-nav-section">
-          <SectionLabel isCollapsed={isSidebarCollapsed}>Workspace tools</SectionLabel>
           <NavLink
             to="/admin/charts"
             className={({ isActive }) => `sb-link sb-workspace-tool-link ${isActive ? 'sb-link--active' : ''}`}
@@ -600,18 +672,6 @@ const Sidebar = ({ isAdmin = false }) => {
             <span className="sb-link-icon"><FaTh /></span>
             <span>View Settings</span>
           </NavLink>
-
-          <SidebarGroup
-            icon={<FaClipboardList />}
-            label="Quotation Manager"
-            isActive={isQuotationRoute}
-            isOpen={quotationManagerOpen}
-            isCollapsed={isSidebarCollapsed}
-            onToggle={() => setQuotationManagerOpen((previous) => !previous)}
-          >
-            <SubLink to="/admin/quotation-manager/view" label="View Quotations" />
-            <SubLink to="/admin/reports/quotation-summary" label="Summary Report" />
-          </SidebarGroup>
 
           <NavLink
             to="/admin/data-manager"
@@ -632,8 +692,6 @@ const Sidebar = ({ isAdmin = false }) => {
               <span>Password Reset Requests</span>
             </NavLink>
           ) : null}
-
-
 
         </div>
 

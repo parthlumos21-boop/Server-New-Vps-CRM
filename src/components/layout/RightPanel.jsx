@@ -14,6 +14,10 @@ import './RightPanel.css'
 
 const DEMO_ACTIVITY = [
   { id: 1, name: 'System Administrator', action: 'is online now', time: '01/06/2026, 04:31 pm' },
+  { id: 2, name: 'Sales Manager', action: 'is online now', time: '01/06/2026, 04:25 pm' },
+  { id: 3, name: 'Support Lead', action: 'is online now', time: '01/06/2026, 04:18 pm' },
+  { id: 4, name: 'CRM Administrator', action: 'updated system configuration', time: '01/06/2026, 04:10 pm' },
+  { id: 5, name: 'Account Executive', action: 'opened new deal proposal', time: '01/06/2026, 03:55 pm' },
 ]
 
 const normalizeActionLabel = (value = '') => {
@@ -70,21 +74,21 @@ const formatDateTime = (value, fallback = '-') => {
 }
 
 const buildLiveEntries = (onlineUsers = [], activities = [], nowLabel = '') => {
-  const onlineEntries = onlineUsers.map((entry) => ({
-    id: `online-${entry.id}`,
-    name: entry.name,
-    action: 'is online',
+  const onlineEntries = (onlineUsers || []).map((entry) => ({
+    id: `online-${entry.id || entry.username || entry.name}`,
+    name: entry.name || entry.username || 'User',
+    action: 'is online now',
     time: formatDateTime(entry.connectedAt, nowLabel),
   }))
 
-  const activityEntries = activities.slice(0, 8).map((entry) => ({
-    id: entry.id,
-    name: entry.userName || 'User',
+  const activityEntries = (activities || []).map((entry) => ({
+    id: entry.id || `${entry.type}-${entry.timestamp}`,
+    name: entry.userName || entry.user || 'User',
     action: normalizeActionLabel(entry.type),
     time: formatDateTime(entry.timestamp, nowLabel),
   }))
 
-  return [...onlineEntries, ...activityEntries].slice(0, 10)
+  return [...onlineEntries, ...activityEntries]
 }
 
 const getActivityBadge = (action = '') => {

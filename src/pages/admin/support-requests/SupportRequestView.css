@@ -1998,7 +1998,7 @@ html.is-user:not([data-theme="dark"]) body #root .layout--user .support-request-
 }
 
 /* Light-mode screenshot match. Keep night mode separate and untouched. */
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page {
+html:not([data-theme="dark"]) .support-request-view-page {
   min-height: 100% !important;
   background: #f5f6f8 !important;
   background-color: #f5f6f8 !important;
@@ -2006,7 +2006,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page {
   color: #111827 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-shell {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-shell {
   min-height: auto !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -2016,7 +2016,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   box-shadow: none !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-toolbar {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-toolbar {
   display: flex !important;
   align-items: flex-start !important;
   justify-content: space-between !important;
@@ -2031,7 +2031,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   box-shadow: none !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-toolbar h1 {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-toolbar h1 {
   margin: 0 !important;
   color: #111827 !important;
   -webkit-text-fill-color: #111827 !important;
@@ -2041,7 +2041,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   font-weight: 800 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-toolbar p {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-toolbar p {
   margin: 2px 0 0 !important;
   color: #374151 !important;
   -webkit-text-fill-color: #374151 !important;
@@ -2051,11 +2051,11 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   font-weight: 700 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-filters {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-filters {
   gap: 8px !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page :is(.sr-status-filter-trigger, .sr-status-filter-load) {
+html:not([data-theme="dark"]) .support-request-view-page :is(.sr-status-filter-trigger, .sr-status-filter-load) {
   min-width: 92px !important;
   min-height: 28px !important;
   height: 28px !important;
@@ -2072,7 +2072,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page :is(
   font-weight: 800 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page :is(.sr-status-filter-trigger, .sr-status-filter-load) :is(svg, span) {
+html:not([data-theme="dark"]) .support-request-view-page :is(.sr-status-filter-trigger, .sr-status-filter-load) :is(svg, span) {
   color: #ffffff !important;
   fill: currentColor !important;
   stroke: currentColor !important;
@@ -2083,7 +2083,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page :is(
    LIGHT MODE KANBAN BOARD & TABLE - PROFESSIONAL ENTERPRISE DESIGN
    ═══════════════════════════════════════════════════════════════════════════ */
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-wrap {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-wrap {
   position: relative !important;
   padding: 1rem 0.5rem !important;
   background: #f8fafc !important;
@@ -2093,13 +2093,13 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   overflow: hidden !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-scroll {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-scroll {
   overflow-x: auto !important;
   padding: 0.25rem 0.5rem 1rem !important;
   scroll-behavior: smooth !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-columns {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-columns {
   display: grid !important;
   grid-auto-flow: column !important;
   grid-auto-columns: 310px !important;
@@ -2109,7 +2109,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   min-width: 100% !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-column {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-column {
   min-width: 310px !important;
   width: 310px !important;
   max-width: 310px !important;
@@ -2123,7 +2123,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   flex-direction: column !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-column-header {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-column-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
@@ -2138,13 +2138,13 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   border-top: 3.5px solid #c60016 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-column-title-group {
+html:not([data-theme="dark"]) .support-request-view-page .sr-column-title-group {
   display: flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-column-indicator {
+html:not([data-theme="dark"]) .support-request-view-page .sr-column-indicator {
   width: 8px !important;
   height: 8px !important;
   border-radius: 50% !important;
@@ -2152,7 +2152,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   flex-shrink: 0 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-column-label {
+html:not([data-theme="dark"]) .support-request-view-page .sr-column-label {
   font-size: 0.88rem !important;
   font-weight: 700 !important;
   color: #0f172a !important;
@@ -2160,7 +2160,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   letter-spacing: -0.01em !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-column-count-chip {
+html:not([data-theme="dark"]) .support-request-view-page .sr-column-count-chip {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2177,7 +2177,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   font-weight: 800 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-column-body {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-column-body {
   min-height: 480px !important;
   padding: 0.85rem !important;
   background: #f8fafc !important;
@@ -2188,7 +2188,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   flex: 1 1 auto !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-card {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-card {
   margin: 0 !important;
   padding: 0.85rem 0.95rem !important;
   border: 1px solid #e2e8f0 !important;
@@ -2204,13 +2204,13 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-card:hover {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-card:hover {
   border-color: #cbd5e1 !important;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
   transform: translateY(-2px) !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-code-pill {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-code-pill {
   font-weight: 700 !important;
   font-size: 0.72rem !important;
   color: #c60016 !important;
@@ -2221,7 +2221,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   border: 1px solid rgba(198, 0, 22, 0.15) !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-type-tag {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-type-tag {
   font-weight: 600 !important;
   font-size: 0.72rem !important;
   color: #475569 !important;
@@ -2232,7 +2232,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   border: 1px solid #e2e8f0 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-time-ago {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-time-ago {
   font-size: 0.72rem !important;
   color: #64748b !important;
   -webkit-text-fill-color: #64748b !important;
@@ -2242,14 +2242,14 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   margin-left: auto !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-customer-name {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-customer-name {
   font-size: 0.9rem !important;
   font-weight: 700 !important;
   color: #0f172a !important;
   -webkit-text-fill-color: #0f172a !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-subject-snippet {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-subject-snippet {
   font-size: 0.78rem !important;
   color: #475569 !important;
   -webkit-text-fill-color: #475569 !important;
@@ -2257,7 +2257,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   margin: 0 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-meta-grid {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-meta-grid {
   display: flex !important;
   flex-direction: column !important;
   gap: 0.3rem !important;
@@ -2266,7 +2266,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   border-bottom: 1px solid #f1f5f9 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-meta-item {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-meta-item {
   display: flex !important;
   align-items: center !important;
   gap: 0.45rem !important;
@@ -2275,14 +2275,14 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   -webkit-text-fill-color: #64748b !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-phone-link {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-phone-link {
   color: #c60016 !important;
   -webkit-text-fill-color: #c60016 !important;
   text-decoration: none !important;
   font-weight: 600 !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-footer {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-footer {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-end !important;
@@ -2290,7 +2290,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   padding-top: 0.35rem !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-action-view {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-action-view {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -2308,20 +2308,20 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   text-decoration: none !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-action-view:hover {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-action-view:hover {
   background: #c60016 !important;
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   box-shadow: 0 2px 8px rgba(198, 0, 22, 0.25) !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-action-view svg,
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-card-action-view svg * {
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-action-view svg,
+html:not([data-theme="dark"]) .support-request-view-page .sr-card-action-view svg * {
   color: inherit !important;
   fill: currentColor !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge {
   position: absolute !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
@@ -2343,7 +2343,7 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   transition: all 0.2s ease !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge:hover {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge:hover {
   background: #c60016 !important;
   background-color: #c60016 !important;
   border-color: #c60016 !important;
@@ -2353,22 +2353,22 @@ html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-
   transform: translateY(-50%) scale(1.08) !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge svg,
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge svg * {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge svg,
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge svg * {
   color: inherit !important;
   fill: currentColor !important;
   stroke: currentColor !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge-left {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge-left {
   left: 8px !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-edge-right {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-edge-right {
   right: 8px !important;
 }
 
-html:not([data-theme="dark"]) body #root .layout .support-request-view-page .sr-status-board-empty {
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-empty {
   min-height: 140px !important;
   border: 1.5px dashed #cbd5e1 !important;
   border-radius: 10px !important;
@@ -2415,5 +2415,206 @@ html:not([data-theme="dark"]) body .support-request-legacy-footer-pagination but
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
   background-color: #b91c1c !important;
+}
+
+/* ==========================================================================
+   Support Request View - Brand Theme Red Border Only & Text Visibility
+   ========================================================================== */
+
+/* 1. Kanban Column Headers - Clean Header with Red Top Border & High Contrast Dark Text */
+.sr-status-board-column-header {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-top: 3px solid #c60016 !important;
+  padding: 0.75rem 0.95rem !important;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.sr-column-label,
+.sr-column-label * {
+  font-size: 0.88rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  letter-spacing: 0.01em !important;
+}
+
+.sr-column-count-chip {
+  background: rgba(198, 0, 22, 0.1) !important;
+  background-color: rgba(198, 0, 22, 0.1) !important;
+  color: #c60016 !important;
+  -webkit-text-fill-color: #c60016 !important;
+  font-weight: 800 !important;
+}
+
+.sr-column-indicator {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+}
+
+/* 2. Empty Column State - Red Border ONLY, NO Background Fill, 100% Crisp Visible Text */
+.sr-status-board-empty,
+html:not([data-theme="dark"]) .support-request-view-page .sr-status-board-empty {
+  min-height: 120px !important;
+  border: 1.5px dashed #c60016 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.4rem !important;
+  padding: 1.25rem 0.85rem !important;
+  text-align: center !important;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.sr-status-board-empty span,
+.sr-status-board-empty div,
+.sr-status-board-empty p,
+.sr-status-board-empty * {
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.sr-empty-dot {
+  width: 0.6rem !important;
+  height: 0.6rem !important;
+  border-radius: 999px !important;
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+}
+
+/* 3. Live Search Bar Text Visibility */
+.sr-search-bar {
+  background: #ffffff !important;
+}
+
+.sr-search-input {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 500 !important;
+  opacity: 1 !important;
+}
+
+.sr-search-input::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+}
+
+/* 4. Filter Buttons & Checked Option Badges */
+.sr-status-filter-trigger {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+  border-color: #a80012 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.sr-status-filter-trigger span,
+.sr-status-filter-trigger svg {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.sr-filter-badge {
+  background: #ffffff !important;
+  color: #c60016 !important;
+  -webkit-text-fill-color: #c60016 !important;
+  font-weight: 800 !important;
+}
+
+.sr-status-filter-option--checked {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.sr-status-filter-option--checked .sr-option-text,
+.sr-status-filter-option--checked .sr-option-check-icon {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+/* 5. Table View & Status Badges Crisp White Text */
+.sr-status-pill {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 800 !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 999px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+}
+
+.sr-status-pill-dot {
+  background-color: #ffffff !important;
+}
+
+.sr-card-code-pill,
+.sr-ticket-code-badge {
+  background: #c60016 !important;
+  background-color: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 1px 4px rgba(198, 0, 22, 0.25) !important;
+}
+
+/* 6. Empty State & Column Header Styling for Support Request View (Admin & User Parity) */
+.sr-status-board-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  margin: 0.5rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #475569 !important;
+  font-size: 0.82rem;
+  font-weight: 700 !important;
+  text-align: center;
+}
+
+.sr-empty-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.sr-status-board-column-header {
+  border-top: 4px solid #c60016;
+  background: #f8fafc;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sr-column-label {
+  font-size: 0.9rem !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.sr-column-count-chip {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 800 !important;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
 }
 

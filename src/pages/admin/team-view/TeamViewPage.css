@@ -18,11 +18,12 @@
   flex-direction: column;
   gap: 1rem;
   min-height: 0;
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  background: var(--surface-card);
-  box-shadow: none;
-  overflow: hidden;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  overflow: visible;
 }
 
 /* ── Header ───────────────────────────────────────────────────────── */
@@ -105,13 +106,14 @@
 .team-view-body {
   padding: 1.25rem;
   min-height: 480px;
-  background: var(--surface-card);
+  background: transparent !important;
 }
 
 .team-view-panel {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background: transparent !important;
 }
 
 /* ── Inner Tabs & Tree Hierarchy ─────────────────────────────────── */

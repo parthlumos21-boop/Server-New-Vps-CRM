@@ -883,7 +883,9 @@ const AccountDetailsDrawer = ({
 
             <section className="admin-accounts-workspace-section">
               <div className="admin-accounts-workspace-section-header">
-                <h3>Converted Deals</h3>
+                <h3>
+                  {String(account?.status || account?.stage || account?.raw?.status || account?.raw?.stage || '').toLowerCase() === 'staged' ? 'Staged Deals' : 'Staged Deals'}
+                </h3>
                 <span className="admin-accounts-converted-deals-count">
                   {relatedConvertedDeals.length} linked
                 </span>
@@ -891,7 +893,7 @@ const AccountDetailsDrawer = ({
 
               {relatedConvertedDeals.length === 0 ? (
                 <div className="admin-accounts-converted-deals-empty">
-                  No converted deals are linked with this account yet.
+                  No staged deals are linked with this account yet.
                 </div>
               ) : (
                 <div className="admin-accounts-converted-deals-list">

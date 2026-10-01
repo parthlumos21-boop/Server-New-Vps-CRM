@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   FaArrowRight,
   FaBell,
+  FaBriefcase,
   FaCalendarAlt,
   FaCheckCircle,
   FaClipboardList,
@@ -10,6 +11,7 @@ import {
   FaFileAlt,
   FaHandshake,
   FaHeadset,
+  FaHome,
   FaThLarge,
   FaUser,
   FaUsers,

@@ -48,6 +48,9 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
   const [replyContent, setReplyContent] = useState('')
   const [postingReply, setPostingReply] = useState(false)
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+
   const loadData = async () => {
     setLoading(true)
     try {
@@ -104,15 +107,34 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
     loadData()
   }, [])
 
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, selectedCategory, selectedEntityType])
+
   const filteredRemarks = useMemo(() => {
-    return remarks.filter((rem) => {
+    const list = remarks.filter((rem) => {
       const matchesCategory = selectedCategory === 'all' || rem.category === selectedCategory
       const matchesEntity = selectedEntityType === 'all' || rem.relatedEntityType === selectedEntityType
       const targetText = `${rem.content || ''} ${rem.accountName || ''} ${rem.dealName || ''} ${rem.recordOwnerName || ''} ${rem.createdByName || ''}`.toLowerCase()
       const matchesSearch = !searchTerm || targetText.includes(searchTerm.toLowerCase())
       return matchesCategory && matchesEntity && matchesSearch
     })
+
+    // Sort strictly LIFO (newest record first)
+    return [...list].sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.remarkDate || 0).getTime()
+      const timeB = new Date(b.createdAt || b.remarkDate || 0).getTime()
+      if (timeA !== timeB) return timeB - timeA
+      return (b.id || b._id || 0) > (a.id || a._id || 0) ? 1 : -1
+    })
   }, [remarks, selectedCategory, selectedEntityType, searchTerm])
+
+  const totalPages = Math.ceil(filteredRemarks.length / pageSize) || 1
+
+  const paginatedRemarks = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredRemarks.slice(start, start + pageSize)
+  }, [filteredRemarks, currentPage, pageSize])
 
   const handleRowClick = (remark) => {
     setSelectedRemark(remark)
@@ -192,7 +214,6 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
           </div>
 
           <div className="comm-activities-filter-group">
-            <FaFilter className="comm-activities-filter-icon" />
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
@@ -224,97 +245,167 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
           ) : filteredRemarks.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#475569', fontWeight: 500 }}>No communication activities found</div>
           ) : (
-            <div className="comm-activities-table-responsive">
-              <table className="comm-activities-table">
-                <thead>
-                  <tr className="comm-activities-thead-tr">
-                  <th style={{ padding: '14px 16px', width: '40px', background: '#740A03', color: '#ffffff' }}></th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Type</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Name</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Category</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Remark / Note</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Record Owner</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Activity By</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Discussion</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Start Time</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>End Time</th>
-                  <th style={{ padding: '14px 16px', background: '#740A03', color: '#ffffff' }}>Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRemarks.map((rem, idx) => {
-                  const isDeal = rem.relatedEntityType === 'deal' || Boolean(rem.dealId)
-                  const recordName = rem.dealName || rem.accountName || 'Record'
-                  const ownerName = rem.recordOwnerName || rem.accountOwnerName || rem.dealOwnerName || '-'
-                  const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc'
-
-                  return (
-                    <tr
-                      key={rem.id || rem._id || idx}
-                      style={{ background: rowBg, borderBottom: '1px solid #e2e8f0', cursor: 'pointer', transition: 'background-color 0.15s' }}
-                      onClick={() => handleRowClick(rem)}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = rowBg }}
-                    >
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        {rem.category === 'call-log' ? (
-                          <FaPhoneAlt style={{ color: '#0284c7' }} />
-                        ) : (
-                          <FaComments style={{ color: '#2563eb' }} />
-                        )}
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <Badge variant={isDeal ? 'info' : 'success'}>
-                          {isDeal ? 'Deal' : 'Account'}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a' }}>
-                        {recordName}
-                      </td>
-                      <td style={{ padding: '12px 16px' }}>
-                        <span style={{
-                          padding: '3px 8px',
-                          borderRadius: '4px',
-                          background: rem.category === 'call-log' ? '#fef3c7' : '#e2e8f0',
-                          color: rem.category === 'call-log' ? '#92400e' : '#1e293b',
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          textTransform: 'capitalize',
-                        }}>
-                          {rem.category || 'general'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#1e293b', maxWidth: '320px', fontWeight: 500 }}>
-                        <div>{rem.content || '-'}</div>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#334155', fontWeight: 500 }}>
-                        {ownerName}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#334155', fontWeight: 500 }}>
-                        {rem.createdByName || rem.authorName || 'User'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#2563eb', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <FaComments /> Discussion
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                        {rem.startTime || (rem.category === 'call-log' ? (rem.callLogTime || '-') : '-')}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>
-                        {rem.endTime || '-'}
-                      </td>
-                      <td style={{ padding: '12px 16px', color: '#475569', whiteSpace: 'nowrap', fontWeight: 500 }}>
-                        {rem.remarkDate ? formatDate(rem.remarkDate, 'long') : (rem.createdAt ? formatDate(rem.createdAt, 'long') : '-')}
-                      </td>
+            <>
+              <div className="comm-activities-table-responsive">
+                <table className="comm-activities-table">
+                  <thead>
+                    <tr className="comm-activities-thead-tr">
+                      <th style={{ padding: '14px 16px', width: '40px', background: '#c60016', color: '#ffffff' }}></th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Type</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Name</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Category</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Remark / Note</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Record Owner</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Activity By</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Start Time</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>End Time</th>
+                      <th style={{ padding: '14px 16px', background: '#c60016', color: '#ffffff' }}>Date & Time</th>
                     </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                  </thead>
+                  <tbody>
+                    {paginatedRemarks.map((rem, idx) => {
+                      const isDeal = rem.relatedEntityType === 'deal' || Boolean(rem.dealId)
+                      const recordName = rem.dealName || rem.accountName || 'Record'
+                      const ownerName = rem.recordOwnerName || rem.accountOwnerName || rem.dealOwnerName || '-'
+                      const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc'
+
+                      return (
+                        <tr
+                          key={rem.id || rem._id || idx}
+                          style={{ background: rowBg, borderBottom: '1px solid #e2e8f0', cursor: 'pointer', transition: 'background-color 0.15s' }}
+                          onClick={() => handleRowClick(rem)}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = rowBg }}
+                        >
+                          <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                            {rem.category === 'call-log' ? (
+                              <FaPhoneAlt style={{ color: '#0284c7' }} />
+                            ) : (
+                              <FaComments style={{ color: '#2563eb' }} />
+                            )}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <Badge variant={isDeal ? 'info' : 'success'}>
+                              {isDeal ? 'Deal' : 'Account'}
+                            </Badge>
+                          </td>
+                          <td style={{ padding: '12px 16px', fontWeight: 600, color: '#0f172a' }}>
+                            {recordName}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              background: rem.category === 'call-log' ? '#fef3c7' : '#e2e8f0',
+                              color: rem.category === 'call-log' ? '#92400e' : '#1e293b',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              textTransform: 'capitalize',
+                            }}>
+                              {rem.category || 'general'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#1e293b', maxWidth: '320px', fontWeight: 500 }}>
+                            <div>{rem.content || '-'}</div>
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#334155', fontWeight: 500 }}>
+                            {ownerName}
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#334155', fontWeight: 500 }}>
+                            {rem.createdByName || rem.authorName || 'User'}
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {rem.startTime || (rem.category === 'call-log' ? (rem.callLogTime || '-') : '-')}
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#475569', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                            {rem.endTime || '-'}
+                          </td>
+                          <td style={{ padding: '12px 16px', color: '#475569', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                            {rem.remarkDate ? formatDate(rem.remarkDate, 'long') : (rem.createdAt ? formatDate(rem.createdAt, 'long') : '-')}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls (First, 1, 2, 3..., Last) */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'space-between',
+                padding: '12px 20px',
+                borderTop: '1px solid #e2e8f0',
+                background: '#ffffff',
+                flexWrap: 'wrap',
+                gap: '10px'
+              }}>
+                <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 500 }}>
+                  Showing <strong>{Math.min((currentPage - 1) * pageSize + 1, filteredRemarks.length)}</strong> to <strong>{Math.min(currentPage * pageSize, filteredRemarks.length)}</strong> of <strong>{filteredRemarks.length}</strong> records
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      background: currentPage === 1 ? '#f1f5f9' : '#ffffff',
+                      color: currentPage === 1 ? '#94a3b8' : '#740a03',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    First
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      type="button"
+                      onClick={() => setCurrentPage(pageNum)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        border: pageNum === currentPage ? '1px solid #740a03' : '1px solid #cbd5e1',
+                        background: pageNum === currentPage ? '#740a03' : '#ffffff',
+                        color: pageNum === currentPage ? '#ffffff' : '#0f172a',
+                        fontWeight: pageNum === currentPage ? 800 : 600,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      background: currentPage === totalPages ? '#f1f5f9' : '#ffffff',
+                      color: currentPage === totalPages ? '#94a3b8' : '#740a03',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Row Click Detail & Chat Replies Modal */}
@@ -370,30 +461,32 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
                 <FaComments style={{ color: '#2563eb' }} /> Remarks & Chat Discussion Replies ({threadRemarks.length})
               </h4>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', maxHeight: '280px', overflowY: 'auto', paddingRight: '6px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto', paddingRight: '6px' }}>
                 {threadRemarks.map((item, idx) => (
                   <div
                     key={item.id || idx}
                     style={{
                       background: item.id === selectedRemark.id ? '#eff6ff' : '#f8fafc',
-                      border: item.id === selectedRemark.id ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
-                      padding: '12px 14px',
-                      borderRadius: '8px',
+                      border: item.id === selectedRemark.id ? '1px solid #93c5fd' : '1px solid #e2e8f0',
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '13px', color: '#1e293b' }}>
-                        {item.createdByName || 'User'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '6px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '13.5px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <FaUser style={{ color: '#740a03', fontSize: '12px' }} />
+                        {item.createdByName || 'Keval V Shah'}
                       </span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                        {item.createdAt ? formatDate(item.createdAt) : '-'}
+                      <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                        {item.createdAt ? formatDate(item.createdAt, 'long') : 'Sep 29, 2026'}
                       </span>
                     </div>
-                    <div style={{ fontSize: '13.5px', color: '#334155', lineHeight: '1.4' }}>
+                    <div style={{ fontSize: '14px', color: '#1e293b', lineHeight: '1.5', whiteSpace: 'pre-wrap', fontWeight: 500 }}>
                       {item.content}
                     </div>
                     {item.category === 'call-log' && (item.startTime || item.endTime || item.callLogTime) && (
-                      <div style={{ fontSize: '12px', color: '#0284c7', marginTop: '6px', fontWeight: 600 }}>
+                      <div style={{ fontSize: '12px', color: '#0284c7', marginTop: '8px', fontWeight: 600 }}>
                         Call Duration: {item.startTime || item.callLogTime || '09:00'} - {item.endTime || '09:30'}
                       </div>
                     )}
@@ -428,7 +521,7 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
                     padding: '10px 18px',
                     borderRadius: '6px',
                     border: 'none',
-                    background: postingReply || !replyContent.trim() ? '#94a3b8' : '#2563eb',
+                    background: postingReply || !replyContent.trim() ? '#94a3b8' : '#740a03',
                     color: '#ffffff',
                     fontWeight: 600,
                     fontSize: '14px',
