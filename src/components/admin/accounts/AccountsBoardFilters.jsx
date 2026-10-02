@@ -13,8 +13,8 @@ const AccountsBoardFilters = ({ columns, filters, onFilterChange, showSerialNumb
             value={filters[column.key] || ''}
             onChange={(event) => onFilterChange(column.key, event.target.value)}
             placeholder={column.filterPlaceholder || `Search ${column.label}`}
-            className="admin-accounts-filter-input"
-            style={{ color: '#000000', WebkitTextFillColor: '#000000', caretColor: '#000000' }}
+            className="admin-accounts-filter-input crm-column-filter-input"
+            style={{ color: '#000000', WebkitTextFillColor: '#000000', textShadow: '0 0 0 #000000', caretColor: '#000000', fontWeight: 400 }}
           />
         ) : (
           <span className="admin-accounts-filter-placeholder">-</span>

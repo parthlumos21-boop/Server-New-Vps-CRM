@@ -1137,12 +1137,6 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
               },
             ]}
           />
-          {!hasUploadedQuotation && (
-            <button type="button" className="aqp-btn aqp-btn--gray" onClick={openUploadQuotationModal}>
-              <FaUpload className="aqp-btn-icon" />
-              Upload Quotation
-            </button>
-          )}
           <button type="button" className="aqp-btn aqp-btn--red aqp-btn--generate" onClick={() => navigate(generatorPath, { state: { openGenerator: true } })}>
             <FaPlus className="aqp-btn-icon" />
             Generate Quotation
@@ -1166,7 +1160,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
               {selectedFieldDefinitions.map((field) => (
                 <th key={field.key} className={`aqp-search-th aqp-field--${field.key}`}>
                   <input
-                    className="aqp-search-input"
+                    className="aqp-search-input crm-column-filter-input"
                     value={filters[field.key] || ''}
                     onChange={(event) => {
                       setFilters((current) => ({ ...current, [field.key]: event.target.value }))

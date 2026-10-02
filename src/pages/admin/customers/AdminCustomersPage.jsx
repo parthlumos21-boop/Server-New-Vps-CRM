@@ -2003,7 +2003,7 @@ const AdminCustomersPage = ({
                               value={filters[column.key]}
                               onChange={(event) => handleFilterChange(column.key, event.target.value)}
                               placeholder={column.placeholder}
-                              className="admin-customers-grid-filter-input"
+                              className="admin-customers-grid-filter-input crm-column-filter-input"
                             />
                           </th>
                         ))}

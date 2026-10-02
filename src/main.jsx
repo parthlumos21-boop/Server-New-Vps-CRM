@@ -5,6 +5,24 @@ import ErrorBoundary from './components/common/ErrorBoundary'
 import './styles/index.css'
 import './styles/user-modern.css'
 
+const enforceColumnFilterText = () => {
+  document.querySelectorAll('input.crm-column-filter-input').forEach((input) => {
+    input.style.setProperty('color', '#000000', 'important')
+    input.style.setProperty('-webkit-text-fill-color', '#000000', 'important')
+    input.style.setProperty('caret-color', '#000000', 'important')
+    input.style.setProperty('font-weight', '400', 'important')
+    input.style.setProperty('background-color', '#ffffff', 'important')
+    input.style.setProperty('opacity', '1', 'important')
+    input.style.setProperty('visibility', 'visible', 'important')
+  })
+}
+
+enforceColumnFilterText()
+new MutationObserver(enforceColumnFilterText).observe(document.documentElement, {
+  subtree: true,
+  childList: true,
+})
+
 const STALE_BUILD_RELOAD_KEY = 'crm_stale_build_reload'
 const isStaleBuildError = (error) => {
   const message = String(error?.message || error || '')

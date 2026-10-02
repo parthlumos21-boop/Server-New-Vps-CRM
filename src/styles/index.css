@@ -7235,3 +7235,75 @@ html body #root input.deals-search-input {
   opacity: 1 !important;
   visibility: visible !important;
 }
+
+/* Shared final cascade for every account, deal, and customer column filter. */
+html:not([data-theme="dark"]) body #root .crm-column-filter-input {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: 0 0 0 #000000 !important;
+  caret-color: #000000 !important;
+  background-color: #ffffff !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+  font-weight: 400 !important;
+  font-family: Arial, sans-serif !important;
+  mix-blend-mode: normal !important;
+  font-variant: normal !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html:not([data-theme="dark"]) body #root .crm-column-filter-input::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1 !important;
+}
+
+html:not([data-theme="dark"]) body #root table thead input[type="text"],
+html:not([data-theme="dark"]) body #root table thead input[type="search"] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: 0 0 0 #000000 !important;
+  caret-color: #000000 !important;
+  background-color: #ffffff !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+  font-weight: 400 !important;
+  font-family: Arial, sans-serif !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html:not([data-theme="dark"]) body #root table thead input[type="text"]::placeholder,
+html:not([data-theme="dark"]) body #root table thead input[type="search"]::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1 !important;
+}
+
+/* Quotation manager column filters: keep entered values black and normal-weight. */
+html:not([data-theme="dark"]) body #root :is(.aqp-search-input, .quotation-account-list-search-input) {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  text-shadow: none !important;
+  font-weight: 400 !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  color-scheme: light !important;
+  forced-color-adjust: none !important;
+}
+
+html:not([data-theme="dark"]) body #root :is(.aqp-search-input, .quotation-account-list-search-input)::placeholder {
+  color: #64748b !important;
+  -webkit-text-fill-color: #64748b !important;
+  opacity: 1 !important;
+}

@@ -2179,7 +2179,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     {selectedFieldDefinitions.map((field) => (
                       <th key={field.key} className={`aqp-search-th aqp-field--${field.key}`}>
                         <input
-                          className="aqp-search-input"
+                          className="aqp-search-input crm-column-filter-input"
                           value={quotationFilters[field.key] || ''}
                           onChange={(event) => handleQuotationFilterChange(field.key, event.target.value)}
                           placeholder="Search here ..."

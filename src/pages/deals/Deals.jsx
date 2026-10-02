@@ -5085,7 +5085,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                   ...currentValue,
                                   [column.key]: event.target.value,
                                 }))}
-                                className="deals-crm-filter-input"
+                                className="deals-crm-filter-input crm-column-filter-input"
                               >
                                 {CUSTOM_LOCATION_SELECT_OPTIONS.map((option) => (
                                   <option key={option.value || 'empty-city'} value={option.value}>{option.label}</option>
@@ -5100,7 +5100,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                   [column.key]: event.target.value,
                                 }))}
                                 placeholder={`Search ${column.label}`}
-                                className="deals-crm-filter-input"
+                                className="deals-crm-filter-input crm-column-filter-input"
                               />
                             )}
                           </th>
@@ -5880,7 +5880,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                               <select
                                 value={gridFilters[column.key] || ''}
                                 onChange={(event) => handleGridFilterChange(column.key, event.target.value)}
-                                className="deals-crm-filter-input"
+                                className="deals-crm-filter-input crm-column-filter-input"
                               >
                                 {CUSTOM_LOCATION_SELECT_OPTIONS.map((option) => (
                                   <option key={option.value || 'empty-city'} value={option.value}>{option.label}</option>
@@ -5892,7 +5892,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                 value={gridFilters[column.key] || ''}
                                 onChange={(event) => handleGridFilterChange(column.key, event.target.value)}
                                 placeholder={column.placeholder || `Search ${column.label}`}
-                                className="deals-crm-filter-input"
+                                className="deals-crm-filter-input crm-column-filter-input"
                               />
                             )}
                           </th>

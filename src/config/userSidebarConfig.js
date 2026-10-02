@@ -45,12 +45,6 @@ export const USER_SIDEBAR_PRIMARY_LINKS = [
     label: 'Dashboard',
     icon: FaDesktop,
   },
-  {
-    key: 'team-view',
-    to: '/team-view',
-    label: 'Team View',
-    icon: FaUsers,
-  },
 ]
 
 export const USER_ACCOUNT_MENU_ITEMS = [
