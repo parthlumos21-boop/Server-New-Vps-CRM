@@ -328,19 +328,26 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
 
   const siblingRevisions = useMemo(() => {
     if (!revisionsModalRow) return []
-    const targetNo = revisionsModalRow.num || revisionsModalRow.raw?.quotationNumber || ''
-    const targetAccountId = revisionsModalRow.raw?.customerId || revisionsModalRow.raw?.selectedAccountId || ''
-    const targetDealId = revisionsModalRow.raw?.dealId || ''
+    const targetNo = String(revisionsModalRow.num || revisionsModalRow.raw?.quotationNumber || '').replace(/-R\d+$/i, '')
+    const targetAccountId = String(revisionsModalRow.raw?.customerId || revisionsModalRow.raw?.selectedAccountId || revisionsModalRow.raw?.data?.selectedAccountId || '').trim()
+    const targetDealId = String(revisionsModalRow.raw?.dealId || revisionsModalRow.raw?.data?.dealId || '').trim()
+    const targetAccNum = String(revisionsModalRow.raw?.clientAccountNumber || revisionsModalRow.raw?.data?.clientAccountNumber || '').trim()
+    const targetComp = String(revisionsModalRow.raw?.companyName || revisionsModalRow.raw?.customerName || revisionsModalRow.company || '').trim().toLowerCase()
 
     return rows.filter((r) => {
-      const qNo = r.num || r.raw?.quotationNumber || ''
-      const qCust = r.raw?.customerId || r.raw?.selectedAccountId || ''
-      const qDeal = r.raw?.dealId || ''
+      const qNo = String(r.num || r.raw?.quotationNumber || '').replace(/-R\d+$/i, '')
+      const qCust = String(r.raw?.customerId || r.raw?.selectedAccountId || r.raw?.data?.selectedAccountId || '').trim()
+      const qDeal = String(r.raw?.dealId || r.raw?.data?.dealId || '').trim()
+      const qAccNum = String(r.raw?.clientAccountNumber || r.raw?.data?.clientAccountNumber || '').trim()
+      const qComp = String(r.raw?.companyName || r.raw?.customerName || r.company || '').trim().toLowerCase()
+
       if (targetNo && qNo === targetNo) return true
-      if (targetDealId && String(qDeal) === String(targetDealId)) return true
-      if (targetAccountId && String(qCust) === String(targetAccountId)) return true
+      if (targetDealId && qDeal && qDeal === targetDealId) return true
+      if (targetAccountId && qCust && qCust === targetAccountId) return true
+      if (targetAccNum && qAccNum && qAccNum === targetAccNum) return true
+      if (targetComp && qComp && qComp === targetComp) return true
       return false
-    }).sort((a, b) => (a.raw?.revisionNo || 0) - (b.raw?.revisionNo || 0))
+    }).sort((a, b) => (a.raw?.revisionNo ?? 0) - (b.raw?.revisionNo ?? 0))
   }, [revisionsModalRow, rows])
 
   const filteredRows = useMemo(() => {

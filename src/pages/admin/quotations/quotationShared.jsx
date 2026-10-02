@@ -1831,8 +1831,8 @@ export function RevisionsListModal({
 
     if (qRevisions) {
       qRevisions.forEach((revItem) => {
-        let revCode = revItem.revisionCode || (revItem.revisionNo ? `R${revItem.revisionNo}` : 'R1')
-        if (revCode === 'Normal') revCode = 'R1'
+        let revCode = revItem.revisionCode || (revItem.revisionNo === 0 ? 'R0' : revItem.revisionNo ? `R${revItem.revisionNo}` : 'R0')
+        if (revCode === 'Normal') revCode = 'R0'
         const formattedNum = `${rawBaseQuoteNo}-${revCode}`
         const rawAmt = Number(revItem.amount || revItem.totalAmount || 0)
         const amtLabel = formatCurrency(rawAmt, q.currency || 'INR')
@@ -1896,8 +1896,8 @@ export function RevisionsListModal({
     parseRevNum(a) - parseRevNum(b)
   ))
 
-  if (allRevisionCodes.length === 0) {
-    allRevisionCodes.push('R0')
+  if (!allRevisionCodes.includes('R0')) {
+    allRevisionCodes.unshift('R0')
   }
 
   return (
@@ -1968,7 +1968,7 @@ export function RevisionsListModal({
 
                     let cellVal = '-'
                     const matchRev = revisionRowsList.find((r) => r.revisionCode === code)
-                    if (matchRev && cellCodeNum <= revRowCodeNum) {
+                    if (matchRev && matchRev.amount > 0 && cellCodeNum <= revRowCodeNum) {
                       cellVal = matchRev.amountLabel
                     }
 

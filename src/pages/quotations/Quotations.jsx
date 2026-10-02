@@ -218,7 +218,8 @@ const buildQuotationCustomerAccount = (customer = {}) => {
   const primaryContact = customer.contacts?.[0] || {}
 
   return {
-    id: customer.id || customer.customerNumber || customer.accountNumber || `customer-${Date.now()}`,
+    id: customer.id || customer._id || customer.customerNumber || customer.accountNumber || `customer-${Date.now()}`,
+    quotationContext: 'account',
     accountNumber: customer.accountNumber || customer.customerNumber || '',
     name: customer.name || customer.customerName || '',
     contactPerson: primaryContact.contactPerson || customer.contactPerson || '',
@@ -356,10 +357,10 @@ const buildQuotationFormFromExisting = (quotation = {}, nextQuotationNumber = ''
     : [createEmptyLineItem()]
 
   const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
-  const r0Val = revAmounts.R0 ?? (quotation.revisionCategory === 'R0' ? quotation.revisionAmount : (quotation.data?.revisionAmountR0 ?? (quotation.revisionNo === 0 ? quotation.amount : '')))
-  const r1Val = revAmounts.R1 ?? (quotation.revisionCategory === 'R1' ? quotation.revisionAmount : (quotation.data?.revisionAmountR1 ?? (quotation.revisionNo === 1 ? quotation.amount : '')))
-  const r2Val = revAmounts.R2 ?? (quotation.revisionCategory === 'R2' ? quotation.revisionAmount : (quotation.data?.revisionAmountR2 ?? ''))
-  const r3Val = revAmounts.R3 ?? (quotation.revisionCategory === 'R3' ? quotation.revisionAmount : (quotation.data?.revisionAmountR3 ?? ''))
+  const r0Val = revAmounts.R0 ?? quotation.revisionAmountR0 ?? quotation.r0Amount ?? (quotation.revisionCode === 'R0' || quotation.revisionNo === 0 ? (quotation.revisionAmount || '') : '')
+  const r1Val = revAmounts.R1 ?? quotation.revisionAmountR1 ?? quotation.r1Amount ?? (quotation.revisionCode === 'R1' || quotation.revisionNo === 1 ? (quotation.revisionAmount || '') : '')
+  const r2Val = revAmounts.R2 ?? quotation.revisionAmountR2 ?? quotation.r2Amount ?? (quotation.revisionCode === 'R2' || quotation.revisionNo === 2 ? (quotation.revisionAmount || '') : '')
+  const r3Val = revAmounts.R3 ?? quotation.revisionAmountR3 ?? quotation.r3Amount ?? (quotation.revisionCode === 'R3' || quotation.revisionNo === 3 ? (quotation.revisionAmount || '') : '')
 
   const hasR0 = r0Val !== undefined && r0Val !== null && r0Val !== '' && r0Val !== 0 && r0Val !== '0'
   const hasR1 = r1Val !== undefined && r1Val !== null && r1Val !== '' && r1Val !== 0 && r1Val !== '0'
@@ -1183,13 +1184,25 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
 
       existingMatchingQuotes.forEach((q) => {
         const revCode = String(q.revisionCode || (q.revisionNo === 0 ? 'R0' : q.revisionNo ? `R${q.revisionNo}` : '')).toUpperCase()
-        const amt = q.totalAmount || q.amount || 0
         const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
 
-        if (revCode === 'R0' || q.revisionNo === 0) savedR0 = amt || revs.R0 || q.revisionAmountR0 || q.r0Amount || savedR0
-        if (revCode === 'R1' || q.revisionNo === 1) savedR1 = amt || revs.R1 || q.revisionAmountR1 || q.r1Amount || savedR1
-        if (revCode === 'R2' || q.revisionNo === 2) savedR2 = amt || revs.R2 || q.revisionAmountR2 || q.r2Amount || savedR2
-        if (revCode === 'R3' || q.revisionNo === 3) savedR3 = amt || revs.R3 || q.revisionAmountR3 || q.r3Amount || savedR3
+        const getExplicit = (code) => {
+          if (revs[code] !== undefined && revs[code] !== null && revs[code] !== '') return revs[code]
+          if (q[`revisionAmount${code}`] !== undefined && q[`revisionAmount${code}`] !== null && q[`revisionAmount${code}`] !== '') return q[`revisionAmount${code}`]
+          if (q[`${code.toLowerCase()}Amount`] !== undefined && q[`${code.toLowerCase()}Amount`] !== null && q[`${code.toLowerCase()}Amount`] !== '') return q[`${code.toLowerCase()}Amount`]
+          if (q.data?.[`${code.toLowerCase()}Amount`] !== undefined && q.data?.[`${code.toLowerCase()}Amount`] !== null && q.data?.[`${code.toLowerCase()}Amount`] !== '') return q.data[`${code.toLowerCase()}Amount`]
+          return ''
+        }
+
+        const r0Explicit = getExplicit('R0')
+        const r1Explicit = getExplicit('R1')
+        const r2Explicit = getExplicit('R2')
+        const r3Explicit = getExplicit('R3')
+
+        if (r0Explicit !== '') savedR0 = r0Explicit
+        if (r1Explicit !== '') savedR1 = r1Explicit
+        if (r2Explicit !== '') savedR2 = r2Explicit
+        if (r3Explicit !== '') savedR3 = r3Explicit
       })
     } else {
       const baseClean = nextQuotationNumber.replace(/-R\d+$/i, '')
@@ -1208,6 +1221,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const autofillPmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || account?.pmcName || ''
     const autofillProductName = latestQuote?.productName || latestQuote?.product || account?.productName || account?.productCategory || account?.product || ''
     const autofillProductGroup = latestQuote?.productGroup || account?.productGroup || 'Non TTA'
+    const autofillTtaOrg = latestQuote?.ttaOrg || latestQuote?.data?.ttaOrg || account?.ttaOrg || 'Abp'
     const autofillHsn = latestQuote?.hsn || account?.hsn || ''
 
     const autofillLineItems = (Array.isArray(latestQuote?.lineItems) && latestQuote.lineItems.length > 0)
@@ -1245,6 +1259,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       quotationNotes: account?.latestRemark || account?.remark || '',
       customerReferenceDate: quotationDate,
       productGroup: autofillProductGroup,
+      ttaOrg: autofillTtaOrg,
       productName: autofillProductName,
       hsn: autofillHsn,
       r0Amount: hasR0 ? String(savedR0) : '',
@@ -1301,6 +1316,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
             pmcName: autofill.pmcName || current.pmcName,
             productName: autofill.productName || current.productName,
             productGroup: autofill.productGroup || current.productGroup,
+            ttaOrg: autofill.ttaOrg || current.ttaOrg,
             hsn: autofill.hsn || current.hsn,
             companyName: autofill.companyName || current.companyName,
             contactPerson: autofill.contactPerson || current.contactPerson,
@@ -1630,8 +1646,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       lineItems: persistedLineItems,
     }
 
-    // Frontend pre-check: scan loaded quotations for an exact match so the
-    // user gets immediate feedback without an extra round-trip.
+    // Do not block generation with duplicate warning when adding/updating revisions for an Account or Deal
+    /*
     const duplicateCandidate = userQuotations.find((existing) => (
       isQuotationDuplicate(existing, payload, persistedLineItems)
     ))
@@ -1644,6 +1660,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       addNotification('warning', 'Duplicate quotation', duplicateMessage)
       return
     }
+    */
 
     if (savingQuotation) return // prevent double-click double submit
 
@@ -2782,38 +2799,38 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                 <div className="quotation-builder-grid quotation-builder-grid-two">
                   <label className="quotation-builder-field">
                     <span>Client/Account No.</span>
-                    <input value={quotationForm.clientAccountNumber} readOnly />
+                    <input value={quotationForm.clientAccountNumber || ''} readOnly />
                   </label>
                   <label className="quotation-builder-field">
                     <span>Quotation Date</span>
                     <input
                       type="date"
-                      value={quotationForm.quotationDate}
+                      value={quotationForm.quotationDate || ''}
                       onChange={(event) => handleBuilderFieldChange('quotationDate', event.target.value)}
                     />
                   </label>
                   <label className="quotation-builder-field">
                     <span>Company Name</span>
                     <input
-                      value={quotationForm.companyName}
+                      value={quotationForm.companyName || ''}
                       onChange={(event) => handleBuilderFieldChange('companyName', event.target.value)}
                     />
                   </label>
                   <label className="quotation-builder-field">
                     <span>Contact Person</span>
                     <input
-                      value={quotationForm.contactPerson}
+                      value={quotationForm.contactPerson || ''}
                       onChange={(event) => handleBuilderFieldChange('contactPerson', event.target.value)}
                     />
                   </label>
                   <label className="quotation-builder-field">
                     <span>Choose Product Group</span>
                     <select
-                      value={quotationForm.productGroup || 'TTA'}
+                      value={quotationForm.productGroup || 'Non TTA'}
                       onChange={(event) => handleBuilderFieldChange('productGroup', event.target.value)}
                     >
+                      <option value="Non TTA">Non TTA</option>
                       <option value="TTA">TTA</option>
-                      <option value="Non TT">Non TT</option>
                       <option value="ELECTRICAL PANEL">ELECTRICAL PANEL</option>
                     </select>
                   </label>
@@ -2825,9 +2842,9 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                         onChange={(event) => handleBuilderFieldChange('ttaOrg', event.target.value)}
                       >
                         <option value="Abp">Abp</option>
+                        <option value="Schneider">Schneider</option>
                         <option value="Siemens">Siemens</option>
-                        <option value="L&T">L&T</option>
-                        <option value="Schinder">Schinder</option>
+                        <option value="L&K/L&T">L&K/L&T</option>
                       </select>
                     </label>
                   )}
@@ -2919,7 +2936,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>Quotation No.</span>
                       <input
-                        value={quotationForm.quotationNumber}
+                        value={quotationForm.quotationNumber || ''}
                         onChange={(event) => handleBuilderFieldChange('quotationNumber', event.target.value)}
                       />
                     </label>
@@ -2927,14 +2944,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <span>Valid Until</span>
                       <input
                         type="date"
-                        value={quotationForm.validUntil}
+                        value={quotationForm.validUntil || ''}
                         onChange={(event) => handleBuilderFieldChange('validUntil', event.target.value)}
                       />
                     </label>
                     <label className="quotation-builder-field quotation-builder-field-wide">
                       <span>Organization Name</span>
                       <input
-                        value={quotationForm.organizationName}
+                        value={quotationForm.organizationName || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationName', event.target.value)}
                         placeholder={activeProfile?.organizationName || ''}
                       />
@@ -2943,7 +2960,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <span>Organization Address</span>
                       <textarea
                         rows="2"
-                        value={quotationForm.organizationAddress}
+                        value={quotationForm.organizationAddress || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationAddress', event.target.value)}
                         placeholder={activeProfile?.organizationAddress || ''}
                       />
@@ -2951,7 +2968,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>Organization Email</span>
                       <input
-                        value={quotationForm.organizationEmail}
+                        value={quotationForm.organizationEmail || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationEmail', event.target.value)}
                         placeholder={activeProfile?.organizationEmail || ''}
                       />
@@ -2959,7 +2976,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>Organization Phone</span>
                       <input
-                        value={quotationForm.organizationPhone}
+                        value={quotationForm.organizationPhone || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationPhone', event.target.value.replace(/\D/g, ''))}
                         placeholder={activeProfile?.organizationPhone || ''}
                       />
@@ -2967,7 +2984,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>GSTIN</span>
                       <input
-                        value={quotationForm.organizationGstin}
+                        value={quotationForm.organizationGstin || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationGstin', event.target.value)}
                         placeholder={activeProfile?.organizationGstin || ''}
                       />
@@ -2975,7 +2992,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>State Code</span>
                       <input
-                        value={quotationForm.organizationStateCode}
+                        value={quotationForm.organizationStateCode || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationStateCode', event.target.value)}
                         placeholder={activeProfile?.organizationStateCode || ''}
                       />
@@ -2983,7 +3000,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     <label className="quotation-builder-field">
                       <span>Currency</span>
                       <select
-                        value={quotationForm.currency}
+                        value={quotationForm.currency || 'INR'}
                         onChange={(event) => handleBuilderFieldChange('currency', event.target.value)}
                       >
                         {QUOTATION_CURRENCY_OPTIONS.map((option) => (
@@ -3002,20 +3019,20 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
             <div className="quotation-builder-grid quotation-builder-grid-four">
               <label className="quotation-builder-field">
                 <span>Address Line1</span>
-                <input value={clientAddressLines[0]} onChange={(event) => handleClientAddressLineChange(0, event.target.value)} />
+                <input value={clientAddressLines[0] || ''} onChange={(event) => handleClientAddressLineChange(0, event.target.value)} />
               </label>
               <label className="quotation-builder-field">
                 <span>Address Line2</span>
-                <input value={clientAddressLines[1]} onChange={(event) => handleClientAddressLineChange(1, event.target.value)} />
+                <input value={clientAddressLines[1] || ''} onChange={(event) => handleClientAddressLineChange(1, event.target.value)} />
               </label>
               <label className="quotation-builder-field">
                 <span>Address Line3</span>
-                <input value={clientAddressLines[2]} onChange={(event) => handleClientAddressLineChange(2, event.target.value)} />
+                <input value={clientAddressLines[2] || ''} onChange={(event) => handleClientAddressLineChange(2, event.target.value)} />
               </label>
               <label className="quotation-builder-field">
                 <span>Telephone</span>
                 <input
-                  value={quotationForm.telephone}
+                  value={quotationForm.telephone || ''}
                   onChange={(event) => handleBuilderFieldChange('telephone', event.target.value)}
                 />
               </label>
@@ -3023,21 +3040,21 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                 <span>Email</span>
                 <input
                   type="email"
-                  value={quotationForm.email}
+                  value={quotationForm.email || ''}
                   onChange={(event) => handleBuilderFieldChange('email', event.target.value)}
                 />
               </label>
               <label className="quotation-builder-field">
                 <span>GSTIN</span>
                 <input
-                  value={quotationForm.gstin}
+                  value={quotationForm.gstin || ''}
                   onChange={(event) => handleBuilderFieldChange('gstin', event.target.value)}
                 />
               </label>
               <label className="quotation-builder-field">
                 <span>State Code</span>
                 <input
-                  value={quotationForm.stateCode}
+                  value={quotationForm.stateCode || ''}
                   onChange={(event) => handleBuilderFieldChange('stateCode', event.target.value)}
                 />
               </label>

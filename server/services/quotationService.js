@@ -324,6 +324,8 @@ const buildPayload = async (body, actor, existing) => {
       discountAmount: body.discountAmount ?? body.discount ?? computed.discount,
     }, lineItems)
 
+    // Do not throw duplicate error when creating or updating quotation revisions for an Account or Deal
+    /*
     const duplicate = await findDuplicateQuotation(actor, candidateFingerprint)
     if (duplicate) {
       const existingQuoteNumber = pickQuotationField(duplicate, 'quoteNumber', 'quotationNumber') || 'unknown'
@@ -341,6 +343,7 @@ const buildPayload = async (body, actor, existing) => {
       duplicateError.code = 'DUPLICATE_QUOTATION'
       throw duplicateError
     }
+    */
   }
 
   const {
@@ -387,6 +390,7 @@ const buildPayload = async (body, actor, existing) => {
     revisionCode,
     parentQuotationId,
     revisionReason,
+    ttaOrg: body.ttaOrg ?? existing?.ttaOrg ?? '',
     assignedTo: body.assignedTo ?? existing?.assignedTo ?? (actor.role === 'user' ? actor.id : null),
     createdBy: existing?.createdBy ?? actor.id,
     data: {
@@ -408,6 +412,7 @@ const buildPayload = async (body, actor, existing) => {
       revisionCode,
       parentQuotationId,
       revisionReason,
+      ttaOrg: body.ttaOrg ?? existing?.data?.ttaOrg ?? existing?.ttaOrg ?? '',
       quotationNotes: body.quotationNotes ?? existing?.data?.quotationNotes ?? notes,
       createdBy: existing?.createdBy ?? actor.id,
       userId: body.userId ?? existing?.data?.userId ?? existing?.createdBy ?? actor.id,
@@ -571,17 +576,24 @@ module.exports = {
   ...quotationService,
   create: async (actor, payload) => {
     const allQuotes = await quotationRepository.listAll()
-    const targetCustId = String(payload.customerId || payload.selectedAccountId || payload.data?.selectedAccountId || '').trim()
-    const targetQuoteNo = String(payload.quoteNumber || payload.quotationNumber || payload.data?.quotationNumber || '').trim()
+    const targetCustId = String(payload.customerId || payload.selectedAccountId || payload.data?.selectedAccountId || payload.data?.customerId || '').trim()
+    const targetQuoteNo = String(payload.quoteNumber || payload.quotationNumber || payload.data?.quotationNumber || payload.data?.quoteNumber || '').trim()
     const targetDealId = String(payload.dealId || payload.data?.dealId || '').trim()
+    const targetAccNum = String(payload.clientAccountNumber || payload.data?.clientAccountNumber || '').trim().toLowerCase()
+    const targetCompName = String(payload.companyName || payload.customerName || payload.data?.companyName || payload.data?.customerName || '').trim().toLowerCase()
 
     const existingMatch = allQuotes.find((q) => {
-      const qCust = String(q.customerId || q.data?.selectedAccountId || '').trim()
-      const qNo = String(q.quoteNumber || q.quotationNumber || '').trim()
+      const qCust = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || q.data?.customerId || '').trim()
+      const qNo = String(q.quoteNumber || q.quotationNumber || q.data?.quotationNumber || '').trim()
       const qDeal = String(q.dealId || q.data?.dealId || '').trim()
+      const qAccNum = String(q.clientAccountNumber || q.data?.clientAccountNumber || '').trim().toLowerCase()
+      const qCompName = String(q.companyName || q.customerName || q.data?.companyName || q.data?.customerName || '').trim().toLowerCase()
+
       if (targetQuoteNo && qNo === targetQuoteNo) return true
       if (targetDealId && qDeal === targetDealId) return true
       if (targetCustId && qCust === targetCustId) return true
+      if (targetAccNum && qAccNum && qAccNum === targetAccNum) return true
+      if (targetCompName && qCompName && qCompName === targetCompName) return true
       return false
     })
 
@@ -591,24 +603,33 @@ module.exports = {
         ? existingMatch.revisions
         : (Array.isArray(existingMatch.data?.revisions) ? existingMatch.data.revisions : [])
 
-      const currentRevNo = existingMatch.revisionNo ?? 0
+      const currentRevNo = existingMatch.revisionNo ?? (parseInt(String(existingMatch.revisionCode || '').replace(/\D/g, ''), 10) || 0)
       const nextRevNo = currentRevNo + 1
       const nextRevCode = `R${nextRevNo}`
-      const newAmount = payload.totalAmount || payload.amount || payload.data?.amount || 0
+      const newAmount = payload[`r${nextRevNo}Amount`] !== undefined && payload[`r${nextRevNo}Amount`] !== ''
+        ? Number(payload[`r${nextRevNo}Amount`])
+        : (payload.totalAmount || payload.amount || payload.data?.amount || 0)
 
-      const r0Amt = existingMatch.revisionAmountR0 || existingRevAmounts.R0 || existingMatch.totalAmount || existingMatch.amount || 0
+      const r0Amt = payload.r0Amount !== undefined && payload.r0Amount !== '' ? Number(payload.r0Amount) : (existingMatch.revisionAmountR0 ?? existingRevAmounts.R0 ?? (existingMatch.data?.r0Amount ? Number(existingMatch.data.r0Amount) : undefined))
+      const r1Amt = payload.r1Amount !== undefined && payload.r1Amount !== '' ? Number(payload.r1Amount) : (existingMatch.revisionAmountR1 ?? existingRevAmounts.R1 ?? (existingMatch.data?.r1Amount ? Number(existingMatch.data.r1Amount) : undefined))
+      const r2Amt = payload.r2Amount !== undefined && payload.r2Amount !== '' ? Number(payload.r2Amount) : (existingMatch.revisionAmountR2 ?? existingRevAmounts.R2 ?? (existingMatch.data?.r2Amount ? Number(existingMatch.data.r2Amount) : undefined))
+      const r3Amt = payload.r3Amount !== undefined && payload.r3Amount !== '' ? Number(payload.r3Amount) : (existingMatch.revisionAmountR3 ?? existingRevAmounts.R3 ?? (existingMatch.data?.r3Amount ? Number(existingMatch.data.r3Amount) : undefined))
+
       const updatedRevAmounts = {
         ...existingRevAmounts,
-        R0: existingRevAmounts.R0 || r0Amt,
+        ...(r0Amt !== undefined && r0Amt !== null && r0Amt !== '' ? { R0: Number(r0Amt) } : {}),
+        ...(r1Amt !== undefined && r1Amt !== null && r1Amt !== '' ? { R1: Number(r1Amt) } : {}),
+        ...(r2Amt !== undefined && r2Amt !== null && r2Amt !== '' ? { R2: Number(r2Amt) } : {}),
+        ...(r3Amt !== undefined && r3Amt !== null && r3Amt !== '' ? { R3: Number(r3Amt) } : {}),
         [nextRevCode]: newAmount,
       }
 
       const updatedRevisionsList = [...existingRevisions]
-      if (updatedRevisionsList.length === 0) {
+      if (updatedRevisionsList.length === 0 && r0Amt !== undefined && r0Amt !== null && r0Amt !== '') {
         updatedRevisionsList.push({
-          revisionCode: existingMatch.revisionCode || 'R0',
-          amount: r0Amt,
-          date: existingMatch.quotationDate || existingMatch.createdAt || new Date().toISOString().slice(0, 10),
+          revisionCode: 'R0',
+          amount: Number(r0Amt),
+          date: existingMatch.quotationDate || existingMatch.data?.quotationDate || existingMatch.createdAt || new Date().toISOString().slice(0, 10),
           status: existingMatch.status || 'Open',
         })
       }
@@ -623,6 +644,14 @@ module.exports = {
         ...payload,
         revisionCode: nextRevCode,
         revisionNo: nextRevNo,
+        r0Amount: r0Amt !== undefined ? String(r0Amt) : existingMatch.data?.r0Amount,
+        r1Amount: r1Amt !== undefined ? String(r1Amt) : existingMatch.data?.r1Amount,
+        r2Amount: r2Amt !== undefined ? String(r2Amt) : existingMatch.data?.r2Amount,
+        r3Amount: r3Amt !== undefined ? String(r3Amt) : existingMatch.data?.r3Amount,
+        revisionAmountR0: r0Amt !== undefined ? Number(r0Amt) : existingMatch.revisionAmountR0,
+        revisionAmountR1: r1Amt !== undefined ? Number(r1Amt) : existingMatch.revisionAmountR1,
+        revisionAmountR2: r2Amt !== undefined ? Number(r2Amt) : existingMatch.revisionAmountR2,
+        revisionAmountR3: r3Amt !== undefined ? Number(r3Amt) : existingMatch.revisionAmountR3,
         [`revisionAmount${nextRevCode}`]: newAmount,
         quotationRevisionAmounts: updatedRevAmounts,
         revisions: updatedRevisionsList,
@@ -734,50 +763,96 @@ module.exports = {
     const { getMongoModel } = require('../models/mongoModels')
     const Lead = getMongoModel('leads')
     const Deal = getMongoModel('deals')
+    const Customer = getMongoModel('customers')
     const quotationRepo = require('../repositories/quotationRepository')
 
     const targetAccountId = String(queryParams.accountId || queryParams.selectedAccountId || '').trim()
     const targetDealId = String(queryParams.dealId || '').trim()
     const context = queryParams.quotationContext || (targetDealId ? 'deal' : 'account')
 
+    const mongoose = require('mongoose')
+    const buildIdQuery = (targetId) => {
+      if (!targetId) return null
+      const strVal = String(targetId).trim()
+      if (!strVal) return null
+      const numVal = Number(strVal)
+      const isNum = !Number.isNaN(numVal)
+
+      const conditions = [
+        { id: strVal },
+        { legacyId: strVal },
+      ]
+      if (isNum) {
+        conditions.push({ id: numVal })
+        conditions.push({ legacyId: numVal })
+        conditions.push({ accountNumber: strVal })
+        conditions.push({ accountNumber: numVal })
+      }
+      if (mongoose.Types.ObjectId.isValid(strVal)) {
+        conditions.push({ _id: strVal })
+      }
+      return { $or: conditions }
+    }
+
     let accountDoc = null
-    if (targetAccountId) {
-      accountDoc = await Lead.findOne({
-        $or: [{ id: targetAccountId }, { _id: targetAccountId }, { legacyId: targetAccountId }]
-      }).lean()
+    const accQuery = buildIdQuery(targetAccountId)
+    if (accQuery) {
+      accountDoc = await Lead.findOne(accQuery).lean()
+      if (!accountDoc) {
+        accountDoc = await Customer.findOne(accQuery).lean()
+      }
     }
 
     let dealDoc = null
-    if (targetDealId) {
-      dealDoc = await Deal.findOne({
-        $or: [{ id: targetDealId }, { _id: targetDealId }, { legacyId: targetDealId }]
-      }).lean()
+    const dealQuery = buildIdQuery(targetDealId)
+    if (dealQuery) {
+      dealDoc = await Deal.findOne(dealQuery).lean()
     }
 
     if (!accountDoc && dealDoc) {
       const linkedAccId = dealDoc.accountId || dealDoc.data?.accountId || dealDoc.customerId || dealDoc.data?.customerId
-      if (linkedAccId) {
-        accountDoc = await Lead.findOne({
-          $or: [{ id: linkedAccId }, { _id: linkedAccId }, { legacyId: linkedAccId }]
-        }).lean()
+      const linkedAccQuery = buildIdQuery(linkedAccId)
+      if (linkedAccQuery) {
+        accountDoc = await Lead.findOne(linkedAccQuery).lean()
+        if (!accountDoc) {
+          accountDoc = await Customer.findOne(linkedAccQuery).lean()
+        }
       }
     }
 
     const accNum = accountDoc?.accountNumber || accountDoc?.formData?.accountNumber || ''
 
+    const dealIdCandidates = new Set()
+    if (targetDealId) dealIdCandidates.add(targetDealId)
+    if (dealDoc) {
+      if (dealDoc._id) dealIdCandidates.add(String(dealDoc._id))
+      if (dealDoc.id) dealIdCandidates.add(String(dealDoc.id))
+      if (dealDoc.legacyId) dealIdCandidates.add(String(dealDoc.legacyId))
+      if (dealDoc.dealNumber) dealIdCandidates.add(String(dealDoc.dealNumber))
+    }
+
     const allQuotes = await quotationRepo.listAll()
+    const targetCompName = String(accountDoc?.name || accountDoc?.company || accountDoc?.formData?.name || '').trim().toLowerCase()
+
     const matchingQuotes = allQuotes.filter((q) => {
       const qDealId = String(q.dealId || q.data?.dealId || q.raw?.dealId || '').trim()
-      const qAccId = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || '').trim()
+      const qAccId = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || q.data?.customerId || '').trim()
       const qAccNum = String(q.clientAccountNumber || q.data?.clientAccountNumber || '').trim()
+      const qCompName = String(q.companyName || q.customerName || q.data?.companyName || q.data?.customerName || '').trim().toLowerCase()
 
       if (context === 'deal') {
+        if (qDealId && dealIdCandidates.size > 0 && dealIdCandidates.has(qDealId)) return true
         if (targetDealId && qDealId && qDealId === targetDealId) return true
+        if (q.data?.quotationContext === 'deal' || q.quotationContext === 'deal') {
+          if (targetCompName && qCompName && qCompName === targetCompName) return true
+          if (accNum && qAccNum && qAccNum === accNum) return true
+        }
         return false
       }
 
       if (targetAccountId && qAccId && qAccId === targetAccountId) return true
       if (accNum && qAccNum && qAccNum === accNum) return true
+      if (targetCompName && qCompName && qCompName === targetCompName) return true
       return false
     }).sort((a, b) => (a.revisionNo ?? 0) - (b.revisionNo ?? 0))
 
@@ -788,13 +863,25 @@ module.exports = {
 
     matchingQuotes.forEach((q) => {
       const revCode = String(q.revisionCode || (q.revisionNo === 0 ? 'R0' : q.revisionNo ? `R${q.revisionNo}` : '')).toUpperCase()
-      const amt = q.totalAmount || q.amount || 0
       const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
 
-      if (revCode === 'R0' || q.revisionNo === 0) savedR0 = amt || revs.R0 || q.revisionAmountR0 || q.r0Amount || savedR0
-      if (revCode === 'R1' || q.revisionNo === 1) savedR1 = amt || revs.R1 || q.revisionAmountR1 || q.r1Amount || savedR1
-      if (revCode === 'R2' || q.revisionNo === 2) savedR2 = amt || revs.R2 || q.revisionAmountR2 || q.r2Amount || savedR2
-      if (revCode === 'R3' || q.revisionNo === 3) savedR3 = amt || revs.R3 || q.revisionAmountR3 || q.r3Amount || savedR3
+      const getExplicitAmt = (code) => {
+        if (revs[code] !== undefined && revs[code] !== null && revs[code] !== '') return revs[code]
+        if (q[`revisionAmount${code}`] !== undefined && q[`revisionAmount${code}`] !== null && q[`revisionAmount${code}`] !== '') return q[`revisionAmount${code}`]
+        if (q[`${code.toLowerCase()}Amount`] !== undefined && q[`${code.toLowerCase()}Amount`] !== null && q[`${code.toLowerCase()}Amount`] !== '') return q[`${code.toLowerCase()}Amount`]
+        if (q.data?.[`${code.toLowerCase()}Amount`] !== undefined && q.data?.[`${code.toLowerCase()}Amount`] !== null && q.data?.[`${code.toLowerCase()}Amount`] !== '') return q.data[`${code.toLowerCase()}Amount`]
+        return ''
+      }
+
+      const r0Explicit = getExplicitAmt('R0')
+      const r1Explicit = getExplicitAmt('R1')
+      const r2Explicit = getExplicitAmt('R2')
+      const r3Explicit = getExplicitAmt('R3')
+
+      if (r0Explicit !== '') savedR0 = r0Explicit
+      if (r1Explicit !== '') savedR1 = r1Explicit
+      if (r2Explicit !== '') savedR2 = r2Explicit
+      if (r3Explicit !== '') savedR3 = r3Explicit
     })
 
     const isR0Locked = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
@@ -806,6 +893,7 @@ module.exports = {
 
     const productName = latestQuote?.productName || latestQuote?.data?.productName || dealDoc?.productName || dealDoc?.data?.productName || accountDoc?.productName || accountDoc?.formData?.productName || accountDoc?.productCategory || ''
     const productGroup = latestQuote?.productGroup || latestQuote?.data?.productGroup || dealDoc?.productGroup || dealDoc?.data?.productGroup || accountDoc?.productGroup || accountDoc?.formData?.productGroup || 'Non TTA'
+    const ttaOrg = latestQuote?.ttaOrg || latestQuote?.data?.ttaOrg || dealDoc?.ttaOrg || dealDoc?.data?.ttaOrg || accountDoc?.ttaOrg || accountDoc?.formData?.ttaOrg || 'Abp'
     const hsn = latestQuote?.hsn || latestQuote?.data?.hsn || dealDoc?.hsn || dealDoc?.data?.hsn || accountDoc?.hsn || accountDoc?.formData?.hsn || ''
     const projectName = latestQuote?.projectName || latestQuote?.data?.projectName || dealDoc?.projectName || dealDoc?.data?.projectName || accountDoc?.projectName || accountDoc?.formData?.projectName || accountDoc?.name || ''
     const architectName = latestQuote?.architectName || latestQuote?.data?.architectName || dealDoc?.architectName || dealDoc?.data?.architectName || accountDoc?.architectName || accountDoc?.formData?.architectName || ''
@@ -827,6 +915,7 @@ module.exports = {
       autofill: {
         productName,
         productGroup,
+        ttaOrg,
         hsn,
         projectName,
         architectName,
