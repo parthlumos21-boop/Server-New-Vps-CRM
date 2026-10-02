@@ -767,6 +767,11 @@ const SummaryReportsPage = () => {
   const summaryViewRoutes = location.pathname.startsWith('/admin') ? ADMIN_SUMMARY_VIEW_ROUTES : USER_SUMMARY_VIEW_ROUTES
   const { accounts, deals, addNotification, refreshData } = useData()
   const { user } = useAuth()
+  const isKeval = Boolean(
+    user?.name?.toLowerCase().includes('keval')
+    || user?.username?.toLowerCase().includes('keval')
+    || user?.email?.toLowerCase().includes('keval')
+  )
   const [activeCategory, setActiveCategory] = useState('Accounts')
   const [caretOpen, setCaretOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState(null)
@@ -1265,8 +1270,9 @@ const SummaryReportsPage = () => {
       />
       <div className="summary-reports-topbar">
         <h1>Summary</h1>
-        <div className="summary-reports-topbar-actions">
-          <div className="summary-reports-split-btn" ref={splitBtnRef}>
+          <div className="summary-reports-topbar-actions">
+            {isKeval && (
+            <div className="summary-reports-split-btn" ref={splitBtnRef}>
             <button type="button" className="summary-reports-primary-btn btn-red-theme">New Report</button>
             <button
               type="button"
@@ -1290,8 +1296,9 @@ const SummaryReportsPage = () => {
                 ))}
               </div>
             )}
+            </div>
+            )}
           </div>
-        </div>
       </div>
 
       <div className="summary-reports-body">

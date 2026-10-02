@@ -61,6 +61,25 @@ export const INITIAL_ACCOUNT_FILTERS = {
   accountOwner: '',
 }
 
+const hasExplicitRevisionValue = (value) => value !== undefined && value !== null && value !== ''
+
+const getExplicitRevisionAmount = (quotation = {}, revisionCode) => {
+  const raw = quotation.raw || quotation
+  const data = raw.data || quotation.data || {}
+  const revisionAmounts = raw.quotationRevisionAmounts || quotation.quotationRevisionAmounts || data.quotationRevisionAmounts || {}
+  const key = `${String(revisionCode).toLowerCase()}Amount`
+  const hasRawRevisionField = Object.prototype.hasOwnProperty.call(raw, key) || Object.prototype.hasOwnProperty.call(data, key)
+
+  if (Object.prototype.hasOwnProperty.call(revisionAmounts, revisionCode) && hasExplicitRevisionValue(revisionAmounts[revisionCode])) return revisionAmounts[revisionCode]
+  if (Object.prototype.hasOwnProperty.call(data.quotationRevisionAmounts || {}, revisionCode) && hasExplicitRevisionValue(data.quotationRevisionAmounts[revisionCode])) return data.quotationRevisionAmounts[revisionCode]
+  if (Object.prototype.hasOwnProperty.call(raw, key) && hasExplicitRevisionValue(raw[key])) return raw[key]
+  if (Object.prototype.hasOwnProperty.call(data, key) && hasExplicitRevisionValue(data[key])) return data[key]
+  if (hasExplicitRevisionValue(quotation[key])) return quotation[key]
+  if (!hasRawRevisionField && hasExplicitRevisionValue(raw[`revisionAmount${revisionCode}`]) && Number(raw[`revisionAmount${revisionCode}`]) !== 0) return raw[`revisionAmount${revisionCode}`]
+  if (!hasRawRevisionField && hasExplicitRevisionValue(data[`revisionAmount${revisionCode}`]) && Number(data[`revisionAmount${revisionCode}`]) !== 0) return data[`revisionAmount${revisionCode}`]
+  return ''
+}
+
 export const UPLOAD_QUOTATION_STATUS_OPTIONS = [
   { value: '', label: 'Select' },
   { value: 'open', label: 'Open' },
@@ -549,15 +568,33 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
   const logoSource = getBrandLogoSource(brandKey)
   const lineItems = buildLineItems(quotation)
   const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
-  const activeRevCode = quotation.revisionCode || (quotation.revisionNo === 0 ? 'R0' : quotation.revisionNo ? `R${quotation.revisionNo}` : null)
-  const codeAmount = activeRevCode && revAmounts[activeRevCode] ? revAmounts[activeRevCode] : null
+  const storedRevisionCodes = [
+    ...Object.keys(revAmounts),
+    ...(Array.isArray(quotation.revisions) ? quotation.revisions.map((revision) => revision.revisionCode) : []),
+    ...(Array.isArray(quotation.data?.revisions) ? quotation.data.revisions.map((revision) => revision.revisionCode) : []),
+  ].filter((code) => /^R\d+$/i.test(String(code || '')))
+  const activeRevCode = storedRevisionCodes.length > 0
+    ? storedRevisionCodes.sort((a, b) => Number(String(a).replace(/\D/g, '')) - Number(String(b).replace(/\D/g, ''))).pop()
+    : (quotation.revisionCode || (quotation.revisionNo === 0 ? 'R0' : quotation.revisionNo ? `R${quotation.revisionNo}` : null))
+  const codeAmount = activeRevCode && hasExplicitRevisionValue(revAmounts[activeRevCode]) ? revAmounts[activeRevCode] : null
 
-  const latestRevisionAmount = codeAmount
-    || revAmounts.R3 || revAmounts.R2 || revAmounts.R1 || revAmounts.R0
-    || quotation.revisionAmountR3 || quotation.revisionAmountR2 || quotation.revisionAmountR1 || quotation.revisionAmountR0
-    || quotation.r3Amount || quotation.r2Amount || quotation.r1Amount || quotation.r0Amount
+  const latestRevisionAmount = [
+    codeAmount,
+    revAmounts.R3,
+    revAmounts.R2,
+    revAmounts.R1,
+    revAmounts.R0,
+    quotation.revisionAmountR3,
+    quotation.revisionAmountR2,
+    quotation.revisionAmountR1,
+    quotation.revisionAmountR0,
+    quotation.r3Amount,
+    quotation.r2Amount,
+    quotation.r1Amount,
+    quotation.r0Amount,
+  ].find(hasExplicitRevisionValue)
 
-  const storedAmount = toNumber(latestRevisionAmount || quotation.amount || quotation.totalAmount)
+  const storedAmount = toNumber(hasExplicitRevisionValue(latestRevisionAmount) ? latestRevisionAmount : quotation.amount)
   const productNameLabel = quotation.productName || quotation.product || quotation.data?.productName || linkedAccount?.productCategory || linkedAccount?.productName || ''
 
   const displayLineItems = lineItems.map((item) => {
@@ -1806,13 +1843,6 @@ export function RevisionsListModal({
 
   const recordsToProcess = siblingRevisions.length > 0 ? siblingRevisions : [row]
 
-  const isAnyRecordApproved = recordsToProcess.some((q) => {
-    const st = String(q.status || q.raw?.status || '').toLowerCase()
-    if (st === 'approved') return true
-    const revs = Array.isArray(q.raw?.revisions) ? q.raw.revisions : (Array.isArray(q.revisions) ? q.revisions : [])
-    return revs.some((r) => String(r.status || '').toLowerCase() === 'approved')
-  })
-
   // Extract base quotation number e.g. "SSIPL/2026/1013" from "SSIPL/2026/1013-R1" or "SSIPL/2026/1013"
   const rawBaseQuoteNo = (targetQuoteNo || row.num || row.quotationNumber || 'SSIPL/2026/1013').replace(/-R\d+$/i, '')
   const companyName = row.company || row.raw?.companyName || row.raw?.customerName || row.raw?.clientName || 'Account'
@@ -1834,9 +1864,12 @@ export function RevisionsListModal({
         let revCode = revItem.revisionCode || (revItem.revisionNo === 0 ? 'R0' : revItem.revisionNo ? `R${revItem.revisionNo}` : 'R0')
         if (revCode === 'Normal') revCode = 'R0'
         const formattedNum = `${rawBaseQuoteNo}-${revCode}`
-        const rawAmt = Number(revItem.amount || revItem.totalAmount || 0)
-        const amtLabel = formatCurrency(rawAmt, q.currency || 'INR')
-        const statusVal = isAnyRecordApproved ? 'Approved' : (revItem.status || q.raw?.status || q.status || 'Draft')
+        const explicitAmt = hasExplicitRevisionValue(revItem.amount)
+          ? revItem.amount
+          : getExplicitRevisionAmount(q, revCode)
+        const rawAmt = hasExplicitRevisionValue(explicitAmt) ? Number(explicitAmt) : ''
+        const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
+        const statusVal = revItem.status || q.raw?.status || q.status || 'Open'
         const dateVal = revItem.date || q.date || q.raw?.quotationDate || '-'
 
         revisionRowsMap.set(revCode, {
@@ -1860,9 +1893,10 @@ export function RevisionsListModal({
       const formattedNum = (q.num || q.quoteNumber || q.quotationNumber || '').includes('-R')
         ? (q.num || q.quoteNumber || q.quotationNumber)
         : `${rawBaseQuoteNo}-${revCode}`
-      const rawAmt = Number(q.amount || q.totalAmount || q.raw?.totalAmount || q.raw?.amount || 0)
-      const amtLabel = q.amountLabel || formatCurrency(rawAmt, q.currency || 'INR')
-      const statusVal = isAnyRecordApproved ? 'Approved' : (q.raw?.status || q.status || 'Draft')
+      const explicitAmt = getExplicitRevisionAmount(q, revCode)
+      const rawAmt = hasExplicitRevisionValue(explicitAmt) ? Number(explicitAmt) : ''
+      const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
+      const statusVal = q.raw?.status || q.status || 'Open'
       const dateVal = q.date || q.raw?.quotationDate || '-'
 
       revisionRowsMap.set(revCode, {
@@ -1889,6 +1923,8 @@ export function RevisionsListModal({
   const revisionRowsList = Array.from(revisionRowsMap.values()).sort((a, b) => (
     parseRevNum(a.revisionCode) - parseRevNum(b.revisionCode)
   ))
+  const currentRevision = revisionRowsList[revisionRowsList.length - 1]
+  const currentRevisionStatus = currentRevision?.status || row.raw?.status || row.status || 'Open'
 
   const allRevisionCodes = Array.from(
     new Set(revisionRowsList.map((r) => r.revisionCode))
@@ -1917,6 +1953,10 @@ export function RevisionsListModal({
           </h1>
           <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#64748b' }}>
             Viewing all revision versions for <strong>{companyName}</strong>. Click any revision to view details or click Approve to approve.
+          </p>
+          <p style={{ margin: '8px 0 0 0', fontSize: '0.9rem', color: '#334155' }}>
+            <strong>Current Revision:</strong> {currentRevision?.revisionCode || 'R0'}{' '}
+            <strong>Status:</strong> {currentRevisionStatus}
           </p>
         </div>
       </div>
@@ -1968,7 +2008,7 @@ export function RevisionsListModal({
 
                     let cellVal = '-'
                     const matchRev = revisionRowsList.find((r) => r.revisionCode === code)
-                    if (matchRev && matchRev.amount > 0 && cellCodeNum <= revRowCodeNum) {
+                    if (matchRev && hasExplicitRevisionValue(matchRev.amount) && cellCodeNum <= revRowCodeNum) {
                       cellVal = matchRev.amountLabel
                     }
 
@@ -1987,7 +2027,7 @@ export function RevisionsListModal({
                     )
                   })}
                   <td style={{ padding: '12px 14px' }}>
-                    <StatusBadge statusKey={rev.status} />
+                    <StatusBadge status={rev.status} />
                   </td>
                   <td style={{ padding: '12px 14px' }}>{rev.project || '-'}</td>
                   <td style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -2052,8 +2092,10 @@ export function SequentialRevisionSummaryCard({
   const revisionAmounts = {}
   siblingQuotes.forEach((q) => {
     const code = q.raw?.revisionCode || (q.raw?.revisionNo === 0 ? 'R0' : `R${q.raw?.revisionNo}`)
-    const amt = q.raw?.totalAmount || q.raw?.amount || q.amount || 0
-    revisionAmounts[code] = amt
+    const explicitAmt = getExplicitRevisionAmount(q, code)
+    if (hasExplicitRevisionValue(explicitAmt)) {
+      revisionAmounts[code] = Number(explicitAmt)
+    }
   })
 
   return (
@@ -2091,4 +2133,4 @@ export function SequentialRevisionSummaryCard({
   )
 }
 
-
+

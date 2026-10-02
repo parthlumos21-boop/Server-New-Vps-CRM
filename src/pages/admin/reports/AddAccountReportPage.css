@@ -307,3 +307,37 @@ html:not([data-theme="dark"]) .account-report-builder-transfer-btn {
   color: #ffffff !important;
   border: 1px solid #b91c1c !important;
 }
+
+.account-report-builder-template-filters,
+.account-report-builder-meta-grid > .account-report-builder-field:has(label) {
+  display: block;
+}
+
+.account-report-builder-template-filters {
+  display: none !important;
+}
+
+.account-report-builder-meta-grid > .account-report-builder-field:nth-child(n + 4) {
+  display: none !important;
+}
+
+.account-report-builder-meta-grid > .account-report-builder-field:has(> label:first-child) {
+  display: block;
+}
+
+.account-report-builder-context-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 2fr);
+  gap: 1rem;
+}
+
+.account-report-builder-date-range {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.account-report-builder-date-range input {
+  min-width: 0;
+  flex: 1;
+}

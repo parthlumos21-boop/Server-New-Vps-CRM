@@ -204,7 +204,7 @@ const fieldGroups = {
 const AddAccountWizard = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { accounts, createAccount, createDeal, createReminder, addNotification } = useData()
+  const { accounts, deals = [], createAccount, createDeal, createReminder, addNotification } = useData()
   const { user } = useAuth()
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState(initialFormData)
@@ -342,8 +342,22 @@ const AddAccountWizard = () => {
         String(customer.customerNumber || '').trim().toLowerCase(),
       ].some((key) => customerKeys.has(key)))
 
-    return [...customerRecords, ...accountRecords]
-  }, [accounts, customers])
+    const dealRecords = deals
+      .map((deal) => ({
+        ...deal,
+        id: `deal-${deal.id || deal._id || deal.dealNumber || deal.name}`,
+        sourceType: 'deal',
+        dealId: deal.id || deal._id || deal.dealNumber || '',
+        customerName: deal.accountName || deal.customerName || deal.companyName || deal.name || deal.dealName || '',
+        customerNumber: deal.dealNumber || '',
+        customerOwner: deal.dealOwner || deal.ownerName || '',
+        customerOwnerDisplay: deal.dealOwner || deal.ownerName || '',
+        projectName: deal.projectName || deal.dealName || deal.name || '',
+      }))
+      .filter((deal) => deal.customerName)
+
+    return [...customerRecords, ...accountRecords, ...dealRecords]
+  }, [accounts, customers, deals])
 
   const filteredCustomers = useMemo(() => {
     const searchValue = customerSearch.trim().toLowerCase()
@@ -829,7 +843,7 @@ const AddAccountWizard = () => {
                         <div key={c.id} onClick={() => handleSelectCustomer(c)} className="p-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-0">
                           <div className="font-semibold text-sm text-slate-800">{c.customerName}</div>
                           <div className="text-xs text-slate-500">
-                            <span className="bg-gray-100 px-1 py-0.5 rounded mr-2">{c.sourceType === 'account' ? 'Account' : 'Customer'}</span>
+                            <span className="bg-gray-100 px-1 py-0.5 rounded mr-2">{c.sourceType === 'account' ? 'Account' : c.sourceType === 'deal' ? 'Deal' : 'Customer'}</span>
                             {c.customerNumber || 'No number'} | {c.customerOwnerDisplay || 'No owner'}
                           </div>
                         </div>

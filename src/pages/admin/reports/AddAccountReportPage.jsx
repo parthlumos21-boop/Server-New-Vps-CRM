@@ -15,6 +15,7 @@ import { CUSTOMER_REPORT_FIELD_OPTIONS } from '../../../features/adminReports/cu
 import { useAuth } from '../../../context/AuthContext'
 import { generateId } from '../../../utils/helpers'
 import apiClient from '../../../services/apiClient'
+import { userApi } from '../../../services/userApi'
 import './AddAccountReportPage.css'
 
 const buildFilterRow = () => ({
@@ -35,6 +36,9 @@ const initialFormState = {
   aggregate: '',
   filters: [buildFilterRow()],
   selectedFields: [],
+  accountOwner: '',
+  generatedFrom: '',
+  generatedTo: '',
 }
 
 const AddAccountReportPage = () => {
@@ -46,9 +50,18 @@ const AddAccountReportPage = () => {
   const [selectedAvailableField, setSelectedAvailableField] = useState('')
   const [selectedChosenField, setSelectedChosenField] = useState('')
   const [pageError, setPageError] = useState('')
+  const [ownerOptions, setOwnerOptions] = useState([])
 
   const searchParams = new URLSearchParams(location.search)
   const contextParam = searchParams.get('context')
+
+  useEffect(() => {
+    userApi.listDirectory()
+      .then((users) => setOwnerOptions((Array.isArray(users) ? users : [])
+        .map((entry) => ({ value: entry.name || entry.username || entry.ownerCode || entry.id, label: entry.name || entry.username || entry.ownerCode || entry.id }))
+        .filter((entry) => entry.value)))
+      .catch(() => setOwnerOptions([]))
+  }, [])
 
   useEffect(() => {
     if (contextParam === 'deal') {
@@ -165,6 +178,9 @@ const AddAccountReportPage = () => {
       groupBy: formState.groupBy,
       orderBy: formState.orderBy,
       aggregate: formState.aggregate,
+      accountOwner: formState.accountOwner,
+      generatedFrom: formState.generatedFrom,
+      generatedTo: formState.generatedTo,
       filters: cleanedFilters,
       displayFields: displayFields,
       selectedFields: displayFields,
@@ -226,20 +242,6 @@ const AddAccountReportPage = () => {
               ))}
             </select>
           </div>
-        </section>
-
-        <section className="account-report-builder-panel">
-          <label className="account-report-builder-checkbox">
-            <input
-              type="checkbox"
-              checked={formState.runtimePeriodEnabled}
-              onChange={(event) => setFormState((currentValue) => ({
-                ...currentValue,
-                runtimePeriodEnabled: event.target.checked,
-              }))}
-            />
-            <span>Run at time period ?</span>
-          </label>
         </section>
 
         <section className="account-report-builder-panel">
@@ -317,7 +319,25 @@ const AddAccountReportPage = () => {
           </div>
         </section>
 
-        <section className="account-report-builder-section">
+        <section className="account-report-builder-panel account-report-builder-context-filters">
+          <div className="account-report-builder-field">
+            <label>Owner</label>
+            <select value={formState.accountOwner} onChange={(event) => setFormState((currentValue) => ({ ...currentValue, accountOwner: event.target.value }))}>
+              <option value="">All Owners</option>
+              {ownerOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+          <div className="account-report-builder-field">
+            <label>Quotes Generated Between</label>
+            <div className="account-report-builder-date-range">
+              <input type="date" value={formState.generatedFrom} onChange={(event) => setFormState((currentValue) => ({ ...currentValue, generatedFrom: event.target.value }))} />
+              <span>to</span>
+              <input type="date" value={formState.generatedTo} onChange={(event) => setFormState((currentValue) => ({ ...currentValue, generatedTo: event.target.value }))} />
+            </div>
+          </div>
+        </section>
+
+        <section className="account-report-builder-section account-report-builder-template-filters">
           <div className="account-report-builder-section-title">Template Filters</div>
           <div className="account-report-builder-section-body">
             <div className="account-report-builder-filter-shell">

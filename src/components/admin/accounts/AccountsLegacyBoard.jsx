@@ -298,6 +298,7 @@ const AccountsLegacyBoard = ({
                             value={filters[column.key] || ''}
                             onChange={(event) => onFilterChange(column.key, event.target.value)}
                             placeholder={column.filterPlaceholder || `Search ${column.label}`}
+                            style={{ color: '#000000', WebkitTextFillColor: '#000000', caretColor: '#000000' }}
                           />
                         ) : (
                           <span className="admin-accounts-filter-placeholder">-</span>

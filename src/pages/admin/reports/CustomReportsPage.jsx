@@ -761,6 +761,27 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
     const finalCustomers = allCustomers.length > 0 ? allCustomers : customers
     const finalQuotations = allQuotations.length > 0 ? allQuotations : quotations
 
+    const reportOwner = String(report.accountOwner || report.owner || '').trim().toLowerCase()
+    const reportFrom = report.generatedFrom ? new Date(`${report.generatedFrom}T00:00:00`) : null
+    const reportTo = report.generatedTo ? new Date(`${report.generatedTo}T23:59:59`) : null
+    const applyReportScope = (items, type) => items.filter((item) => {
+      const owner = type === 'account'
+        ? item.accountOwnerName || item.accountOwner || item.ownerName || item.owner
+        : type === 'deal'
+          ? item.dealOwnerName || item.dealOwner || item.ownerName || item.owner
+          : item.ownerName || item.owner || item.accountOwner || item.customerOwner
+      const dateValue = item.createdAt || item.updatedAt || item.accountDate || item.dealDate || item.quotationDate
+      const date = dateValue ? new Date(dateValue) : null
+      return (!reportOwner || String(owner || '').trim().toLowerCase() === reportOwner)
+        && (!reportFrom || (date && date >= reportFrom))
+        && (!reportTo || (date && date <= reportTo))
+    })
+
+    const scopedAccounts = applyReportScope(finalAccounts, 'account')
+    const scopedDeals = applyReportScope(finalDeals, 'deal')
+    const scopedCustomers = applyReportScope(finalCustomers, 'customer')
+    const scopedQuotations = applyReportScope(finalQuotations, 'quotation')
+
     let columns = []
     let rows = []
 
@@ -926,7 +947,7 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           { key: 'email', label: 'Email' },
         ]
       }
-      let list = finalAccounts
+      let list = scopedAccounts
       if (isDailyStatus) {
         list = list.filter(item => isCurrentUser(item.accountOwnerName || item.accountOwner || item.ownerName || item.raw?.accountOwner, item.assignedTo || item.ownerUserId, item.createdBy) && isToday(item.accountDate || item.createdAt))
       }
@@ -948,7 +969,7 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           { key: 'assignedTo', label: 'Assigned To' },
         ]
       }
-      let list = finalCustomers
+      let list = scopedCustomers
       if (isDailyStatus) {
         list = list.filter(item => isCurrentUser(item.assignedToName || item.ownerName || item.owner, item.assignedTo || item.ownerUserId, item.createdBy) && isToday(item.createdAt || item.addedDate))
       }
@@ -971,7 +992,7 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           { key: 'consultantName', label: 'Consultant Name' },
         ]
       }
-      let list = finalDeals
+      let list = scopedDeals
       if (isDailyStatus) {
         list = list.filter(item => isCurrentUser(item.dealOwnerName || item.dealOwner || item.ownerName || item.owner, item.assignedTo || item.ownerUserId, item.createdBy) && isToday(item.dealDate || item.quotationDate || item.createdAt))
       }
@@ -991,7 +1012,7 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           { key: 'status', label: 'Status' },
         ]
       }
-      let list = finalQuotations
+      let list = scopedQuotations
       if (isDailyStatus) {
         list = list.filter(item => isCurrentUser(item.ownerName || item.owner, item.assignedTo || item.ownerUserId, item.createdBy) && isToday(item.date || item.createdAt))
       }
@@ -1008,9 +1029,9 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
         { key: 'status', label: 'Status' },
         { key: 'details', label: 'Details' },
       ]
-      let accountsList = finalAccounts
-      let dealsList = finalDeals
-      let customersList = finalCustomers
+      let accountsList = scopedAccounts
+      let dealsList = scopedDeals
+      let customersList = scopedCustomers
 
       if (isDailyStatus) {
         accountsList = accountsList.filter(item => isCurrentUser(item.accountOwnerName || item.accountOwner || item.ownerName || item.raw?.accountOwner, item.assignedTo || item.ownerUserId, item.createdBy) && isToday(item.accountDate || item.createdAt))

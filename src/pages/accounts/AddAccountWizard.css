@@ -319,6 +319,11 @@
   word-break: break-word;
 }
 
+.legacy-form-label--required,
+.legacy-form-label--required .legacy-form-label-text {
+  color: #c60016 !important;
+}
+
 .legacy-form-required-marker,
 .text-red-500,
 .text-red-600 {
@@ -656,6 +661,13 @@ html body #root :is(.layout--admin, .layout--user) .legacy-form-label-text {
   color: #334155 !important;
   white-space: normal !important;
   word-break: break-word !important;
+}
+
+html body #root :is(.layout--admin, .layout--user) .legacy-form-label--required,
+html body #root :is(.layout--admin, .layout--user) .legacy-form-label--required .legacy-form-label-text,
+html body #root :is(.layout--admin, .layout--user) .legacy-form-label--required .legacy-form-label-text * {
+  color: #c60016 !important;
+  -webkit-text-fill-color: #c60016 !important;
 }
 
 html body #root :is(.layout--admin, .layout--user) .legacy-form-required-marker {

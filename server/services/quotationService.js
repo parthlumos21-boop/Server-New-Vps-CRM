@@ -51,6 +51,91 @@ const isInSequenceWindow = (sequence) => (
   && sequence < 10000
 )
 
+const hasExplicitValue = (value) => value !== undefined && value !== null && value !== ''
+
+const toExplicitNumber = (value) => (
+  hasExplicitValue(value) && Number.isFinite(Number(value)) ? Number(value) : undefined
+)
+
+const getExplicitRevisionAmount = (source = {}, code) => {
+  const data = source.data || {}
+  const revisionAmounts = source.quotationRevisionAmounts || data.quotationRevisionAmounts || {}
+  const key = `${String(code).toLowerCase()}Amount`
+
+  // revisionAmountR* is historically written as 0 for every unused slot.
+  // A revision is real only when the revision map/history or its raw r*Amount
+  // field explicitly contains it.
+  if (Object.prototype.hasOwnProperty.call(revisionAmounts, code) && hasExplicitValue(revisionAmounts[code])) {
+    return revisionAmounts[code]
+  }
+  if (Object.prototype.hasOwnProperty.call(data.quotationRevisionAmounts || {}, code) && hasExplicitValue(data.quotationRevisionAmounts[code])) {
+    return data.quotationRevisionAmounts[code]
+  }
+  const hasRawRevisionField = Object.prototype.hasOwnProperty.call(source, key) || Object.prototype.hasOwnProperty.call(data, key)
+  if (Object.prototype.hasOwnProperty.call(source, key) && hasExplicitValue(source[key])) return source[key]
+  if (Object.prototype.hasOwnProperty.call(data, key) && hasExplicitValue(data[key])) return data[key]
+  // Legacy revisionAmountR* fields are only valid when no raw r*Amount field
+  // exists. Old documents use zero/nonzero placeholders in these fields.
+  if (!hasRawRevisionField && hasExplicitValue(source[`revisionAmount${code}`]) && Number(source[`revisionAmount${code}`]) !== 0) return source[`revisionAmount${code}`]
+  if (!hasRawRevisionField && hasExplicitValue(data[`revisionAmount${code}`]) && Number(data[`revisionAmount${code}`]) !== 0) return data[`revisionAmount${code}`]
+  return ''
+}
+
+const parseRevisionNumber = (code) => {
+  const parsed = Number.parseInt(String(code || '').replace(/\D/g, ''), 10)
+  return Number.isNaN(parsed) ? null : parsed
+}
+
+const getSavedRevisionNumbers = (record = {}) => {
+  const revisions = Array.isArray(record.revisions)
+    ? record.revisions
+    : (Array.isArray(record.data?.revisions) ? record.data.revisions : [])
+  const revisionNumbers = new Set()
+
+  ;['R0', 'R1', 'R2', 'R3'].forEach((code) => {
+    if (hasExplicitValue(getExplicitRevisionAmount(record, code))) {
+      const revNo = parseRevisionNumber(code)
+      if (revNo !== null) revisionNumbers.add(revNo)
+    }
+  })
+
+  revisions.forEach((revision) => {
+    const code = revision.revisionCode || (revision.revisionNo === 0 ? 'R0' : revision.revisionNo ? `R${revision.revisionNo}` : '')
+    const revNo = parseRevisionNumber(code)
+    if (revNo !== null && hasExplicitValue(revision.amount)) {
+      revisionNumbers.add(revNo)
+    }
+  })
+
+  return Array.from(revisionNumbers).sort((a, b) => a - b)
+}
+
+const buildSafeMongoIdQuery = (targetId, extraStringFields = []) => {
+  const strVal = String(targetId || '').trim()
+  if (!strVal) return null
+
+  const mongoose = require('mongoose')
+  const numVal = Number(strVal)
+  const isNum = !Number.isNaN(numVal)
+  const conditions = [
+    { id: strVal },
+    { legacyId: strVal },
+    ...extraStringFields.map((field) => ({ [field]: strVal })),
+  ]
+
+  if (isNum) {
+    conditions.push({ id: numVal })
+    conditions.push({ legacyId: numVal })
+    extraStringFields.forEach((field) => conditions.push({ [field]: numVal }))
+  }
+
+  if (mongoose.Types.ObjectId.isValid(strVal)) {
+    conditions.push({ _id: strVal })
+  }
+
+  return { $or: conditions }
+}
+
 const getRecordSequenceMonth = (record = {}) => (
   record.quotationSequenceMonth
   || record.data?.quotationSequenceMonth
@@ -448,7 +533,8 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
 
     siblingQuotes.forEach((sq) => {
       const code = sq.revisionCode || (sq.revisionNo === 0 ? 'R0' : sq.revisionNo ? `R${sq.revisionNo}` : 'R0')
-      const amt = sq.totalAmount || sq.amount || 0
+      const explicitAmount = getExplicitRevisionAmount(sq, code)
+      const amt = hasExplicitValue(explicitAmount) ? Number(explicitAmount) : 0
       revisionAmounts[code] = amt
       revisionHistory.push({
         revisionCode: code,
@@ -482,7 +568,9 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
 
     const syncPayload = {
       latestQuotationNumber: quotationRecord.quotationNumber || quotationRecord.quoteNumber,
-      latestQuotationAmount: quotationRecord.totalAmount || quotationRecord.amount,
+      latestQuotationAmount: hasExplicitValue(getExplicitRevisionAmount(quotationRecord, quotationRecord.revisionCode || 'R0'))
+        ? Number(getExplicitRevisionAmount(quotationRecord, quotationRecord.revisionCode || 'R0'))
+        : quotationRecord.amount,
       quotationRevisionCode: quotationRecord.revisionCode || 'R0',
       quotationRevisionNo: quotationRecord.revisionNo ?? 0,
       quotationRevisionAmounts: quotationRecord.quotationRevisionAmounts || revisionAmounts,
@@ -498,8 +586,10 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
     }
 
     if (customerId) {
+      const customerQuery = buildSafeMongoIdQuery(customerId, ['accountNumber'])
+      if (customerQuery) {
       await Lead.updateOne(
-        { $or: [{ id: customerId }, { _id: customerId }, { legacyId: customerId }] },
+        customerQuery,
         {
           $set: {
             'formData.latestQuotationNumber': syncPayload.latestQuotationNumber,
@@ -524,11 +614,14 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
           }
         }
       )
+      }
     }
 
     if (dealId) {
+      const dealQuery = buildSafeMongoIdQuery(dealId, ['dealNumber'])
+      if (dealQuery) {
       await Deal.updateOne(
-        { $or: [{ id: dealId }, { _id: dealId }, { legacyId: dealId }] },
+        dealQuery,
         {
           $set: {
             'data.latestQuotationNumber': syncPayload.latestQuotationNumber,
@@ -553,6 +646,7 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
           }
         }
       )
+      }
     }
   } catch (syncErr) {
     console.warn('Could not sync quotation revision to leads/deals collections:', syncErr)
@@ -578,42 +672,64 @@ module.exports = {
     const allQuotes = await quotationRepository.listAll()
     const targetCustId = String(payload.customerId || payload.selectedAccountId || payload.data?.selectedAccountId || payload.data?.customerId || '').trim()
     const targetQuoteNo = String(payload.quoteNumber || payload.quotationNumber || payload.data?.quotationNumber || payload.data?.quoteNumber || '').trim()
-    const targetDealId = String(payload.dealId || payload.data?.dealId || '').trim()
+    const targetDealId = String(payload.dealId || payload.data?.dealId || payload.sourceDealId || payload.data?.sourceDealId || payload.dealNumber || payload.data?.dealNumber || '').trim()
     const targetAccNum = String(payload.clientAccountNumber || payload.data?.clientAccountNumber || '').trim().toLowerCase()
     const targetCompName = String(payload.companyName || payload.customerName || payload.data?.companyName || payload.data?.customerName || '').trim().toLowerCase()
+    const targetContext = String(payload.quotationContext || payload.data?.quotationContext || (targetDealId ? 'deal' : 'account')).trim().toLowerCase()
 
     const existingMatch = allQuotes.find((q) => {
       const qCust = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || q.data?.customerId || '').trim()
       const qNo = String(q.quoteNumber || q.quotationNumber || q.data?.quotationNumber || '').trim()
-      const qDeal = String(q.dealId || q.data?.dealId || '').trim()
+      const qDeal = String(q.dealId || q.data?.dealId || q.sourceDealId || q.data?.sourceDealId || q.dealNumber || q.data?.dealNumber || '').trim()
       const qAccNum = String(q.clientAccountNumber || q.data?.clientAccountNumber || '').trim().toLowerCase()
       const qCompName = String(q.companyName || q.customerName || q.data?.companyName || q.data?.customerName || '').trim().toLowerCase()
+      const hasStrongTarget = Boolean(targetDealId || targetCustId || targetAccNum)
+      const qContext = String(q.quotationContext || q.data?.quotationContext || (qDeal ? 'deal' : 'account')).trim().toLowerCase()
 
-      if (targetQuoteNo && qNo === targetQuoteNo) return true
-      if (targetDealId && qDeal === targetDealId) return true
-      if (targetCustId && qCust === targetCustId) return true
+      if (targetContext === 'deal') {
+        if (targetDealId && qDeal === targetDealId) return true
+        return false
+      }
+
+      if (qContext === 'deal') return false
+
+      if (targetCustId) return Boolean(qCust && qCust === targetCustId)
       if (targetAccNum && qAccNum && qAccNum === targetAccNum) return true
-      if (targetCompName && qCompName && qCompName === targetCompName) return true
+      if (!hasStrongTarget && targetQuoteNo && qNo === targetQuoteNo) return true
+      if (!hasStrongTarget && targetCompName && qCompName && qCompName === targetCompName) return true
       return false
     })
 
     if (existingMatch) {
+      const existingStatus = String(existingMatch.status || existingMatch.data?.status || '').toLowerCase()
+      if (existingStatus === 'approved') {
+        throw new AppError('This quotation is already approved and cannot receive another revision.', 409)
+      }
       const existingRevAmounts = existingMatch.quotationRevisionAmounts || existingMatch.data?.quotationRevisionAmounts || {}
       const existingRevisions = Array.isArray(existingMatch.revisions)
         ? existingMatch.revisions
         : (Array.isArray(existingMatch.data?.revisions) ? existingMatch.data.revisions : [])
 
-      const currentRevNo = existingMatch.revisionNo ?? (parseInt(String(existingMatch.revisionCode || '').replace(/\D/g, ''), 10) || 0)
+      const savedRevisionNumbers = getSavedRevisionNumbers(existingMatch)
+      const currentRevNo = savedRevisionNumbers.length > 0 ? Math.max(...savedRevisionNumbers) : -1
       const nextRevNo = currentRevNo + 1
       const nextRevCode = `R${nextRevNo}`
-      const newAmount = payload[`r${nextRevNo}Amount`] !== undefined && payload[`r${nextRevNo}Amount`] !== ''
-        ? Number(payload[`r${nextRevNo}Amount`])
-        : (payload.totalAmount || payload.amount || payload.data?.amount || 0)
+      const newAmount = toExplicitNumber(payload[`r${nextRevNo}Amount`])
+      if (newAmount === undefined) {
+        throw new AppError(`${nextRevCode} Amount is required to create the next quotation revision.`, 400)
+      }
 
-      const r0Amt = payload.r0Amount !== undefined && payload.r0Amount !== '' ? Number(payload.r0Amount) : (existingMatch.revisionAmountR0 ?? existingRevAmounts.R0 ?? (existingMatch.data?.r0Amount ? Number(existingMatch.data.r0Amount) : undefined))
-      const r1Amt = payload.r1Amount !== undefined && payload.r1Amount !== '' ? Number(payload.r1Amount) : (existingMatch.revisionAmountR1 ?? existingRevAmounts.R1 ?? (existingMatch.data?.r1Amount ? Number(existingMatch.data.r1Amount) : undefined))
-      const r2Amt = payload.r2Amount !== undefined && payload.r2Amount !== '' ? Number(payload.r2Amount) : (existingMatch.revisionAmountR2 ?? existingRevAmounts.R2 ?? (existingMatch.data?.r2Amount ? Number(existingMatch.data.r2Amount) : undefined))
-      const r3Amt = payload.r3Amount !== undefined && payload.r3Amount !== '' ? Number(payload.r3Amount) : (existingMatch.revisionAmountR3 ?? existingRevAmounts.R3 ?? (existingMatch.data?.r3Amount ? Number(existingMatch.data.r3Amount) : undefined))
+      const resolveRevisionAmount = (code) => {
+        const payloadValue = toExplicitNumber(payload[`${code.toLowerCase()}Amount`])
+        if (payloadValue !== undefined) return payloadValue
+        const existingValue = toExplicitNumber(getExplicitRevisionAmount(existingMatch, code))
+        return existingValue
+      }
+
+      const r0Amt = resolveRevisionAmount('R0')
+      const r1Amt = resolveRevisionAmount('R1')
+      const r2Amt = resolveRevisionAmount('R2')
+      const r3Amt = resolveRevisionAmount('R3')
 
       const updatedRevAmounts = {
         ...existingRevAmounts,
@@ -633,12 +749,24 @@ module.exports = {
           status: existingMatch.status || 'Open',
         })
       }
-      updatedRevisionsList.push({
+      const nextRevisionEntry = {
         revisionCode: nextRevCode,
         amount: newAmount,
         date: new Date().toISOString().slice(0, 10),
         status: 'Open',
+      }
+      const existingRevisionIndex = updatedRevisionsList.findIndex((revision) => {
+        const code = revision.revisionCode || (revision.revisionNo === 0 ? 'R0' : revision.revisionNo ? `R${revision.revisionNo}` : '')
+        return code === nextRevCode
       })
+      if (existingRevisionIndex >= 0) {
+        updatedRevisionsList[existingRevisionIndex] = {
+          ...updatedRevisionsList[existingRevisionIndex],
+          ...nextRevisionEntry,
+        }
+      } else {
+        updatedRevisionsList.push(nextRevisionEntry)
+      }
 
       const updatePayload = {
         ...payload,
@@ -663,11 +791,15 @@ module.exports = {
       return updatedResult
     }
 
-    const initialAmount = payload.totalAmount || payload.amount || 0
+    const initialAmount = toExplicitNumber(payload.r0Amount) ?? toExplicitNumber(payload.revisionAmountR0)
+    if (initialAmount === undefined) {
+      throw new AppError('R0 Amount is required to create the first quotation revision.', 400)
+    }
     const initialRevCode = payload.revisionCode || 'R0'
     const initialRevNo = payload.revisionNo ?? 0
     const result = await quotationService.create(actor, {
       ...payload,
+      status: 'Open',
       revisionCode: initialRevCode,
       revisionNo: initialRevNo,
       revisionAmountR0: payload.revisionAmountR0 ?? (initialRevCode === 'R0' ? initialAmount : 0),
@@ -726,9 +858,10 @@ module.exports = {
         }
       })
     } else {
+      const approvedAmount = getExplicitRevisionAmount(existing, targetRevCode)
       updatedRevisions.push({
         revisionCode: targetRevCode,
-        amount: existing.totalAmount || existing.amount || 0,
+        amount: hasExplicitValue(approvedAmount) ? Number(approvedAmount) : 0,
         date: new Date().toISOString().slice(0, 10),
         status: 'Approved',
       })
@@ -767,35 +900,16 @@ module.exports = {
     const quotationRepo = require('../repositories/quotationRepository')
 
     const targetAccountId = String(queryParams.accountId || queryParams.selectedAccountId || '').trim()
-    const targetDealId = String(queryParams.dealId || '').trim()
+    const targetAccountNumber = String(queryParams.accountNumber || queryParams.accountNo || '').trim()
+    const targetDealId = String(queryParams.dealId || queryParams.sourceDealId || queryParams.dealNumber || '').trim()
     const context = queryParams.quotationContext || (targetDealId ? 'deal' : 'account')
 
-    const mongoose = require('mongoose')
-    const buildIdQuery = (targetId) => {
-      if (!targetId) return null
-      const strVal = String(targetId).trim()
-      if (!strVal) return null
-      const numVal = Number(strVal)
-      const isNum = !Number.isNaN(numVal)
-
-      const conditions = [
-        { id: strVal },
-        { legacyId: strVal },
-      ]
-      if (isNum) {
-        conditions.push({ id: numVal })
-        conditions.push({ legacyId: numVal })
-        conditions.push({ accountNumber: strVal })
-        conditions.push({ accountNumber: numVal })
-      }
-      if (mongoose.Types.ObjectId.isValid(strVal)) {
-        conditions.push({ _id: strVal })
-      }
-      return { $or: conditions }
+    const buildIdQuery = (targetId, extraStringFields = []) => {
+      return buildSafeMongoIdQuery(targetId, extraStringFields)
     }
 
     let accountDoc = null
-    const accQuery = buildIdQuery(targetAccountId)
+    const accQuery = buildIdQuery(targetAccountId || targetAccountNumber, ['accountNumber', 'accountNo'])
     if (accQuery) {
       accountDoc = await Lead.findOne(accQuery).lean()
       if (!accountDoc) {
@@ -804,14 +918,14 @@ module.exports = {
     }
 
     let dealDoc = null
-    const dealQuery = buildIdQuery(targetDealId)
+    const dealQuery = buildIdQuery(targetDealId, ['dealNumber'])
     if (dealQuery) {
       dealDoc = await Deal.findOne(dealQuery).lean()
     }
 
     if (!accountDoc && dealDoc) {
       const linkedAccId = dealDoc.accountId || dealDoc.data?.accountId || dealDoc.customerId || dealDoc.data?.customerId
-      const linkedAccQuery = buildIdQuery(linkedAccId)
+      const linkedAccQuery = buildIdQuery(linkedAccId, ['accountNumber'])
       if (linkedAccQuery) {
         accountDoc = await Lead.findOne(linkedAccQuery).lean()
         if (!accountDoc) {
@@ -820,7 +934,7 @@ module.exports = {
       }
     }
 
-    const accNum = accountDoc?.accountNumber || accountDoc?.formData?.accountNumber || ''
+    const accNum = accountDoc?.accountNumber || accountDoc?.accountNo || accountDoc?.formData?.accountNumber || targetAccountNumber
 
     const dealIdCandidates = new Set()
     if (targetDealId) dealIdCandidates.add(targetDealId)
@@ -835,61 +949,51 @@ module.exports = {
     const targetCompName = String(accountDoc?.name || accountDoc?.company || accountDoc?.formData?.name || '').trim().toLowerCase()
 
     const matchingQuotes = allQuotes.filter((q) => {
-      const qDealId = String(q.dealId || q.data?.dealId || q.raw?.dealId || '').trim()
+      const qDealId = String(q.dealId || q.data?.dealId || q.sourceDealId || q.data?.sourceDealId || q.dealNumber || q.data?.dealNumber || q.raw?.dealId || '').trim()
       const qAccId = String(q.customerId || q.selectedAccountId || q.data?.selectedAccountId || q.data?.customerId || '').trim()
       const qAccNum = String(q.clientAccountNumber || q.data?.clientAccountNumber || '').trim()
       const qCompName = String(q.companyName || q.customerName || q.data?.companyName || q.data?.customerName || '').trim().toLowerCase()
+      const qContext = String(q.quotationContext || q.data?.quotationContext || (qDealId ? 'deal' : 'account')).trim().toLowerCase()
 
       if (context === 'deal') {
         if (qDealId && dealIdCandidates.size > 0 && dealIdCandidates.has(qDealId)) return true
-        if (targetDealId && qDealId && qDealId === targetDealId) return true
-        if (q.data?.quotationContext === 'deal' || q.quotationContext === 'deal') {
-          if (targetCompName && qCompName && qCompName === targetCompName) return true
-          if (accNum && qAccNum && qAccNum === accNum) return true
-        }
         return false
       }
 
-      if (targetAccountId && qAccId && qAccId === targetAccountId) return true
+      if (qContext === 'deal') return false
+
+      if (targetAccountId) return Boolean(qAccId && qAccId === targetAccountId)
       if (accNum && qAccNum && qAccNum === accNum) return true
-      if (targetCompName && qCompName && qCompName === targetCompName) return true
+      if (!targetAccountId && !accNum && targetCompName && qCompName && qCompName === targetCompName) return true
       return false
     }).sort((a, b) => (a.revisionNo ?? 0) - (b.revisionNo ?? 0))
 
-    let savedR0 = ''
-    let savedR1 = ''
-    let savedR2 = ''
-    let savedR3 = ''
+    const savedRevisions = {}
 
     matchingQuotes.forEach((q) => {
-      const revCode = String(q.revisionCode || (q.revisionNo === 0 ? 'R0' : q.revisionNo ? `R${q.revisionNo}` : '')).toUpperCase()
-      const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
-
-      const getExplicitAmt = (code) => {
-        if (revs[code] !== undefined && revs[code] !== null && revs[code] !== '') return revs[code]
-        if (q[`revisionAmount${code}`] !== undefined && q[`revisionAmount${code}`] !== null && q[`revisionAmount${code}`] !== '') return q[`revisionAmount${code}`]
-        if (q[`${code.toLowerCase()}Amount`] !== undefined && q[`${code.toLowerCase()}Amount`] !== null && q[`${code.toLowerCase()}Amount`] !== '') return q[`${code.toLowerCase()}Amount`]
-        if (q.data?.[`${code.toLowerCase()}Amount`] !== undefined && q.data?.[`${code.toLowerCase()}Amount`] !== null && q.data?.[`${code.toLowerCase()}Amount`] !== '') return q.data[`${code.toLowerCase()}Amount`]
-        return ''
-      }
-
-      const r0Explicit = getExplicitAmt('R0')
-      const r1Explicit = getExplicitAmt('R1')
-      const r2Explicit = getExplicitAmt('R2')
-      const r3Explicit = getExplicitAmt('R3')
-
-      if (r0Explicit !== '') savedR0 = r0Explicit
-      if (r1Explicit !== '') savedR1 = r1Explicit
-      if (r2Explicit !== '') savedR2 = r2Explicit
-      if (r3Explicit !== '') savedR3 = r3Explicit
+      getSavedRevisionNumbers(q).forEach((revisionNumber) => {
+        const code = `R${revisionNumber}`
+        const explicitAmount = getExplicitRevisionAmount(q, code)
+        if (hasExplicitValue(explicitAmount)) savedRevisions[code] = explicitAmount
+      })
     })
 
-    const isR0Locked = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
-    const isR1Locked = Boolean(savedR1 !== '' && savedR1 !== null && savedR1 !== undefined && savedR1 !== 0 && savedR1 !== '0')
-    const isR2Locked = Boolean(savedR2 !== '' && savedR2 !== null && savedR2 !== undefined && savedR2 !== 0 && savedR2 !== '0')
-    const isR3Locked = Boolean(savedR3 !== '' && savedR3 !== null && savedR3 !== undefined && savedR3 !== 0 && savedR3 !== '0')
+    const isR0Locked = hasExplicitValue(savedRevisions.R0)
+    const isR1Locked = hasExplicitValue(savedRevisions.R1)
+    const isR2Locked = hasExplicitValue(savedRevisions.R2)
+    const isR3Locked = hasExplicitValue(savedRevisions.R3)
 
     const latestQuote = matchingQuotes.length > 0 ? matchingQuotes[matchingQuotes.length - 1] : null
+    const savedRevisionNumbers = Object.keys(savedRevisions)
+      .map((code) => parseRevisionNumber(code))
+      .filter((number) => number !== null)
+    const currentRevisionNumber = savedRevisionNumbers.length > 0 ? Math.max(...savedRevisionNumbers) : null
+    const currentRevisionCode = currentRevisionNumber === null ? null : `R${currentRevisionNumber}`
+    const quotationStatus = String(latestQuote?.status || latestQuote?.data?.status || 'Open')
+    const isApproved = quotationStatus.toLowerCase() === 'approved'
+    const nextRevisionCode = isApproved
+      ? null
+      : `R${currentRevisionNumber === null ? 0 : currentRevisionNumber + 1}`
 
     const productName = latestQuote?.productName || latestQuote?.data?.productName || dealDoc?.productName || dealDoc?.data?.productName || accountDoc?.productName || accountDoc?.formData?.productName || accountDoc?.productCategory || ''
     const productGroup = latestQuote?.productGroup || latestQuote?.data?.productGroup || dealDoc?.productGroup || dealDoc?.data?.productGroup || accountDoc?.productGroup || accountDoc?.formData?.productGroup || 'Non TTA'
@@ -900,12 +1004,7 @@ module.exports = {
     const pmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || dealDoc?.pmcName || dealDoc?.data?.pmcName || accountDoc?.pmcName || accountDoc?.formData?.pmcName || ''
 
     return {
-      savedRevisions: {
-        R0: savedR0,
-        R1: savedR1,
-        R2: savedR2,
-        R3: savedR3,
-      },
+      savedRevisions,
       locks: {
         isR0Locked,
         isR1Locked,
@@ -929,7 +1028,11 @@ module.exports = {
         stateCode: accountDoc?.stateCode || accountDoc?.formData?.stateCode || '',
       },
       existingQuotesCount: matchingQuotes.length,
-      nextRevisionCode: isR2Locked ? 'R3' : (isR1Locked ? 'R2' : (isR0Locked ? 'R1' : 'R0')),
+      currentRevisionCode,
+      currentRevisionNumber,
+      quotationStatus,
+      nextRevisionCode,
+      nextRevisionAllowed: !isApproved,
     }
   },
 }

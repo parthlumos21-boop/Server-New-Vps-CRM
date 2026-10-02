@@ -67,6 +67,12 @@ const INITIAL_ACCOUNT_FILTERS = {
   accountOwner: '',
 }
 
+const hasExplicitRevisionValue = (value) => value !== undefined && value !== null && value !== ''
+
+const toRevisionNumber = (value) => (
+  hasExplicitRevisionValue(value) && Number.isFinite(Number(value)) ? Number(value) : undefined
+)
+
 const PROFILE_OPTIONS = [
   {
     value: 'swati-switch',
@@ -218,9 +224,9 @@ const buildQuotationCustomerAccount = (customer = {}) => {
   const primaryContact = customer.contacts?.[0] || {}
 
   return {
-    id: customer.id || customer._id || customer.customerNumber || customer.accountNumber || `customer-${Date.now()}`,
+    id: customer.id || customer._id || customer.legacyId || customer.customerNumber || customer.accountNumber || `customer-${Date.now()}`,
     quotationContext: 'account',
-    accountNumber: customer.accountNumber || customer.customerNumber || '',
+    accountNumber: customer.accountNumber || customer.accountNo || customer.formData?.accountNumber || customer.customerNumber || '',
     name: customer.name || customer.customerName || '',
     contactPerson: primaryContact.contactPerson || customer.contactPerson || '',
     contactDesignation: primaryContact.designation || customer.contactDesignation || customer.designation || '',
@@ -245,8 +251,18 @@ const buildQuotationCustomerAccount = (customer = {}) => {
   }
 }
 
+const hasPersistedAccountIdentity = (account = {}) => {
+  const candidates = [account.id, account._id, account.legacyId, account.accountNumber, account.accountNo]
+  return candidates.some((value) => {
+    const normalized = String(value || '').trim().toLowerCase()
+    return normalized && !/^(customer|account)-\d+$/.test(normalized)
+  })
+}
+
 const buildQuotationDealAccount = (deal = {}) => ({
   id: deal.id || deal.dealNumber || `deal-${Date.now()}`,
+  dealId: deal.id || deal.dealId || deal._id || deal.legacyId || deal.dealNumber || '',
+  sourceDealId: deal.sourceDealId || deal.source_deal_id || deal.dealId || deal.id || deal._id || deal.legacyId || deal.dealNumber || '',
   quotationContext: 'deal',
   accountNumber: deal.dealNumber || '',
   name: deal.companyName || deal.customerName || deal.accountName || deal.dealName || deal.name || '',
@@ -340,6 +356,13 @@ const createInitialQuotationForm = () => ({
   otherService: '',
   uploadedLineItemsName: '',
   selectedAccountId: '',
+  dealId: '',
+  nextRevisionCode: '',
+  nextRevisionAmount: '',
+  savedRevisionAmounts: {},
+  currentRevisionCode: null,
+  quotationStatus: 'Open',
+  nextRevisionAllowed: true,
   selectedAccountOwner: '',
   lineItems: [createEmptyLineItem()],
 })
@@ -357,10 +380,18 @@ const buildQuotationFormFromExisting = (quotation = {}, nextQuotationNumber = ''
     : [createEmptyLineItem()]
 
   const revAmounts = quotation.quotationRevisionAmounts || quotation.data?.quotationRevisionAmounts || {}
-  const r0Val = revAmounts.R0 ?? quotation.revisionAmountR0 ?? quotation.r0Amount ?? (quotation.revisionCode === 'R0' || quotation.revisionNo === 0 ? (quotation.revisionAmount || '') : '')
-  const r1Val = revAmounts.R1 ?? quotation.revisionAmountR1 ?? quotation.r1Amount ?? (quotation.revisionCode === 'R1' || quotation.revisionNo === 1 ? (quotation.revisionAmount || '') : '')
-  const r2Val = revAmounts.R2 ?? quotation.revisionAmountR2 ?? quotation.r2Amount ?? (quotation.revisionCode === 'R2' || quotation.revisionNo === 2 ? (quotation.revisionAmount || '') : '')
-  const r3Val = revAmounts.R3 ?? quotation.revisionAmountR3 ?? quotation.r3Amount ?? (quotation.revisionCode === 'R3' || quotation.revisionNo === 3 ? (quotation.revisionAmount || '') : '')
+  const revisionValue = (code) => {
+    const key = `${code.toLowerCase()}Amount`
+    if (Object.prototype.hasOwnProperty.call(revAmounts, code) && revAmounts[code] !== null && revAmounts[code] !== '') return revAmounts[code]
+    if (Object.prototype.hasOwnProperty.call(quotation, key) && quotation[key] !== null && quotation[key] !== '') return quotation[key]
+    if (Object.prototype.hasOwnProperty.call(quotation.data || {}, key) && quotation.data[key] !== null && quotation.data[key] !== '') return quotation.data[key]
+    const legacy = quotation[`revisionAmount${code}`] ?? quotation.data?.[`revisionAmount${code}`]
+    return legacy !== undefined && legacy !== null && legacy !== 0 && legacy !== '0' ? legacy : ''
+  }
+  const r0Val = revisionValue('R0')
+  const r1Val = revisionValue('R1')
+  const r2Val = revisionValue('R2')
+  const r3Val = revisionValue('R3')
 
   const hasR0 = r0Val !== undefined && r0Val !== null && r0Val !== '' && r0Val !== 0 && r0Val !== '0'
   const hasR1 = r1Val !== undefined && r1Val !== null && r1Val !== '' && r1Val !== 0 && r1Val !== '0'
@@ -934,8 +965,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
         if (!prev) return null
         const updatedRevisions = Array.isArray(prev.raw?.revisions)
           ? prev.raw.revisions.map((r) => {
-              const rCode = r.revisionCode || (r.revisionNo ? `R${r.revisionNo}` : 'R1')
-              if (rCode === revCode || revCode === 'R1') {
+              const rCode = r.revisionCode || (r.revisionNo === 0 ? 'R0' : r.revisionNo ? `R${r.revisionNo}` : 'R0')
+              if (rCode === revCode) {
                 return { ...r, status: 'Approved' }
               }
               return r
@@ -1157,19 +1188,21 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       const qDealId = String(q.dealId || q.raw?.dealId || q.raw?.sourceDealId || q.raw?.source_deal_id || '').trim()
       const qAccId = String(q.selectedAccountId || q.raw?.selectedAccountId || q.customerId || q.raw?.customerId || '').trim()
       const qAccNum = String(q.clientAccountNumber || q.raw?.clientAccountNumber || '').trim()
+      const qContext = String(q.quotationContext || q.raw?.quotationContext || (qDealId ? 'deal' : 'account')).trim().toLowerCase()
 
       if (account?.quotationContext === 'deal') {
         if (targetDealId && qDealId && qDealId === targetDealId) return true
         return false
       }
 
-      if (targetAccountId && qAccId && qAccId === targetAccountId) return true
+      if (qContext === 'deal') return false
+
+      if (targetAccountId) return Boolean(qAccId && qAccId === targetAccountId)
       if (targetAccNum && qAccNum && qAccNum === targetAccNum) return true
       return false
     })
 
     const latestQuote = existingMatchingQuotes.length > 0 ? existingMatchingQuotes[existingMatchingQuotes.length - 1] : null
-    const storedRevs = account?.quotationRevisionAmounts || account?.data?.quotationRevisionAmounts || account?.formData?.quotationRevisionAmounts || {}
 
     let computedQuoteNumber = nextQuotationNumber
     let savedR0 = ''
@@ -1187,10 +1220,12 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
         const revs = q.quotationRevisionAmounts || q.data?.quotationRevisionAmounts || {}
 
         const getExplicit = (code) => {
-          if (revs[code] !== undefined && revs[code] !== null && revs[code] !== '') return revs[code]
-          if (q[`revisionAmount${code}`] !== undefined && q[`revisionAmount${code}`] !== null && q[`revisionAmount${code}`] !== '') return q[`revisionAmount${code}`]
-          if (q[`${code.toLowerCase()}Amount`] !== undefined && q[`${code.toLowerCase()}Amount`] !== null && q[`${code.toLowerCase()}Amount`] !== '') return q[`${code.toLowerCase()}Amount`]
-          if (q.data?.[`${code.toLowerCase()}Amount`] !== undefined && q.data?.[`${code.toLowerCase()}Amount`] !== null && q.data?.[`${code.toLowerCase()}Amount`] !== '') return q.data[`${code.toLowerCase()}Amount`]
+          if (Object.prototype.hasOwnProperty.call(revs, code) && revs[code] !== undefined && revs[code] !== null && revs[code] !== '') return revs[code]
+          const rawKey = `${code.toLowerCase()}Amount`
+          const hasRawRevisionField = Object.prototype.hasOwnProperty.call(q, rawKey) || Object.prototype.hasOwnProperty.call(q.data || {}, rawKey)
+          if (q[rawKey] !== undefined && q[rawKey] !== null && q[rawKey] !== '') return q[rawKey]
+          if (q.data?.[rawKey] !== undefined && q.data?.[rawKey] !== null && q.data?.[rawKey] !== '') return q.data[rawKey]
+          if (!hasRawRevisionField && q[`revisionAmount${code}`] !== undefined && q[`revisionAmount${code}`] !== null && Number(q[`revisionAmount${code}`]) !== 0) return q[`revisionAmount${code}`]
           return ''
         }
 
@@ -1209,12 +1244,16 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       computedQuoteNumber = `${baseClean}-R0`
     }
 
-    if (!savedR0 && storedRevs.R0) savedR0 = storedRevs.R0
-
-    const hasR0 = Boolean(savedR0 !== '' && savedR0 !== null && savedR0 !== undefined && savedR0 !== 0 && savedR0 !== '0')
-    const hasR1 = Boolean(savedR1 !== '' && savedR1 !== null && savedR1 !== undefined && savedR1 !== 0 && savedR1 !== '0')
-    const hasR2 = Boolean(savedR2 !== '' && savedR2 !== null && savedR2 !== undefined && savedR2 !== 0 && savedR2 !== '0')
-    const hasR3 = Boolean(savedR3 !== '' && savedR3 !== null && savedR3 !== undefined && savedR3 !== 0 && savedR3 !== '0')
+    const hasR0 = hasExplicitRevisionValue(savedR0)
+    const hasR1 = hasExplicitRevisionValue(savedR1)
+    const hasR2 = hasExplicitRevisionValue(savedR2)
+    const hasR3 = hasExplicitRevisionValue(savedR3)
+    const savedRevisionNumbers = [savedR0, savedR1, savedR2, savedR3]
+      .map((value, index) => hasExplicitRevisionValue(value) ? index : null)
+      .filter((value) => value !== null)
+    let nextRevisionNumber = 0
+    const savedRevisionSet = new Set(savedRevisionNumbers)
+    while (savedRevisionSet.has(nextRevisionNumber)) nextRevisionNumber += 1
 
     const autofillProjectName = latestQuote?.projectName || latestQuote?.data?.projectName || account?.projectName || account?.name || ''
     const autofillArchitectName = latestQuote?.architectName || latestQuote?.data?.architectName || account?.architectName || ''
@@ -1274,8 +1313,11 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       savedR2InDb: hasR2,
       isR3Locked: hasR3,
       savedR3InDb: hasR3,
+      nextRevisionCode: `R${nextRevisionNumber}`,
+      currentRevisionCode: savedRevisionNumbers.length > 0 ? `R${Math.max(...savedRevisionNumbers)}` : 'R0',
       product: autofillProductName,
       selectedAccountId: account?.quotationContext === 'deal' ? '' : account?.id || '',
+      dealId: account?.quotationContext === 'deal' ? (account?.sourceDealId || account?.source_deal_id || account?.dealId || account?.id || '') : '',
       selectedAccountOwner: account?.accountOwnerName || account?.accountOwner || '',
       lineItems: autofillLineItems,
     }
@@ -1295,19 +1337,44 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     try {
       const contextParams = {
         accountId: account?.id || account?.selectedAccountId || '',
-        dealId: account?.sourceDealId || account?.source_deal_id || account?.dealId || '',
+        accountNumber: account?.quotationContext === 'deal' ? '' : (account?.accountNumber || account?.accountNo || account?.formData?.accountNumber || ''),
+        dealId: account?.quotationContext === 'deal'
+          ? (account?.sourceDealId || account?.source_deal_id || account?.dealId || account?.dealNumber || account?.accountNumber || '')
+          : '',
+        sourceDealId: account?.quotationContext === 'deal'
+          ? (account?.sourceDealId || account?.source_deal_id || account?.dealId || account?.dealNumber || account?.accountNumber || '')
+          : '',
         quotationContext: account?.quotationContext || (account?.sourceDealId || account?.dealId ? 'deal' : 'account'),
       }
 
-      if (contextParams.accountId || contextParams.dealId) {
+      const canLoadAccountContext = contextParams.quotationContext === 'deal'
+        ? Boolean(contextParams.dealId)
+        : hasPersistedAccountIdentity(account)
+
+      if ((contextParams.accountId || contextParams.dealId) && canLoadAccountContext) {
         const dbDetails = await quotationApi.getContextDetails(contextParams)
         if (dbDetails) {
-          const { savedRevisions = {}, locks = {}, autofill = {} } = dbDetails
+          const { savedRevisions = {}, locks = {}, autofill = {}, currentRevisionCode = null, quotationStatus = 'Open', nextRevisionCode: backendNextRevisionCode = null, nextRevisionAllowed = true } = dbDetails
 
-          const hasR0 = Boolean(savedRevisions.R0 !== '' && savedRevisions.R0 !== null && savedRevisions.R0 !== undefined && savedRevisions.R0 !== 0 && savedRevisions.R0 !== '0')
-          const hasR1 = Boolean(savedRevisions.R1 !== '' && savedRevisions.R1 !== null && savedRevisions.R1 !== undefined && savedRevisions.R1 !== 0 && savedRevisions.R1 !== '0')
-          const hasR2 = Boolean(savedRevisions.R2 !== '' && savedRevisions.R2 !== null && savedRevisions.R2 !== undefined && savedRevisions.R2 !== 0 && savedRevisions.R2 !== '0')
-          const hasR3 = Boolean(savedRevisions.R3 !== '' && savedRevisions.R3 !== null && savedRevisions.R3 !== undefined && savedRevisions.R3 !== 0 && savedRevisions.R3 !== '0')
+          const hasR0 = hasExplicitRevisionValue(savedRevisions.R0)
+          const hasR1 = hasExplicitRevisionValue(savedRevisions.R1)
+          const hasR2 = hasExplicitRevisionValue(savedRevisions.R2)
+          const hasR3 = hasExplicitRevisionValue(savedRevisions.R3)
+          const savedRevisionNumbers = Object.keys(savedRevisions)
+            .filter((code) => hasExplicitRevisionValue(savedRevisions[code]))
+            .map((code) => Number(String(code).replace(/\D/g, '')))
+            .filter((number) => Number.isFinite(number))
+          const savedRevisionSet = new Set(savedRevisionNumbers)
+          let nextRevisionNumber = 0
+          while (savedRevisionSet.has(nextRevisionNumber)) nextRevisionNumber += 1
+          const highestSavedRevision = savedRevisionNumbers.length > 0 ? Math.max(...savedRevisionNumbers) : null
+          const normalizedCurrentRevisionCode = highestSavedRevision !== null
+            ? `R${highestSavedRevision}`
+            : currentRevisionCode
+          const nextRevisionCode = nextRevisionAllowed === false
+            ? ''
+            : `R${nextRevisionNumber ?? 0}`
+          const isAccountQuotation = contextParams.quotationContext !== 'deal'
 
           setQuotationForm((current) => ({
             ...current,
@@ -1324,7 +1391,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
             email: autofill.email || current.email,
             gstin: autofill.gstin || current.gstin,
             stateCode: autofill.stateCode || current.stateCode,
-            r0Amount: hasR0 ? String(savedRevisions.R0) : current.r0Amount,
+            r0Amount: hasR0 ? String(savedRevisions.R0) : (isAccountQuotation ? '' : current.r0Amount),
             r1Amount: hasR1 ? String(savedRevisions.R1) : '',
             r2Amount: hasR2 ? String(savedRevisions.R2) : '',
             r3Amount: hasR3 ? String(savedRevisions.R3) : '',
@@ -1336,6 +1403,12 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
             savedR2InDb: hasR2,
             isR3Locked: locks.isR3Locked ?? hasR3,
             savedR3InDb: hasR3,
+            nextRevisionCode,
+            nextRevisionAmount: '',
+            savedRevisionAmounts: savedRevisions,
+            currentRevisionCode: normalizedCurrentRevisionCode,
+            quotationStatus,
+            nextRevisionAllowed,
           }))
         }
       }
@@ -1526,7 +1599,17 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
   const handleGenerateQuotation = async (event) => {
     event.preventDefault()
 
+    if (quotationForm.nextRevisionAllowed === false) {
+      setBuilderError('This quotation is approved and cannot receive another revision.')
+      return
+    }
+
     const isDealQuotation = quotationForm.quotationContext === 'deal' || (!quotationForm.selectedAccountId && quotationForm.clientAccountNumber)
+    const isAccountQuotation = quotationForm.quotationContext === 'account'
+    if (isAccountQuotation && !String(quotationForm.selectedAccountId || '').trim()) {
+      setBuilderError('A valid account must be selected before generating an account quotation.')
+      return
+    }
     if (!quotationForm.profileKey || (!quotationForm.selectedAccountId && !isDealQuotation)) {
       setBuilderError('Profile and account selection are required to generate a quotation.')
       return
@@ -1544,35 +1627,64 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
 
     const persistedLineItems = sanitizeLineItems(quotationForm.lineItems)
 
-    const lineItemsSum = persistedLineItems.reduce((total, lineItem) => total + lineItem.amount, 0)
-    const r0Num = Number(quotationForm.r0Amount) || 0
-    const r1Num = Number(quotationForm.r1Amount) || 0
-    const r2Num = Number(quotationForm.r2Amount) || 0
-    const r3Num = Number(quotationForm.r3Amount) || 0
+    const r0Num = toRevisionNumber(quotationForm.r0Amount)
+    const r1Num = toRevisionNumber(quotationForm.r1Amount)
+    const r2Num = toRevisionNumber(quotationForm.r2Amount)
+    const r3Num = toRevisionNumber(quotationForm.r3Amount)
+    const nextRevisionNum = toRevisionNumber(quotationForm.nextRevisionAmount)
 
-    let latestRevNum = 0
+    const requiredRevisionCode = quotationForm.nextRevisionCode
+      || (quotationForm.savedR2InDb || quotationForm.isR2Locked
+      ? 'R3'
+      : quotationForm.savedR1InDb || quotationForm.isR1Locked
+        ? 'R2'
+        : quotationForm.savedR0InDb || quotationForm.isR0Locked
+          ? 'R1'
+          : 'R0')
+    const requiredRevisionValue = {
+      R0: r0Num,
+      R1: r1Num,
+      R2: r2Num,
+      R3: r3Num,
+    }[requiredRevisionCode] ?? nextRevisionNum
+
+    if (requiredRevisionValue === undefined) {
+      setBuilderError(`${requiredRevisionCode} Amount is required.`)
+      return
+    }
+
+    let latestRevNum
     let revisionCodeVal = 'R0'
     let revisionNoVal = 0
 
-    if (quotationForm.r3Amount && Number(quotationForm.r3Amount) > 0) {
+    if (nextRevisionNum !== undefined && quotationForm.nextRevisionCode) {
+      latestRevNum = nextRevisionNum
+      revisionCodeVal = quotationForm.nextRevisionCode
+      revisionNoVal = Number(String(quotationForm.nextRevisionCode).replace(/\D/g, ''))
+    } else if (r3Num !== undefined) {
       latestRevNum = r3Num
       revisionCodeVal = 'R3'
       revisionNoVal = 3
-    } else if (quotationForm.r2Amount && Number(quotationForm.r2Amount) > 0) {
+    } else if (r2Num !== undefined) {
       latestRevNum = r2Num
       revisionCodeVal = 'R2'
       revisionNoVal = 2
-    } else if (quotationForm.r1Amount && Number(quotationForm.r1Amount) > 0) {
+    } else if (r1Num !== undefined) {
       latestRevNum = r1Num
       revisionCodeVal = 'R1'
       revisionNoVal = 1
-    } else if (quotationForm.r0Amount && Number(quotationForm.r0Amount) > 0) {
+    } else if (r0Num !== undefined) {
       latestRevNum = r0Num
       revisionCodeVal = 'R0'
       revisionNoVal = 0
     }
 
-    const grandTotal = latestRevNum > 0 ? latestRevNum : lineItemsSum
+    if (latestRevNum === undefined) {
+      setBuilderError(`${revisionCodeVal} Amount is required.`)
+      return
+    }
+
+    const grandTotal = latestRevNum
 
     const payload = {
       quotationNumber: quotationForm.quotationNumber.trim() || nextQuotationNumber,
@@ -1602,8 +1714,9 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       website: quotationForm.website,
       organizationTagline: quotationForm.organizationTagline,
       selectedAccountId: quotationForm.selectedAccountId,
+      dealId: quotationForm.dealId,
       selectedAccountOwner: quotationForm.selectedAccountOwner,
-      quotationContext: quotationForm.quotationContext || (quotationForm.selectedAccountId ? 'account' : 'deal'),
+      quotationContext: isAccountQuotation ? 'account' : (quotationForm.quotationContext || (quotationForm.selectedAccountId ? 'account' : 'deal')),
       architectName: quotationForm.architectName,
       pmcName: quotationForm.pmcName,
       quotationSubject: quotationForm.quotationSubject,
@@ -1619,7 +1732,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
         date: quotationForm.customerReferenceDate,
         subject: quotationForm.customerReferenceSubject,
       },
-      productGroup: quotationForm.productGroup || 'TTA',
+      productGroup: quotationForm.productGroup || 'Non TTA',
       ttaOrg: quotationForm.productGroup === 'TTA' ? (quotationForm.ttaOrg || 'Abp') : '',
       productName: quotationForm.productName || quotationForm.product || '',
       hsn: quotationForm.hsn || '',
@@ -1629,15 +1742,17 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       r1Amount: quotationForm.r1Amount,
       r2Amount: quotationForm.r2Amount,
       r3Amount: quotationForm.r3Amount,
-      revisionAmountR0: r0Num,
-      revisionAmountR1: r1Num,
-      revisionAmountR2: r2Num,
-      revisionAmountR3: r3Num,
+      ...(quotationForm.nextRevisionCode && nextRevisionNum !== undefined ? { [`${quotationForm.nextRevisionCode.toLowerCase()}Amount`]: quotationForm.nextRevisionAmount } : {}),
+      ...(r0Num !== undefined ? { revisionAmountR0: r0Num } : {}),
+      ...(r1Num !== undefined ? { revisionAmountR1: r1Num } : {}),
+      ...(r2Num !== undefined ? { revisionAmountR2: r2Num } : {}),
+      ...(r3Num !== undefined ? { revisionAmountR3: r3Num } : {}),
       quotationRevisionAmounts: {
-        ...(r0Num ? { R0: r0Num } : {}),
-        ...(r1Num ? { R1: r1Num } : {}),
-        ...(r2Num ? { R2: r2Num } : {}),
-        ...(r3Num ? { R3: r3Num } : {}),
+        ...(r0Num !== undefined ? { R0: r0Num } : {}),
+        ...(r1Num !== undefined ? { R1: r1Num } : {}),
+        ...(r2Num !== undefined ? { R2: r2Num } : {}),
+        ...(r3Num !== undefined ? { R3: r3Num } : {}),
+        ...(quotationForm.nextRevisionCode && nextRevisionNum !== undefined ? { [quotationForm.nextRevisionCode]: nextRevisionNum } : {}),
       },
       product: quotationForm.productName || quotationForm.product,
       otherProduct: quotationForm.otherProduct,
@@ -2864,8 +2979,12 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       placeholder="HSN / SAC Code"
                     />
                   </label>
+                  <div className="quotation-builder-field" style={{ alignSelf: 'end' }}>
+                    <span>Current Revision</span>
+                    <strong>{quotationForm.currentRevisionCode || 'R0'} · {quotationForm.quotationStatus || 'Open'}</strong>
+                  </div>
                   <label className="quotation-builder-field">
-                    <span>R0 Amount (₹)</span>
+                    <span>{quotationForm.currentRevisionCode === 'R0' ? 'Amount' : 'R0 Amount'}</span>
                     <input
                       type="number"
                       value={quotationForm.r0Amount || ''}
@@ -2876,7 +2995,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                   </label>
                   {Boolean(quotationForm.isR0Locked || quotationForm.savedR0InDb) && (
                     <label className="quotation-builder-field">
-                      <span>R1 Amount (₹)</span>
+                      <span>R1 Amount</span>
                       <input
                         type="number"
                         value={quotationForm.r1Amount || ''}
@@ -2888,7 +3007,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                   )}
                   {Boolean(quotationForm.isR1Locked || quotationForm.savedR1InDb) && (
                     <label className="quotation-builder-field">
-                      <span>R2 Amount (₹)</span>
+                      <span>R2 Amount</span>
                       <input
                         type="number"
                         value={quotationForm.r2Amount || ''}
@@ -2900,13 +3019,34 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                   )}
                   {Boolean(quotationForm.isR2Locked || quotationForm.savedR2InDb) && (
                     <label className="quotation-builder-field">
-                      <span>R3 Amount (₹)</span>
+                      <span>R3 Amount</span>
                       <input
                         type="number"
                         value={quotationForm.r3Amount || ''}
                         onChange={(event) => handleBuilderFieldChange('r3Amount', event.target.value)}
                         placeholder="R3 Amount"
                         readOnly={Boolean(quotationForm.isR3Locked || quotationForm.savedR3InDb)}
+                      />
+                    </label>
+                  )}
+                  {quotationForm.nextRevisionCode && Number(String(quotationForm.nextRevisionCode).replace(/\D/g, '')) >= 4 && quotationForm.nextRevisionAllowed !== false && (
+                    Object.entries(quotationForm.savedRevisionAmounts || {})
+                      .filter(([code]) => Number(String(code).replace(/\D/g, '')) >= 4)
+                      .map(([code, amount]) => (
+                        <label className="quotation-builder-field" key={code}>
+                          <span>{code} Amount</span>
+                          <input type="number" value={amount ?? ''} readOnly />
+                        </label>
+                      ))
+                  )}
+                  {quotationForm.nextRevisionCode && Number(String(quotationForm.nextRevisionCode).replace(/\D/g, '')) >= 4 && quotationForm.nextRevisionAllowed !== false && (
+                    <label className="quotation-builder-field">
+                      <span>{quotationForm.nextRevisionCode} Amount</span>
+                      <input
+                        type="number"
+                        value={quotationForm.nextRevisionAmount || ''}
+                        onChange={(event) => handleBuilderFieldChange('nextRevisionAmount', event.target.value)}
+                        placeholder={`${quotationForm.nextRevisionCode} Amount`}
                       />
                     </label>
                   )}

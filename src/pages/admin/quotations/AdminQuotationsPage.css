@@ -765,9 +765,9 @@
   border: 1px solid var(--border-subtle);
   border-radius: 2px;
   font-size: 0.75rem;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
-  background: #c7475e;
+  color: #111827;
+  -webkit-text-fill-color: #111827;
+  background: #ffffff;
   outline: none;
   box-sizing: border-box;
   transition: all 0.15s ease-out;
@@ -775,18 +775,18 @@
 
 .aqp-search-input:hover {
   border-color: rgba(255, 255, 255, 0.7);
-  background: #c7475e;
+  background: #ffffff;
 }
 
 .aqp-search-input:focus {
   border-color: #ffffff;
-  background: #c7475e;
+  background: #ffffff;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.22);
 }
 
 .aqp-search-input::placeholder {
-  color: rgba(255, 255, 255, 0.82);
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.82);
+  color: #6b7280;
+  -webkit-text-fill-color: #6b7280;
 }
 
 /* Data rows */

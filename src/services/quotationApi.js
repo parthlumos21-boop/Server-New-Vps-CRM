@@ -61,6 +61,7 @@ export const normalizeQuotationRecord = (quotation = {}) => {
     companyName: mergedQuotation.companyName || quotation.customerName || mergedQuotation.customerName || '',
     customerName: mergedQuotation.customerName || quotation.customerName || mergedQuotation.companyName || '',
     customerId: mergedQuotation.customerId || quotation.customerId || mergedQuotation.selectedAccountId || '',
+    dealId: mergedQuotation.dealId || quotation.dealId || persistedData.dealId || '',
     projectName: mergedQuotation.projectName || mergedQuotation.quotationSubject || '',
     architectName: mergedQuotation.architectName || '',
     pmcName: mergedQuotation.pmcName || '',

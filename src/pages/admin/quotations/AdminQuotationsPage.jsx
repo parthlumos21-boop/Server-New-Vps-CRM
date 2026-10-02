@@ -298,8 +298,8 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
         if (!prev) return null
         const updatedRevisions = Array.isArray(prev.raw?.revisions)
           ? prev.raw.revisions.map((r) => {
-              const rCode = r.revisionCode || (r.revisionNo ? `R${r.revisionNo}` : 'R1')
-              if (rCode === revCode || revCode === 'R1') {
+              const rCode = r.revisionCode || (r.revisionNo === 0 ? 'R0' : r.revisionNo ? `R${r.revisionNo}` : 'R0')
+              if (rCode === revCode) {
                 return { ...r, status: 'Approved' }
               }
               return r

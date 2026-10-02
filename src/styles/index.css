@@ -7123,7 +7123,13 @@ html:not([data-theme="dark"]) body #root :is(
   .deals-search-input,
   .deals-crm-search-input,
   .admin-accounts-toolbar-search-input,
+  .admin-accounts-filter-input,
   .admin-customers-search-input,
+  .admin-customers-grid-filter-input,
+  .deals-crm-filter-input,
+  .support-request-legacy-filter-row input,
+  .quotation-account-list-search-input,
+  .quotation-report-builder-filter-row input,
   th.search-th input,
   tr.search-row input,
   .search-row input,
@@ -7146,7 +7152,13 @@ html:not([data-theme="dark"]) body #root :is(
   .deals-search-input,
   .deals-crm-search-input,
   .admin-accounts-toolbar-search-input,
+  .admin-accounts-filter-input,
   .admin-customers-search-input,
+  .admin-customers-grid-filter-input,
+  .deals-crm-filter-input,
+  .support-request-legacy-filter-row input,
+  .quotation-account-list-search-input,
+  .quotation-report-builder-filter-row input,
   th.search-th input,
   tr.search-row input,
   .search-row input,
@@ -7157,4 +7169,69 @@ html:not([data-theme="dark"]) body #root :is(
   color: #64748b !important;
   -webkit-text-fill-color: #64748b !important;
   font-weight: 400 !important;
+}
+
+/* Final light-mode cascade for all table column filters. */
+html:not([data-theme="dark"]) body #root table input:is(
+  .admin-accounts-filter-input,
+  .admin-customers-grid-filter-input,
+  .deals-crm-filter-input,
+  .deals-search-input,
+  .support-request-legacy-filter-row input,
+  .aqp-search-input,
+  .aqp-support-search-input,
+  .quotation-account-list-search-input,
+  .quotation-report-builder-filter-row input,
+  .table-filter-input
+) {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  caret-color: #111827 !important;
+}
+
+html:not([data-theme="dark"]) body #root table input[type="text"],
+html:not([data-theme="dark"]) body #root table input[type="search"] {
+  color: #111827 !important;
+  -webkit-text-fill-color: #111827 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  caret-color: #111827 !important;
+}
+
+/* Keep typed values readable when a table header supplies its own color. */
+html:not([data-theme="dark"]) body #root table thead input:not([type="checkbox"]),
+html:not([data-theme="dark"]) body #root table th input:not([type="checkbox"]) {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Explicitly cover the customer grid filter class used by both portals. */
+html body #root .admin-customers-grid-filter-input,
+html body #root .admin-accounts-filter-input,
+html body #root .deals-crm-filter-input,
+html body #root .deals-search-input {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html body #root input.admin-accounts-filter-input,
+html body #root input.admin-customers-grid-filter-input,
+html body #root input.deals-crm-filter-input,
+html body #root input.deals-search-input {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }

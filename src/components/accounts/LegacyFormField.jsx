@@ -120,7 +120,7 @@ const LegacyFormField = ({
       <div className={`legacy-form-row ${rowClassName}`.trim()}>
         <label
           htmlFor={name}
-          className={`legacy-form-label ${labelClassName}`.trim()}
+          className={`legacy-form-label ${required ? 'legacy-form-label--required' : ''} ${labelClassName}`.trim()}
         >
           {icon ? (
             <span className="legacy-form-icon-wrap">
@@ -145,7 +145,7 @@ const LegacyFormField = ({
     <div className={`legacy-form-field-stack ${rowClassName}`.trim()}>
       <label
         htmlFor={name}
-        className={`legacy-form-label ${labelClassName}`.trim()}
+        className={`legacy-form-label ${required ? 'legacy-form-label--required' : ''} ${labelClassName}`.trim()}
       >
         {icon ? (
           <span className="legacy-form-icon-wrap">

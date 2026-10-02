@@ -1082,11 +1082,15 @@ export const DataProvider = ({ children }) => {
       refreshQuotations().catch(() => {})
       return { success: true, data: quotation }
     } catch (error) {
-      const message = getErrorMessage(error, 'Unable to create quotation.')
       const responseData = error?.response?.data || {}
       const code = responseData.code || responseData.details?.code || ''
       const details = responseData.details || null
       const status = error?.response?.status || 0
+      const message = responseData.message
+        || responseData.error?.message
+        || (typeof responseData.error === 'string' ? responseData.error : '')
+        || details?.message
+        || getErrorMessage(error, 'Unable to create quotation.')
       setQuotationsError(message)
       return { success: false, message, code, details, status }
     }
