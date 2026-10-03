@@ -76,17 +76,9 @@
   align-items: center;
 }
 
-.analytics-filter-icon {
-  position: absolute;
-  left: 0.75rem;
-  color: #dc2626;
-  font-size: 0.8rem;
-  pointer-events: none;
-  z-index: 2;
-}
-
 .analytics-select {
-  padding: 0.45rem 2rem 0.45rem 2.2rem;
+  min-width: 9rem;
+  padding: 0.45rem 2rem 0.45rem 0.85rem;
   border: 1px solid #f0eae1;
   border-radius: 10px;
   background: #ffffff;
@@ -287,7 +279,9 @@
 
 .analytics-card table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 0.85rem;
 }
 
@@ -308,11 +302,38 @@
   padding: 0.85rem 1.1rem;
   border-bottom: 1px solid #f1f5f9 !important;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: #0f172a !important;
   font-size: 0.85rem;
   font-weight: 600;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+.analytics-card th.analytics-col-account,
+.analytics-card td.analytics-col-account {
+  width: 34%;
+}
+
+.analytics-card th.analytics-col-contact,
+.analytics-card td.analytics-col-contact {
+  width: 28%;
+}
+
+.analytics-card th.analytics-col-industry,
+.analytics-card td.analytics-col-industry {
+  width: 22%;
+}
+
+.analytics-card th.analytics-col-status,
+.analytics-card td.analytics-col-status {
+  width: 16%;
+  text-align: center;
+}
+
+.analytics-card td.analytics-col-status {
+  overflow: visible;
 }
 
 .analytics-card tbody tr {

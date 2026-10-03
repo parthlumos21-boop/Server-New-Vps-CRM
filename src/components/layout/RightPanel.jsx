@@ -152,7 +152,7 @@ const RightPanel = () => {
   const isDemo = !user || user?.name?.toLowerCase().includes('demo')
   const nowLabel = formatDateTime(now)
   const liveActivityLog = buildLiveEntries(onlineUsers, activities, nowLabel)
-  const activityLog = isDemo ? DEMO_ACTIVITY : (liveActivityLog.length > 0 ? liveActivityLog : DEMO_ACTIVITY)
+  const activityLog = isDemo ? DEMO_ACTIVITY : liveActivityLog
   const supportActions = buildSupportActions(isAdmin, integrationStatus, isLoadingIntegrations)
 
   const handleActionClick = async (action) => {
@@ -197,7 +197,7 @@ const RightPanel = () => {
           <button
             type="button"
             className="rp-ticket-add-btn"
-            onClick={() => navigate(isAdmin ? '/admin/tickets' : '/tickets')}
+            onClick={() => navigate(isAdmin ? '/admin/tickets' : '/support-requests/add')}
           >
             <span className="rp-ticket-add-btn__icon">
               <FaTicketAlt />
@@ -217,7 +217,11 @@ const RightPanel = () => {
         </div>
 
         <div className="right-panel-activity">
-          {activityLog.map((entry) => {
+          {activityLog.length === 0 ? (
+            <div className="rp-entry rp-entry--empty">
+              <p className="rp-entry-text">No live activity available right now.</p>
+            </div>
+          ) : activityLog.map((entry) => {
             const badge = getActivityBadge(entry.action)
 
             return (

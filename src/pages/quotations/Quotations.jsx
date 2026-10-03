@@ -355,6 +355,10 @@ const createInitialQuotationForm = () => ({
   otherProduct: '',
   otherService: '',
   uploadedLineItemsName: '',
+  uploadedQuotationFile: null,
+  uploadedQuotationFileName: '',
+  uploadedQuotationFileSize: 0,
+  uploadedQuotationFileType: '',
   selectedAccountId: '',
   dealId: '',
   nextRevisionCode: '',
@@ -1573,27 +1577,17 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const file = event.target.files?.[0]
     if (!file) return
 
-    try {
-      const fileContent = await file.text()
-      const parsedLineItems = parseUploadedLineItems(fileContent)
-
-      if (parsedLineItems.length === 0) {
-        setBuilderError('No valid line items were found in the uploaded file.')
-        return
-      }
-
-      setQuotationForm((currentForm) => ({
-        ...currentForm,
-        uploadedLineItemsName: file.name,
-        lineItems: parsedLineItems,
-      }))
-      setBuilderError('')
-      setBuilderMessage(`${parsedLineItems.length} line item(s) imported from ${file.name}.`)
-    } catch (error) {
-      setBuilderError(error.message || 'Unable to read the uploaded line items file.')
-    } finally {
-      event.target.value = null
-    }
+    setQuotationForm((currentForm) => ({
+      ...currentForm,
+      uploadedLineItemsName: file.name,
+      uploadedQuotationFile: file,
+      uploadedQuotationFileName: file.name,
+      uploadedQuotationFileSize: file.size || 0,
+      uploadedQuotationFileType: file.type || '',
+    }))
+    setBuilderError('')
+    setBuilderMessage(`${file.name} attached to this quotation.`)
+    event.target.value = null
   }
 
   const handleGenerateQuotation = async (event) => {
@@ -1758,6 +1752,9 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       otherProduct: quotationForm.otherProduct,
       otherService: quotationForm.otherService,
       uploadedLineItemsName: quotationForm.uploadedLineItemsName,
+      uploadedQuotationFileName: quotationForm.uploadedQuotationFileName || quotationForm.uploadedLineItemsName || '',
+      uploadedQuotationFileSize: quotationForm.uploadedQuotationFileSize || 0,
+      uploadedQuotationFileType: quotationForm.uploadedQuotationFileType || '',
       lineItems: persistedLineItems,
     }
 
@@ -1791,6 +1788,16 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
         addNotification('warning', 'Duplicate quotation', message)
       }
       return
+    }
+
+    if (quotationForm.uploadedQuotationFile && result.data?.id) {
+      try {
+        const revisionCode = result.data.revisionCode || (result.data.revisionNo === 0 ? 'R0' : result.data.revisionNo ? `R${result.data.revisionNo}` : 'R0')
+        const uploadResult = await quotationApi.uploadQuotationAttachment(result.data.id, quotationForm.uploadedQuotationFile, revisionCode)
+        if (uploadResult?.quotation) result.data = uploadResult.quotation
+      } catch (error) {
+        addNotification('warning', 'Attachment not saved', error.response?.data?.message || error.message || 'Quotation was created, but the attachment could not be stored.')
+      }
     }
 
     const generatedQuotation = result.data || payload
@@ -2900,7 +2907,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
           <input
             ref={lineItemsUploadRef}
             type="file"
-            accept=".csv,.txt"
+            accept=".pdf,.xls,.xlsx"
             className="quotation-builder-hidden-input"
             onChange={handleUploadLineItems}
           />

@@ -9,7 +9,6 @@ import {
   FaChartLine,
   FaChartPie,
   FaFileInvoiceDollar,
-  FaFilter,
   FaHandshake,
   FaHistory,
   FaRegClock,
@@ -117,7 +116,6 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
           </div>
 
           <div className="analytics-filter-wrap">
-            <FaFilter className="analytics-filter-icon" />
             <select
               value={period}
               onChange={(event) => setPeriod(event.target.value)}
@@ -338,19 +336,19 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
               <table>
                 <thead>
                   <tr>
-                    <th>Account</th>
-                    <th>Contact Person</th>
-                    <th>Industry</th>
-                    <th>Status</th>
+                    <th className="analytics-col-account">Account</th>
+                    <th className="analytics-col-contact">Contact Person</th>
+                    <th className="analytics-col-industry">Industry</th>
+                    <th className="analytics-col-status">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.slice(0, 8).map((account) => (
                     <tr key={account.id || account._id}>
-                      <td className="analytics-td-bold">{account.name || '-'}</td>
-                      <td>{account.contactPerson || '-'}</td>
-                      <td>{account.industryType || '-'}</td>
-                      <td>
+                      <td className="analytics-td-bold analytics-col-account">{account.name || '-'}</td>
+                      <td className="analytics-col-contact">{account.contactPerson || '-'}</td>
+                      <td className="analytics-col-industry">{account.industryType || '-'}</td>
+                      <td className="analytics-col-status">
                         <Badge variant={getStatusColor(account.status || account.stage)}>
                           {account.status || account.stage || 'Active'}
                         </Badge>

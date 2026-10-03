@@ -108,6 +108,16 @@ export const quotationApi = {
     return normalizeQuotationRecord(response.data)
   },
 
+  async uploadQuotationAttachment(quotationId, file, revisionCode = '') {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (revisionCode) formData.append('revisionCode', revisionCode)
+    const response = await apiClient.post(`/quotations/${encodeURIComponent(quotationId)}/attachment`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data?.data || response.data
+  },
+
   async approveQuotation(id, payload = {}) {
     const response = await apiClient.post(`/quotations/${encodeURIComponent(id)}/approve`, payload)
     return normalizeQuotationRecord(response.data)

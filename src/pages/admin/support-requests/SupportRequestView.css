@@ -8,6 +8,7 @@
   padding: 0.75rem 1rem 1.5rem;
   background: var(--surface-app, #f8fafc);
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .sr-status-board-shell {
@@ -19,6 +20,7 @@
   background: var(--surface-card, #ffffff);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   overflow: hidden;
+  max-width: 100%;
 }
 
 /* ── Top Header / Toolbar ────────────────────────────────────────────────── */
@@ -33,6 +35,7 @@
   border-bottom: 1px solid var(--border-subtle, #e2e8f0);
   background: var(--surface-app, #f8fafc);
   flex-wrap: wrap;
+  align-items: flex-start;
 }
 
 .sr-toolbar-title-block {
@@ -101,6 +104,7 @@
   justify-content: flex-end;
   gap: 0.65rem;
   flex-wrap: wrap;
+  min-width: 280px;
 }
 
 /* ── Live Search Bar ─────────────────────────────────────────────────────── */
@@ -108,8 +112,9 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: clamp(220px, 24vw, 320px);
   min-width: 220px;
-  max-width: 280px;
+  max-width: 100%;
 }
 
 .sr-search-icon {

@@ -843,9 +843,15 @@ const AdminPanel = () => {
                     className={`ap-todo-row ap-todo-row--${item.type.toLowerCase().replace(/[^a-z]/g, '')}`}
                     onClick={item.onClick}
                   >
-                    <div className={`ap-todo-icon-box ap-todo-icon-box--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}>
+                    <button
+                      type="button"
+                      className={`ap-todo-icon-box ap-todo-icon-box--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}
+                      onClick={item.onClick}
+                      aria-label={`Open ${item.type}`}
+                      title={`Open ${item.type}`}
+                    >
                       <FaCalendarAlt />
-                    </div>
+                    </button>
                     <div className="ap-todo-body">
                       <div className="ap-todo-meta-line">
                         <span className={`ap-todo-badge ap-todo-badge--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}>

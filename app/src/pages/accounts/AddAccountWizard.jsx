@@ -224,7 +224,10 @@ const AddAccountWizard = () => {
     }
   }
 
-  const handleNext = () => {
+  const handleNext = (event) => {
+    event?.preventDefault?.()
+    event?.stopPropagation?.()
+
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
       setValidationNotice([])
@@ -239,6 +242,13 @@ const AddAccountWizard = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    event.stopPropagation()
+
+    if (currentStep < 1) {
+      handleNext(event)
+      return
+    }
+
     const validationErrors = validateAllSteps()
 
     if (Object.keys(validationErrors).length > 0) {
@@ -349,6 +359,12 @@ const AddAccountWizard = () => {
     <div className="add-account-landscape-page">
       <form
         onSubmit={handleSubmit}
+        onSubmitCapture={(event) => {
+          if (currentStep < 1) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }}
         className="add-account-landscape-form"
       >
         <WizardStepper

@@ -503,7 +503,10 @@ const AddAccountWizard = () => {
     setValidationNotice([])
   }
 
-  const handleNext = () => {
+  const handleNext = (event) => {
+    event?.preventDefault?.()
+    event?.stopPropagation?.()
+
     if (!validateStep(currentStep)) {
       triggerErrorScroll()
       return
@@ -528,6 +531,13 @@ const AddAccountWizard = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    event.stopPropagation()
+
+    if (currentStep < steps.length - 1) {
+      handleNext(event)
+      return
+    }
+
     const validationErrors = validateAllSteps()
 
     if (Object.keys(validationErrors).length > 0) {
@@ -770,6 +780,12 @@ const AddAccountWizard = () => {
     <div className="add-account-landscape-page">
       <form
         onSubmit={handleSubmit}
+        onSubmitCapture={(event) => {
+          if (currentStep < steps.length - 1) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
             e.preventDefault()
@@ -1032,8 +1048,8 @@ const AddAccountWizard = () => {
               <button
                 type="button"
                 onClick={handleNext}
-              className="add-account-landscape-button add-account-landscape-button-primary"
-            >
+                className="add-account-landscape-button add-account-landscape-button-primary"
+              >
                 Next <span aria-hidden="true">-&gt;</span>
               </button>
             ) : (

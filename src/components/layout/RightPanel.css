@@ -43,6 +43,10 @@
 
 .right-panel-section--activity {
   padding: 1.15rem !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: clamp(420px, 58vh, 640px);
   overflow: hidden;
 }
 
@@ -167,9 +171,11 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  flex: 1 1 auto;
+  min-height: 0;
   padding-left: 0.2rem;
   padding-right: 0.5rem;
-  max-height: clamp(340px, 50vh, 520px);
+  max-height: none;
   overflow-y: auto;
   scroll-behavior: smooth;
   overscroll-behavior: contain;
@@ -241,6 +247,22 @@
   transform: translateX(3px) !important;
   border-color: #c60016 !important;
   box-shadow: 0 4px 14px rgba(198, 0, 22, 0.12) !important;
+}
+
+.rp-entry--empty {
+  padding: 1rem !important;
+  color: #64748b !important;
+}
+
+.rp-entry--empty::before {
+  display: none;
+}
+
+.rp-entry--empty .rp-entry-text {
+  margin: 0;
+  color: #64748b !important;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 /* Activity Badges */

@@ -357,9 +357,15 @@ const UserDashboardPage = () => {
           <div className="ud-todo-list ud-todo-list--expansive">
             {displayedTodoItems.length > 0 ? displayedTodoItems.map((item) => (
               <div key={item.id} className={`ud-todo-row ud-todo-row--${item.type.toLowerCase().replace(/[^a-z]/g, '')}`} onClick={item.onClick}>
-                <div className={`ud-todo-icon-box ud-todo-icon-box--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}>
+                <button
+                  type="button"
+                  className={`ud-todo-icon-box ud-todo-icon-box--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}
+                  onClick={item.onClick}
+                  aria-label={`Open ${item.type}`}
+                  title={`Open ${item.type}`}
+                >
                   <FaCalendarAlt />
-                </div>
+                </button>
                 <div className="ud-todo-body">
                   <div className="ud-todo-meta-line">
                     <span className={`ud-todo-badge ud-todo-badge--${item.type.toLowerCase().includes('reminder') ? 'reminder' : item.type.toLowerCase().includes('task') ? 'task' : 'reply'}`}>
@@ -422,7 +428,7 @@ const UserDashboardPage = () => {
             </div>
           </div>
           <div className="ud-integrations-grid">
-            <div className="ud-integration-box" onClick={() => navigate('/support-requests/help')}>
+            <div className="ud-integration-box" onClick={() => navigate('/support-requests/add')}>
               <div className="ud-integ-icon-box ud-integ-icon-box--red">
                 <FaHeadset />
               </div>

@@ -582,6 +582,16 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
       return
     }
 
+    if (uploadQuotationForm.quoteFile && result.data?.id) {
+      try {
+        const revisionCode = result.data.revisionCode || (result.data.revisionNo === 0 ? 'R0' : result.data.revisionNo ? `R${result.data.revisionNo}` : 'R0')
+        await quotationApi.uploadQuotationAttachment(result.data.id, uploadQuotationForm.quoteFile, revisionCode)
+        await refreshQuotations?.()
+      } catch (error) {
+        addNotification('warning', 'Attachment not saved', error.response?.data?.message || error.message || 'Quotation was created, but the attachment could not be stored.')
+      }
+    }
+
     addNotification('success', 'Success', 'Quotation uploaded successfully.')
     setHasUploadedQuotation(true)
     setActiveTab('account')
@@ -1736,21 +1746,6 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
                 <FaPrint className="aqp-btn-icon" />
                 Print
               </button>
-              <ExcelExportMenuButton
-                label="Excel"
-                title="Export quotation to Excel"
-                className="quotation-view-export"
-                buttonClassName="aqp-btn aqp-btn--gray"
-                menuClassName="quotation-view-export-menu"
-                items={[
-                  {
-                    key: 'quotation-single-excel',
-                    label: 'Export to Excel .xlsx',
-                    badge: 'XLSX',
-                    onClick: () => handleExportSingleQuotation(viewDocument),
-                  },
-                ]}
-              />
             </div>
           </div>
           <div className="aqp-view-quotation-document">

@@ -331,6 +331,17 @@
   font-weight: 800;
 }
 
+.legacy-form-error-message,
+.add-account-landscape-form .legacy-form-error-message,
+.add-account-landscape-page .legacy-form-error-message,
+html body #root .add-account-landscape-page .legacy-form-error-message,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-page .legacy-form-error-message,
+html body #root :is(.layout--admin, .layout--user) .add-account-landscape-form p.legacy-form-error-message {
+  color: #c60016 !important;
+  -webkit-text-fill-color: #c60016 !important;
+  font-weight: 800 !important;
+}
+
 .legacy-form-control,
 .add-account-landscape-section .legacy-form-control {
   width: 100%;

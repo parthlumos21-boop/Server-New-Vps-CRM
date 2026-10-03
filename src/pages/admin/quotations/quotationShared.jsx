@@ -32,6 +32,7 @@ import { exportExcelWorkbook, exportCsvWorkbook } from '../../../utils/excelExpo
 import { formatCurrency } from '../../../utils/helpers'
 import { customViewApi } from '../../../services/customViewApi'
 import { quotationApi } from '../../../services/quotationApi'
+import apiClient from '../../../services/apiClient'
 import { ExcelExportActionButton, ExcelExportMenuButton } from '../../../components/common/ExcelExportButton'
 import './AdminQuotationsPage.css'
 
@@ -272,6 +273,82 @@ export const getUploadQuotationFileExtension = (fileName = '') => {
 
 export const validateUploadQuotationFile = (file) => {
   return ''
+}
+
+const getRevisionCode = (record = {}) => (
+  record.revisionCode || (record.revisionNo === 0 ? 'R0' : record.revisionNo ? `R${record.revisionNo}` : '')
+)
+
+const readQuotationAttachmentFields = (source = {}) => {
+  const data = source?.data && typeof source.data === 'object' ? source.data : {}
+  const attachmentId = source.uploadedQuotationAttachmentId || source.quotationAttachmentId || source.attachmentId
+    || data.uploadedQuotationAttachmentId || data.quotationAttachmentId || data.attachmentId
+  const filePath = source.uploadedQuotationFilePath || source.quotationFilePath || source.uploadedQuotationStoragePath
+    || data.uploadedQuotationFilePath || data.quotationFilePath || data.uploadedQuotationStoragePath
+  const fileName = source.uploadedQuotationFileName || source.quotationFileName || source.uploadedLineItemsName
+    || data.uploadedQuotationFileName || data.quotationFileName || data.uploadedLineItemsName
+
+  if (!attachmentId && !filePath && !fileName) return null
+
+  return {
+    attachmentId,
+    filePath,
+    fileName,
+    fileType: source.uploadedQuotationFileType || source.quotationFileType || data.uploadedQuotationFileType || data.quotationFileType || '',
+    fileSize: source.uploadedQuotationFileSize || source.quotationFileSize || data.uploadedQuotationFileSize || data.quotationFileSize || 0,
+  }
+}
+
+const getQuotationAttachment = (revision = {}) => {
+  if (revision.attachment?.fileName || revision.attachment?.filePath || revision.attachment?.attachmentId) {
+    return revision.attachment
+  }
+
+  const rawRecord = revision.rawRecord || {}
+  const raw = rawRecord.raw || revision.raw || rawRecord || {}
+  const rawRecordData = rawRecord.data || {}
+  const rawData = raw.data || {}
+  const revItem = revision.revItem || {}
+  const revCode = revision.revisionCode || getRevisionCode(revItem) || getRevisionCode(raw) || getRevisionCode(rawData) || 'R0'
+  const rawCode = getRevisionCode(raw) || getRevisionCode(rawData) || getRevisionCode(rawRecord) || getRevisionCode(rawRecordData) || 'R0'
+  const candidates = [
+    revItem,
+    revision,
+    rawRecord,
+    rawRecordData,
+    rawCode === revCode ? raw : null,
+    rawCode === revCode ? rawData : null,
+  ].filter(Boolean)
+
+  for (const source of candidates) {
+    const attachment = readQuotationAttachmentFields(source)
+    if (attachment) {
+      return {
+        ...attachment,
+        revisionCode: revCode,
+        quotationId: raw.id || raw._id || raw.legacyId || revision.rawRecord?.id || revision.rawRecord?._id || '',
+      }
+    }
+  }
+
+  return null
+}
+
+const openQuotationAttachment = async (attachment) => {
+  if (!attachment?.quotationId) {
+    window.alert('This revision has attachment details, but no quotation file route is available.')
+    return
+  }
+
+  const revisionCode = attachment.revisionCode || 'R0'
+  const response = await apiClient.get(`/quotations/${encodeURIComponent(attachment.quotationId)}/revisions/${encodeURIComponent(revisionCode)}/attachment/view`, {
+    responseType: 'blob',
+  })
+  const contentType = response.headers?.['content-type'] || attachment.fileType || 'application/octet-stream'
+  const blob = new Blob([response.data], { type: contentType })
+  const blobUrl = window.URL.createObjectURL(blob)
+  window.open(blobUrl, '_blank', 'noopener,noreferrer')
+  window.setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000)
 }
 
 export const getProfileFallback = (quotation = {}) => {
@@ -1858,6 +1935,21 @@ export function RevisionsListModal({
     const ownerName = q.owner || q.raw?.selectedAccountOwner || q.raw?.accountOwner || row.owner || '-'
     const projName = q.project || q.raw?.projectName || row.project || '-'
     const compName = q.company || q.raw?.companyName || q.raw?.customerName || row.company || '-'
+    const qRaw = q.raw || q
+    const qRawData = qRaw.data || {}
+    const qRevisionCode = getRevisionCode(qRaw) || getRevisionCode(qRawData) || 'R0'
+    const qAttachment = readQuotationAttachmentFields(qRaw) || readQuotationAttachmentFields(qRawData)
+    const withRevisionAttachment = (revCode, revItem = {}) => {
+      const revAttachment = readQuotationAttachmentFields(revItem)
+      const attachment = revAttachment || (qRevisionCode === revCode ? qAttachment : null)
+      return attachment
+        ? {
+          ...attachment,
+          revisionCode: revCode,
+          quotationId: qRaw.id || qRaw._id || qRaw.legacyId || q.id || q._id || '',
+        }
+        : null
+    }
 
     if (qRevisions) {
       qRevisions.forEach((revItem) => {
@@ -1871,6 +1963,7 @@ export function RevisionsListModal({
         const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
         const statusVal = revItem.status || q.raw?.status || q.status || 'Open'
         const dateVal = revItem.date || q.date || q.raw?.quotationDate || '-'
+        const attachment = withRevisionAttachment(revCode, revItem)
 
         revisionRowsMap.set(revCode, {
           key: revCode,
@@ -1883,6 +1976,7 @@ export function RevisionsListModal({
           amountLabel: amtLabel,
           status: statusVal,
           project: projName,
+          attachment,
           rawRecord: q,
           revItem,
         })
@@ -1898,6 +1992,7 @@ export function RevisionsListModal({
       const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
       const statusVal = q.raw?.status || q.status || 'Open'
       const dateVal = q.date || q.raw?.quotationDate || '-'
+      const attachment = withRevisionAttachment(revCode)
 
       revisionRowsMap.set(revCode, {
         key: revCode,
@@ -1910,6 +2005,7 @@ export function RevisionsListModal({
         amountLabel: amtLabel,
         status: statusVal,
         project: projName,
+        attachment,
         rawRecord: q,
       })
     }
@@ -1977,6 +2073,7 @@ export function RevisionsListModal({
               ))}
               <th style={{ padding: '12px 14px' }}>Status</th>
               <th style={{ padding: '12px 14px' }}>Project</th>
+              <th style={{ padding: '12px 14px', textAlign: 'center' }}>Attachment</th>
               <th style={{ padding: '12px 14px', textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
@@ -1984,6 +2081,7 @@ export function RevisionsListModal({
             {revisionRowsList.map((rev) => {
               const isApproved = String(rev.status || '').toLowerCase() === 'approved'
               const revRowCodeNum = Number(rev.revisionCode.replace(/\D/g, '')) || 1
+              const attachment = getQuotationAttachment(rev)
 
               return (
                 <tr
@@ -2030,6 +2128,25 @@ export function RevisionsListModal({
                     <StatusBadge status={rev.status} />
                   </td>
                   <td style={{ padding: '12px 14px' }}>{rev.project || '-'}</td>
+                  <td style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {attachment?.fileName ? (
+                      <button
+                        type="button"
+                        className="aqp-btn aqp-btn--secondary aqp-btn--sm"
+                        title={attachment.fileName}
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          try {
+                            await openQuotationAttachment(attachment)
+                          } catch (error) {
+                            window.alert(error.response?.data?.message || error.message || 'Unable to open attachment.')
+                          }
+                        }}
+                      >
+                        <FaEye /> View
+                      </button>
+                    ) : '-'}
+                  </td>
                   <td style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                       <button

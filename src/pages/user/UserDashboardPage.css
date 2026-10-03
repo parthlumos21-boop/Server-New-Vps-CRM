@@ -336,12 +336,15 @@
   justify-content: center;
   width: 2.85rem;
   height: 2.85rem;
+  padding: 0;
+  border: 0;
   border-radius: 12px;
   font-size: 1.15rem;
   flex-shrink: 0;
   transition: transform 0.2s ease;
   background: #c60016 !important;
   color: #ffffff !important;
+  cursor: pointer;
 }
 
 .ud-todo-icon-box svg {

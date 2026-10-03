@@ -660,6 +660,39 @@ const quotationService = createCrudService({
   buildPayload,
 })
 
+const resolveQuotationRevisionCode = (record = {}) => (
+  record.revisionCode || (record.revisionNo === 0 ? 'R0' : record.revisionNo ? `R${record.revisionNo}` : 'R0')
+)
+
+const readAttachmentFields = (source = {}) => {
+  const data = source?.data && typeof source.data === 'object' ? source.data : {}
+  const storagePath = source.uploadedQuotationFilePath || source.quotationFilePath || source.uploadedQuotationStoragePath
+    || data.uploadedQuotationFilePath || data.quotationFilePath || data.uploadedQuotationStoragePath
+  const fileName = source.uploadedQuotationFileName || source.quotationFileName || source.uploadedLineItemsName
+    || data.uploadedQuotationFileName || data.quotationFileName || data.uploadedLineItemsName
+  const fileType = source.uploadedQuotationFileType || source.quotationFileType || data.uploadedQuotationFileType || data.quotationFileType || ''
+  const fileSize = source.uploadedQuotationFileSize || source.quotationFileSize || data.uploadedQuotationFileSize || data.quotationFileSize || 0
+
+  if (!storagePath && !fileName) return null
+  return { storagePath, fileName, fileType, fileSize }
+}
+
+const buildAttachmentMetadata = (file = {}) => ({
+  uploadedLineItemsName: file.originalname || file.filename || '',
+  uploadedQuotationFileName: file.originalname || file.filename || '',
+  uploadedQuotationFileSize: file.size || 0,
+  uploadedQuotationFileType: file.mimetype || '',
+  uploadedQuotationFilePath: file.storagePath || file.filename || '',
+})
+
+const mergeRevisionAttachment = (revisions, revisionCode, metadata) => {
+  if (!Array.isArray(revisions)) return revisions
+  return revisions.map((revision) => {
+    const code = resolveQuotationRevisionCode(revision)
+    return code === revisionCode ? { ...revision, ...metadata } : revision
+  })
+}
+
 const applyStrictIsolation = (actor) => {
   const email = String(actor?.email || '').toLowerCase().trim()
   if (email === 'keval@swatiswitchgears.com') return { ...actor, role: 'admin' }
@@ -668,7 +701,69 @@ const applyStrictIsolation = (actor) => {
 
 module.exports = {
   ...quotationService,
+  saveQuotationAttachment: async (actor, id, file, payload = {}) => {
+    const existing = await quotationService.get(actor, id)
+    if (!file) {
+      throw new AppError('No quotation attachment uploaded.', 400)
+    }
+
+    const revisionCode = payload.revisionCode || resolveQuotationRevisionCode(existing)
+    const metadata = buildAttachmentMetadata(file)
+    const existingRevisions = Array.isArray(existing.revisions)
+      ? existing.revisions
+      : (Array.isArray(existing.data?.revisions) ? existing.data.revisions : null)
+    const updatedRevisions = mergeRevisionAttachment(existingRevisions, revisionCode, metadata)
+
+    const updated = await quotationService.update(actor, id, {
+      ...metadata,
+      ...(updatedRevisions ? { revisions: updatedRevisions } : {}),
+    })
+
+    return {
+      quotation: updated,
+      attachment: {
+        revisionCode,
+        ...metadata,
+      },
+    }
+  },
+  getQuotationAttachmentForView: async (actor, id, revisionCode = '') => {
+    const quotation = await quotationService.get(actor, id)
+    const requestedRevisionCode = revisionCode || resolveQuotationRevisionCode(quotation)
+    const revisions = Array.isArray(quotation.revisions)
+      ? quotation.revisions
+      : (Array.isArray(quotation.data?.revisions) ? quotation.data.revisions : [])
+    const revision = revisions.find((item) => resolveQuotationRevisionCode(item) === requestedRevisionCode) || null
+    const quotationCode = resolveQuotationRevisionCode(quotation)
+    const candidates = [
+      revision,
+      quotationCode === requestedRevisionCode ? quotation : null,
+      quotationCode === requestedRevisionCode ? quotation.data : null,
+    ].filter(Boolean)
+
+    for (const source of candidates) {
+      const attachment = readAttachmentFields(source)
+      if (attachment?.storagePath) {
+        return {
+          quotation,
+          revisionCode: requestedRevisionCode,
+          ...attachment,
+        }
+      }
+    }
+
+    const hasMetadataOnly = candidates.some((source) => readAttachmentFields(source)?.fileName)
+    throw new AppError(
+      hasMetadataOnly
+        ? 'Quotation attachment metadata exists, but the stored file is not available.'
+        : 'Quotation attachment not found.',
+      hasMetadataOnly ? 410 : 404
+    )
+  },
   create: async (actor, payload) => {
+    const uploadQuotationAmount = isUploadQuotationPayload(payload)
+      ? toExplicitNumber(payload.totalAmount) ?? toExplicitNumber(payload.amount)
+      : undefined
     const allQuotes = await quotationRepository.listAll()
     const targetCustId = String(payload.customerId || payload.selectedAccountId || payload.data?.selectedAccountId || payload.data?.customerId || '').trim()
     const targetQuoteNo = String(payload.quoteNumber || payload.quotationNumber || payload.data?.quotationNumber || payload.data?.quoteNumber || '').trim()
@@ -714,7 +809,7 @@ module.exports = {
       const currentRevNo = savedRevisionNumbers.length > 0 ? Math.max(...savedRevisionNumbers) : -1
       const nextRevNo = currentRevNo + 1
       const nextRevCode = `R${nextRevNo}`
-      const newAmount = toExplicitNumber(payload[`r${nextRevNo}Amount`])
+      const newAmount = toExplicitNumber(payload[`r${nextRevNo}Amount`]) ?? uploadQuotationAmount
       if (newAmount === undefined) {
         throw new AppError(`${nextRevCode} Amount is required to create the next quotation revision.`, 400)
       }
@@ -791,7 +886,7 @@ module.exports = {
       return updatedResult
     }
 
-    const initialAmount = toExplicitNumber(payload.r0Amount) ?? toExplicitNumber(payload.revisionAmountR0)
+    const initialAmount = toExplicitNumber(payload.r0Amount) ?? toExplicitNumber(payload.revisionAmountR0) ?? uploadQuotationAmount
     if (initialAmount === undefined) {
       throw new AppError('R0 Amount is required to create the first quotation revision.', 400)
     }

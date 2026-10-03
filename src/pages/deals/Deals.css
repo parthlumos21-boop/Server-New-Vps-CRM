@@ -3556,3 +3556,15 @@ html body .deals-crm-owner-filter select option {
   stroke: currentColor !important;
   -webkit-text-fill-color: #ffffff !important;
 }
+.deals-ownerwise-toolbar-icon svg,
+.deals-board-toolbar-icon svg,
+.deals-board-toolbar-button svg {
+  display: inline-block !important;
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  color: currentColor !important;
+  fill: currentColor !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
