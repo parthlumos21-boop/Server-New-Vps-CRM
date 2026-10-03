@@ -4,7 +4,7 @@ const { AppError } = require('../utils/appError')
 
 const chartService = {
   listTemplates: async (actor) => {
-    return chartRepository.listTemplates(actor.companyId || 1)
+    return chartRepository.listTemplates(actor)
   },
   createTemplate: async (actor, payload) => {
     if (!payload.templateKey || !payload.name || !payload.entity) {
@@ -14,7 +14,7 @@ const chartService = {
       ...payload,
       companyId: actor.companyId || 1,
       createdBy: actor.id,
-      createdByEmail: actor.email || '',
+      createdByEmail: String(actor.email || '').trim().toLowerCase(),
       createdByName: actor.name || actor.username || '',
     })
   },
@@ -35,7 +35,7 @@ const chartService = {
 
     const companyId = actor.companyId || 1
     const createdBy = actor.id || 16
-    const createdByEmail = actor.email || 'user@example.com'
+    const createdByEmail = String(actor.email || '').trim().toLowerCase()
     const createdByName = actor.name || actor.username || 'Admin User'
 
     // 1. Save template definition into chart_templates MongoDB collection

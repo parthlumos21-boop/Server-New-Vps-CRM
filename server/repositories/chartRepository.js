@@ -1,13 +1,29 @@
 const ChartTemplate = require('../models/ChartTemplate')
 const ChartConfiguration = require('../models/ChartConfiguration')
 
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase()
+const toNumberOrNull = (value) => {
+  const numberValue = Number(value)
+  return Number.isFinite(numberValue) ? numberValue : null
+}
+
 const chartRepository = {
   // Template CRUD
-  listTemplates: async (companyId = 1) => {
+  listTemplates: async (actor = {}) => {
+    const email = normalizeEmail(actor.email)
+    const userId = toNumberOrNull(actor.id)
+    const visibility = [{ isSystem: true }]
+    if (email) {
+      visibility.push({ createdByEmail: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } })
+    }
+    if (userId !== null) {
+      visibility.push({ createdBy: userId })
+    }
+
     return ChartTemplate.find({
-      $or: [{ companyId }, { isSystem: true }],
+      $or: visibility,
       isActive: true,
-    }).lean()
+    }).sort({ createdAt: -1, _id: -1 }).lean()
   },
   getTemplateById: async (id) => {
     return ChartTemplate.findById(id).lean()

@@ -998,10 +998,11 @@ const AdminPanel = () => {
         </div>
 
         <AnalyticsSection
-        accounts={accounts}
-        deals={deals}
-        quotations={quotations}
-        activities={activities}
+          accounts={accounts}
+          deals={deals}
+          customers={customers}
+          quotations={quotations}
+          activities={activities}
         />
       </div>
     )

@@ -46,6 +46,7 @@ const ChartRow = ({
 }) => {
   const displayTitle = chart.title || chart.name || 'Untitled Chart'
   const displayType = chart.chartType || chart.type || 'Pie'
+  const sourceLabel = chart.source === 'template' ? 'Template' : 'Chart'
   return (
     <div className={`cl-row ${isExpanded ? 'cl-row-expanded' : ''}`}>
       <div className="cl-row-main">
@@ -70,6 +71,9 @@ const ChartRow = ({
 
         <div className="cl-row-right">
           <span className="cl-row-badge">{displayType}</span>
+          <span className={`cl-row-source cl-row-source--${chart.source === 'template' ? 'template' : 'chart'}`}>
+            {sourceLabel}
+          </span>
           <div className="cl-row-actions">
             <button type="button" className="cl-action cl-action--edit" title="Edit" onClick={onEdit}>
               <FaPencilAlt />
@@ -120,7 +124,8 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { addNotification } = useData()
-  const initialFilter = location.state?.newChartCategory || 'Accounts'
+  const filterOptions = ['All', ...ADMIN_CHART_CATEGORIES]
+  const initialFilter = location.state?.newChartCategory || 'All'
   const [activeFilter, setActiveFilter] = useState(initialFilter)
   const [chartData, setChartData] = useState(() => loadAllCharts())
   const [expandedIds, setExpandedIds] = useState({})
@@ -137,17 +142,26 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
     return () => { isMounted = false }
   }, [location.state])
 
-  const rows = useMemo(() => chartData[activeFilter] || [], [activeFilter, chartData])
+  const rows = useMemo(() => {
+    if (activeFilter === 'All') {
+      return ADMIN_CHART_CATEGORIES.flatMap((category) => (
+        (chartData[category] || []).map((chart) => ({ ...chart, category }))
+      ))
+    }
+    return (chartData[activeFilter] || []).map((chart) => ({ ...chart, category: activeFilter }))
+  }, [activeFilter, chartData])
 
   const flashStatus = (type, text) => {
     setStatusMessage({ type, text })
     window.setTimeout(() => setStatusMessage(null), 2400)
   }
 
-  const updateChart = (chartId, updater) => {
+  const getChartCategory = (chart) => chart.category || activeFilter
+
+  const updateChart = (chartId, category, updater) => {
     setChartData((current) => ({
       ...current,
-      [activeFilter]: (current[activeFilter] || []).map((chart) => (
+      [category]: (current[category] || []).map((chart) => (
         chart.id === chartId ? { ...chart, ...updater(chart) } : chart
       )),
     }))
@@ -166,31 +180,33 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
   }
 
   const handleToggleActive = (chart) => {
-    updateChart(chart.id, (current) => ({ active: !current.active }))
+    updateChart(chart.id, getChartCategory(chart), (current) => ({ active: !current.active }))
     const nextState = !chart.active ? 'active' : 'inactive'
     flashStatus('success', `"${chart.title}" is now ${nextState}`)
     addNotification('success', 'Chart Updated', `"${chart.title}" is now ${nextState}.`)
   }
 
   const handleToggleMobile = (chart) => {
-    updateChart(chart.id, (current) => ({ mobileEnabled: !current.mobileEnabled }))
+    updateChart(chart.id, getChartCategory(chart), (current) => ({ mobileEnabled: !current.mobileEnabled }))
     const nextState = !chart.mobileEnabled ? 'enabled' : 'disabled'
     flashStatus('success', `"${chart.title}" mobile visibility ${nextState}`)
     addNotification('success', 'Mobile Visibility', `"${chart.title}" mobile visibility ${nextState}.`)
   }
 
   const handleCopy = (chart) => {
+    const category = getChartCategory(chart)
     setChartData((current) => {
-      const list = current[activeFilter] || []
+      const list = current[category] || []
       const originalIndex = list.findIndex((entry) => entry.id === chart.id)
       const duplicate = {
         ...chart,
+        category: undefined,
         id: `${chart.id}-copy-${Date.now()}`,
         title: `${chart.title} (Copy)`,
       }
       const next = [...list]
       next.splice(originalIndex + 1, 0, duplicate)
-      return { ...current, [activeFilter]: next }
+      return { ...current, [category]: next }
     })
     flashStatus('success', `Duplicated "${chart.title}"`)
     addNotification('success', 'Chart Duplicated', `"${chart.title}" was duplicated.`)
@@ -199,9 +215,10 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
   const handleDelete = (chart) => {
     const confirmed = window.confirm(`Delete chart "${chart.title}"?`)
     if (!confirmed) return
+    const category = getChartCategory(chart)
     setChartData((current) => ({
       ...current,
-      [activeFilter]: (current[activeFilter] || []).filter((entry) => entry.id !== chart.id),
+      [category]: (current[category] || []).filter((entry) => entry.id !== chart.id),
     }))
     setExpandedIds((current) => {
       const next = { ...current }
@@ -237,7 +254,7 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
       <div className="cl-body">
         <main className="cl-main">
           <div className="cl-horizontal-filters">
-            {ADMIN_CHART_CATEGORIES.map((filterLabel) => {
+            {filterOptions.map((filterLabel) => {
               const isActive = activeFilter === filterLabel
               return (
                 <button
@@ -259,7 +276,7 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
                   key={chart.id}
                   chart={chart}
                   isExpanded={Boolean(expandedIds[chart.id])}
-                  linkedLabel={getCategoryLink(activeFilter, basePath) ? activeFilter : ''}
+                  linkedLabel={getCategoryLink(chart.category || activeFilter, basePath) ? chart.category || activeFilter : ''}
                   onToggleExpand={() => handleToggleExpand(chart.id)}
                   onEdit={() => handleEdit(chart)}
                   onView={() => handleView(chart)}
@@ -270,7 +287,7 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
                 />
               ))
             ) : (
-              <p className="cl-empty">No charts available for {activeFilter}.</p>
+              <p className="cl-empty">No chart templates available for {activeFilter}.</p>
             )}
           </div>
         </main>

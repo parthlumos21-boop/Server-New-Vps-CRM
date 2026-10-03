@@ -1,14 +1,5 @@
-import { ADMIN_CHART_CATEGORIES, ADMIN_CHART_DEFINITIONS } from './chartDefinitions'
+import { ADMIN_CHART_CATEGORIES } from './chartDefinitions'
 import { chartApi } from '../../services/chartApi'
-
-const STORAGE_KEY = 'crm.adminCharts.userCreated'
-
-const CONTEXT_TO_CATEGORY = {
-  Account: 'Accounts',
-  Customer: 'Customers',
-  SR: 'SR',
-  Deal: 'Deals',
-}
 
 export const mapContextToCategory = (context) => {
   if (!context) return null
@@ -21,84 +12,65 @@ export const mapContextToCategory = (context) => {
   return null
 }
 
-const safeParse = (raw) => {
-  if (!raw) return {}
-  try {
-    const parsed = JSON.parse(raw)
-    return parsed && typeof parsed === 'object' ? parsed : {}
-  } catch {
-    return {}
-  }
-}
-
-export const readUserCharts = () => {
-  if (typeof window === 'undefined') return {}
-  return safeParse(window.localStorage.getItem(STORAGE_KEY))
-}
-
-export const writeUserCharts = (data) => {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-}
+const createEmptyChartBuckets = () => Object.fromEntries(ADMIN_CHART_CATEGORIES.map((category) => [category, []]))
 
 export const loadAllCharts = () => {
-  const userCharts = readUserCharts()
-  return Object.fromEntries(
-    ADMIN_CHART_CATEGORIES.map((category) => [
-      category,
-      [
-        ...(ADMIN_CHART_DEFINITIONS[category] || []).map((chart) => ({ ...chart })),
-        ...((userCharts[category] || []).map((chart) => ({ ...chart }))),
-      ],
-    ])
-  )
+  return createEmptyChartBuckets()
 }
 
 export const fetchAllChartsFromDb = async () => {
   try {
-    const dbCharts = await chartApi.listCharts()
-    const categorized = Object.fromEntries(ADMIN_CHART_CATEGORIES.map((c) => [c, []]))
-    
-    dbCharts.forEach((chart) => {
+    const dbTemplates = await chartApi.listTemplates()
+    const categorized = createEmptyChartBuckets()
+
+    const addChartToCategory = (chart) => {
       const category = mapContextToCategory(chart.entity || chart.context)
       if (category && categorized[category]) {
+        const id = chart._id || chart.id
+        if (categorized[category].some((entry) => String(entry.id) === String(id))) return
         categorized[category].push({
           ...chart,
-          id: chart._id || chart.id,
+          id,
+          source: 'template',
           title: chart.title || chart.name || 'Untitled Chart',
           chartType: chart.chartType || chart.type || 'Pie',
           type: chart.chartType || chart.type || 'Pie',
-          active: chart.active !== false,
-          mobileEnabled: chart.mobileEnabled !== false,
+          active: chart.isActive !== false,
+          mobileEnabled: false,
         })
       }
+    }
+
+    dbTemplates.forEach((template) => {
+      const templateId = template._id || template.id
+      addChartToCategory({
+        ...template,
+        id: templateId,
+        title: template.name || template.title,
+        type: template.chartType || template.type,
+        active: template.isActive !== false,
+        mobileEnabled: false,
+        classificationField: template.classification?.field,
+        classificationOptions: template.classification?.options,
+        chartOrderBy: template.classification?.orderBy,
+        timeFilterEnabled: template.defaultFilters?.timeFilter?.enabled,
+        timeFilterField: template.defaultFilters?.timeFilter?.field,
+        timeFilterPeriod: template.defaultFilters?.timeFilter?.period,
+        filterRows: template.defaultFilters?.criteria || [],
+        selectedFieldKeys: template.defaultView?.selectedFieldKeys || [],
+        orderByEnabled: template.defaultView?.orderByEnabled,
+        orderByField: template.defaultView?.orderByField,
+      })
     })
 
-    writeUserCharts(categorized)
-    return Object.fromEntries(
-      ADMIN_CHART_CATEGORIES.map((category) => [
-        category,
-        [
-          ...(ADMIN_CHART_DEFINITIONS[category] || []).map((chart) => ({ ...chart })),
-          ...((categorized[category] || []).map((chart) => ({ ...chart }))),
-        ],
-      ])
-    )
+    return categorized
   } catch (error) {
-    console.warn('Unable to load charts from backend API, falling back to local storage:', error)
+    console.warn('Unable to load chart templates from backend API:', error)
     return loadAllCharts()
   }
 }
 
-export const appendUserChart = (category, chart) => {
-  if (!category || !chart) return
-  const current = readUserCharts()
-  const list = Array.isArray(current[category]) ? current[category] : []
-  writeUserCharts({ ...current, [category]: [...list, chart] })
-}
-
 export const saveUserChartToDb = async (category, chart) => {
-  appendUserChart(category, chart)
   try {
     const created = await chartApi.createChart(chart)
     return created
@@ -107,4 +79,6 @@ export const saveUserChartToDb = async (category, chart) => {
     return chart
   }
 }
+
+export const appendUserChart = () => {}
 

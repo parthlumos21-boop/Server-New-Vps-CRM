@@ -12,6 +12,7 @@ import {
   FaHandshake,
   FaHistory,
   FaRegClock,
+  FaUsers,
 } from 'react-icons/fa'
 import Badge from '../common/Badge'
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
@@ -24,12 +25,19 @@ const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2'
 
 const normalize = (value) => String(value || '').trim().toLowerCase()
 const amountOf = (item) => Number(item?.total || item?.grandTotal || item?.value || item?.amount || 0) || 0
-const dateOf = (item) => item?.createdAt || item?.date || item?.dealDate || item?.quotationDate || item?.updatedAt
+const dateOf = (item) => item?.createdAt || item?.accountDate || item?.customerDate || item?.date || item?.dealDate || item?.quotationDate || item?.updatedAt
 
 const monthKey = (date) => {
   const parsed = new Date(date)
   if (Number.isNaN(parsed.getTime())) return null
   return `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`
+}
+
+const isCurrentMonth = (date) => {
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return false
+  const now = new Date()
+  return parsed.getFullYear() === now.getFullYear() && parsed.getMonth() === now.getMonth()
 }
 
 const buildMonthlyData = (deals, quotations) => {
@@ -70,7 +78,7 @@ const CustomChartTooltip = ({ active, payload, label }) => {
   return null
 }
 
-const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activities = [], users = [] }) => {
+const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotations = [], activities = [], users = [] }) => {
   const [period, setPeriod] = useState('month')
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
@@ -89,8 +97,41 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
   const recentDeals = useMemo(() => [...deals].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [deals])
   const recentQuotations = useMemo(() => [...quotations].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [quotations])
 
-  const totalDealsVal = useMemo(() => deals.reduce((sum, d) => sum + amountOf(d), 0), [deals])
   const totalQuotationVal = useMemo(() => quotations.reduce((sum, q) => sum + amountOf(q), 0), [quotations])
+  const kpiCards = useMemo(() => ([
+    {
+      key: 'accounts',
+      label: 'Accounts',
+      collection: 'leads',
+      value: accounts.length,
+      monthValue: accounts.filter((item) => isCurrentMonth(dateOf(item))).length,
+      icon: FaBuilding,
+    },
+    {
+      key: 'deals',
+      label: 'Deals',
+      collection: 'deals',
+      value: deals.length,
+      monthValue: deals.filter((item) => isCurrentMonth(dateOf(item))).length,
+      icon: FaHandshake,
+    },
+    {
+      key: 'customers',
+      label: 'Customers',
+      collection: 'customers',
+      value: customers.length,
+      monthValue: customers.filter((item) => isCurrentMonth(dateOf(item))).length,
+      icon: FaUsers,
+    },
+    {
+      key: 'quotations',
+      label: 'Quotations',
+      collection: 'quotations',
+      value: quotations.length,
+      monthValue: quotations.filter((item) => isCurrentMonth(dateOf(item))).length,
+      icon: FaFileInvoiceDollar,
+    },
+  ]), [accounts, customers, deals, quotations])
 
   useEffect(() => {
     let isMounted = true
@@ -148,22 +189,12 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
 
         <div className="analytics-header-right">
           <div className="analytics-header-pills">
-            <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Accounts</span>
-              <span className="analytics-pill-val">{accounts.length}</span>
-            </div>
-            <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Deals</span>
-              <span className="analytics-pill-val">{deals.length}</span>
-            </div>
-            <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Customers</span>
-              <span className="analytics-pill-val">{accounts.length}</span>
-            </div>
-            <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Quotations</span>
-              <span className="analytics-pill-val">{quotations.length}</span>
-            </div>
+            {kpiCards.map((card) => (
+              <div key={card.key} className="analytics-header-pill">
+                <span className="analytics-pill-label">{card.label}</span>
+                <span className="analytics-pill-val">{card.value}</span>
+              </div>
+            ))}
           </div>
 
           <div className="analytics-filter-wrap">
@@ -179,6 +210,25 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
             </select>
           </div>
         </div>
+      </div>
+
+      <div className="analytics-kpi-grid">
+        {kpiCards.map((card) => {
+          const Icon = card.icon
+          return (
+            <article key={card.key} className="analytics-kpi-card">
+              <div className="analytics-kpi-icon">
+                <Icon />
+              </div>
+              <div className="analytics-kpi-body">
+                <span className="analytics-kpi-label">{card.label}</span>
+                <strong>{card.value}</strong>
+                <span className="analytics-kpi-collection">Collection: {card.collection}</span>
+                <span className="analytics-kpi-month">+{card.monthValue} this month</span>
+              </div>
+            </article>
+          )
+        })}
       </div>
 
       <div className="analytics-grid analytics-grid--charts">
@@ -285,7 +335,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
-                  data={users.length ? users.map((user) => ({ name: user.department || user.role || 'Other', value: 1 })).reduce((all, item) => { const found = all.find((entry) => entry.name === item.name); if (found) found.value += 1; else all.push(item); return all }, []) : (pipeline.length ? pipeline : [{ name: 'Active', value: 1 }])}
+                  data={users.length ? users.map((user) => ({ name: user.department || user.role || 'Other', value: 1 })).reduce((all, item) => { const found = all.find((entry) => entry.name === item.name); if (found) found.value += 1; else all.push(item); return all }, []) : pipeline}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -295,7 +345,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
                   paddingAngle={4}
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {(users.length ? users : (pipeline.length ? pipeline : [{ name: 'Active' }])).map((entry, index) => (
+                  {(users.length ? users : pipeline).map((entry, index) => (
                     <Cell key={`pie-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

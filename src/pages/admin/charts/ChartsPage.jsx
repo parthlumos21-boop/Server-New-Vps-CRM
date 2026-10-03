@@ -13,7 +13,7 @@ import {
   FunnelChart, Funnel, LabelList,
 } from 'recharts'
 import { useData } from '../../../context/DataContext'
-import { appendUserChart, saveUserChartToDb, mapContextToCategory } from '../../../features/adminCharts/chartStorage'
+import { saveUserChartToDb, mapContextToCategory } from '../../../features/adminCharts/chartStorage'
 import './ChartsPage.css'
 
 const STEPS = [
@@ -209,7 +209,7 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
   // Step 3
   const [timeFilterEnabled, setTimeFilterEnabled] = useState(false)
   const [timeFilterField, setTimeFilterField] = useState('Added Date')
-  const [timeFilterPeriod, setTimeFilterPeriod] = useState('')
+  const [timeFilterPeriod, setTimeFilterPeriod] = useState('This Month')
   const [additionalFiltersEnabled, setAdditionalFiltersEnabled] = useState(false)
   const [filterRows, setFilterRows] = useState([createFilterRow()])
 
@@ -318,6 +318,7 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
         title: trimmedTitle,
         type: selectedChartType || 'Card',
         chartType: selectedChartType || 'Card',
+        aggregation: selectedAggregateType || 'Count',
         entity: selectedContext,
         mobileEnabled: false,
         active: true,
@@ -327,7 +328,7 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
         chartOrderBy,
         timeFilterEnabled,
         timeFilterField,
-        timeFilterPeriod,
+        timeFilterPeriod: timeFilterEnabled ? (timeFilterPeriod || 'This Month') : '',
         additionalFiltersEnabled,
         filterRows,
         selectedActionKeys,

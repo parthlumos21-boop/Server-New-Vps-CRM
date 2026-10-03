@@ -79,7 +79,19 @@ const mapFieldKeyToDbPath = (entity, fieldKey) => {
   return fieldKey
 }
 
-const buildTimeFilterMatch = (timeFilter = {}) => {
+const normalizeDateBoundary = (value, endOfDay = false) => {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  if (endOfDay) {
+    date.setHours(23, 59, 59, 999)
+  } else {
+    date.setHours(0, 0, 0, 0)
+  }
+  return date
+}
+
+const buildTimeFilterRange = (timeFilter = {}) => {
   if (!timeFilter?.enabled || !timeFilter?.period) return null
 
   const now = new Date()
@@ -101,26 +113,61 @@ const buildTimeFilterMatch = (timeFilter = {}) => {
       startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek)
       break
     }
+    case 'last week': {
+      const dayOfWeek = now.getDay()
+      endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek, 0, 0, 0, -1)
+      startDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() - 7)
+      break
+    }
     case 'this month':
     case 'month':
       startDate = new Date(now.getFullYear(), now.getMonth(), 1)
       break
     case 'last month':
       startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      endDate = new Date(now.getFullYear(), now.getMonth(), 0)
+      endDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, -1)
+      break
+    case 'last 90 days':
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90)
       break
     case 'this year':
       startDate = new Date(now.getFullYear(), 0, 1)
       break
     case 'last year':
       startDate = new Date(now.getFullYear() - 1, 0, 1)
-      endDate = new Date(now.getFullYear() - 1, 11, 31)
+      endDate = new Date(now.getFullYear(), 0, 1, 0, 0, 0, -1)
+      break
+    case 'between':
+      startDate = normalizeDateBoundary(timeFilter.startDate || timeFilter.fromDate || timeFilter.from)
+      endDate = normalizeDateBoundary(timeFilter.endDate || timeFilter.toDate || timeFilter.to, true)
       break
     default:
       return null
   }
 
-  return { $gte: startDate, $lte: endDate }
+  if (!startDate || !endDate) return null
+  startDate.setHours(0, 0, 0, 0)
+
+  return { startDate, endDate }
+}
+
+const buildDateRangeExpr = (fieldPath, range) => {
+  if (!fieldPath || !range?.startDate || !range?.endDate) return null
+  const dateValue = {
+    $convert: {
+      input: `$${fieldPath}`,
+      to: 'date',
+      onError: null,
+      onNull: null,
+    },
+  }
+
+  return {
+    $and: [
+      { $gte: [dateValue, range.startDate] },
+      { $lte: [dateValue, range.endDate] },
+    ],
+  }
 }
 
 const computeChartAggregation = async (chartConfig, options = {}) => {
@@ -139,10 +186,13 @@ const computeChartAggregation = async (chartConfig, options = {}) => {
   // Override period from options if passed (e.g. from Dashboard period select)
   const effectivePeriod = options.period || chartConfig.filters?.timeFilter?.period
   if (options.period || chartConfig.filters?.timeFilter?.enabled) {
-    const timeMatch = buildTimeFilterMatch({ enabled: true, period: effectivePeriod })
-    if (timeMatch) {
+    const timeRange = buildTimeFilterRange({ ...chartConfig.filters?.timeFilter, enabled: true, period: effectivePeriod })
+    if (timeRange) {
       const fieldPath = mapFieldKeyToDbPath(entity, chartConfig.filters?.timeFilter?.field || 'createdAt')
-      matchStage[fieldPath] = timeMatch
+      const dateRangeExpr = buildDateRangeExpr(fieldPath, timeRange)
+      if (dateRangeExpr) {
+        matchStage.$expr = dateRangeExpr
+      }
     }
   }
 

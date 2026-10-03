@@ -5,7 +5,7 @@ const chartConfigurationSchema = new mongoose.Schema(
     companyId: { type: Number, default: 1 },
     title: { type: String, required: true },
     description: { type: String, default: '' },
-    entity: { type: String, required: true, enum: ['Account', 'Customer', 'SR', 'Deal'] },
+    entity: { type: String, required: true, enum: ['Account', 'Customer', 'SR', 'Deal', 'Quotation'] },
     chartType: { type: String, required: true, enum: ['Pie', 'Donut', 'Funnel', 'Bar', 'Stack', 'Card'] },
     aggregation: { type: String, required: true, enum: ['Count', 'Sum'], default: 'Count' },
     templateId: { type: mongoose.Schema.Types.Mixed, default: null },

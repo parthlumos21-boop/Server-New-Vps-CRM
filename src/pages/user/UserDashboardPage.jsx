@@ -21,6 +21,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import apiClient from '../../services/apiClient'
 import { remarkApi } from '../../services/remarkApi'
+import { customerService } from '../../services/customerService'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import './UserDashboardPage.css'
 import AnalyticsSection from '../../components/dashboard/AnalyticsSection'
@@ -52,6 +53,7 @@ const UserDashboardPage = () => {
   } = useData()
   const [todoReplies, setTodoReplies] = useState([])
   const [communicationRemarks, setCommunicationRemarks] = useState([])
+  const customers = useMemo(() => customerService.getCustomers(), [])
 
   const fetchTodoReplies = useCallback(async () => {
     try {
@@ -537,6 +539,7 @@ const UserDashboardPage = () => {
       <AnalyticsSection
         accounts={accounts}
         deals={deals}
+        customers={customers}
         quotations={quotations}
         activities={activities}
       />
