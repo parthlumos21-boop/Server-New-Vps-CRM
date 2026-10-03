@@ -3,6 +3,7 @@ export const ADMIN_CHART_CATEGORIES = [
   'Customers',
   'SR',
   'Deals',
+  'Quotations',
 ]
 
 export const ADMIN_CHART_DEFINITIONS = {
@@ -39,4 +40,5 @@ export const ADMIN_CHART_DEFINITIONS = {
   Customers: [],
   SR: [],
   Deals: [],
+  Quotations: [],
 }

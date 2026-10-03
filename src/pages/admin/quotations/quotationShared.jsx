@@ -280,6 +280,7 @@ const getRevisionCode = (record = {}) => (
 )
 
 const readQuotationAttachmentFields = (source = {}) => {
+  if (!source || typeof source !== 'object') return null
   const data = source?.data && typeof source.data === 'object' ? source.data : {}
   const attachmentId = source.uploadedQuotationAttachmentId || source.quotationAttachmentId || source.attachmentId
     || data.uploadedQuotationAttachmentId || data.quotationAttachmentId || data.attachmentId
@@ -300,33 +301,38 @@ const readQuotationAttachmentFields = (source = {}) => {
 }
 
 const getQuotationAttachment = (revision = {}) => {
-  if (revision.attachment?.fileName || revision.attachment?.filePath || revision.attachment?.attachmentId) {
-    return revision.attachment
-  }
-
   const rawRecord = revision.rawRecord || {}
   const raw = rawRecord.raw || revision.raw || rawRecord || {}
   const rawRecordData = rawRecord.data || {}
   const rawData = raw.data || {}
   const revItem = revision.revItem || {}
   const revCode = revision.revisionCode || getRevisionCode(revItem) || getRevisionCode(raw) || getRevisionCode(rawData) || 'R0'
-  const rawCode = getRevisionCode(raw) || getRevisionCode(rawData) || getRevisionCode(rawRecord) || getRevisionCode(rawRecordData) || 'R0'
+  const qId = raw.id || raw._id || raw.legacyId || revision.rawRecord?.id || revision.rawRecord?._id || revision.quotationId || ''
+
+  if (revision.attachment?.fileName || revision.attachment?.filePath || revision.attachment?.attachmentId) {
+    return {
+      ...revision.attachment,
+      revisionCode: revision.attachment.revisionCode || revCode,
+      quotationId: revision.attachment.quotationId || qId,
+    }
+  }
+
   const candidates = [
     revItem,
     revision,
     rawRecord,
     rawRecordData,
-    rawCode === revCode ? raw : null,
-    rawCode === revCode ? rawData : null,
+    raw,
+    rawData,
   ].filter(Boolean)
 
   for (const source of candidates) {
     const attachment = readQuotationAttachmentFields(source)
-    if (attachment) {
+    if (attachment && (attachment.fileName || attachment.filePath || attachment.attachmentId)) {
       return {
         ...attachment,
         revisionCode: revCode,
-        quotationId: raw.id || raw._id || raw.legacyId || revision.rawRecord?.id || revision.rawRecord?._id || '',
+        quotationId: qId,
       }
     }
   }
@@ -1941,7 +1947,7 @@ export function RevisionsListModal({
     const qAttachment = readQuotationAttachmentFields(qRaw) || readQuotationAttachmentFields(qRawData)
     const withRevisionAttachment = (revCode, revItem = {}) => {
       const revAttachment = readQuotationAttachmentFields(revItem)
-      const attachment = revAttachment || (qRevisionCode === revCode ? qAttachment : null)
+      const attachment = revAttachment || qAttachment
       return attachment
         ? {
           ...attachment,
@@ -2072,8 +2078,8 @@ export function RevisionsListModal({
                 </th>
               ))}
               <th style={{ padding: '12px 14px' }}>Status</th>
-              <th style={{ padding: '12px 14px' }}>Project</th>
               <th style={{ padding: '12px 14px', textAlign: 'center' }}>Attachment</th>
+              <th style={{ padding: '12px 14px' }}>Project</th>
               <th style={{ padding: '12px 14px', textAlign: 'center' }}>Action</th>
             </tr>
           </thead>
@@ -2127,7 +2133,6 @@ export function RevisionsListModal({
                   <td style={{ padding: '12px 14px' }}>
                     <StatusBadge status={rev.status} />
                   </td>
-                  <td style={{ padding: '12px 14px' }}>{rev.project || '-'}</td>
                   <td style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {attachment?.fileName ? (
                       <button
@@ -2147,6 +2152,7 @@ export function RevisionsListModal({
                       </button>
                     ) : '-'}
                   </td>
+                  <td style={{ padding: '12px 14px' }}>{rev.project || '-'}</td>
                   <td style={{ padding: '12px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                       <button

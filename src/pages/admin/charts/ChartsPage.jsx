@@ -13,7 +13,7 @@ import {
   FunnelChart, Funnel, LabelList,
 } from 'recharts'
 import { useData } from '../../../context/DataContext'
-import { appendUserChart, mapContextToCategory } from '../../../features/adminCharts/chartStorage'
+import { appendUserChart, saveUserChartToDb, mapContextToCategory } from '../../../features/adminCharts/chartStorage'
 import './ChartsPage.css'
 
 const STEPS = [
@@ -23,7 +23,7 @@ const STEPS = [
   { num: 4, label: 'View Fields' },
 ]
 
-const CONTEXTS = ['Account', 'Customer', 'SR', 'Deal']
+const CONTEXTS = ['Account', 'Customer', 'SR', 'Deal', 'Quotation']
 const CHART_TYPES = ['Pie', 'Donut', 'Funnel', 'Bar', 'Stack', 'Card']
 const AGGREGATE_TYPES = ['Count', 'Sum']
 
@@ -32,6 +32,7 @@ const CONTEXT_LABELS = {
   Customer: 'Customer',
   SR: 'Support Request',
   Deal: 'Deal',
+  Quotation: 'Quotation',
 }
 
 const CARD_PREVIEW_ITEMS = [
@@ -99,6 +100,10 @@ const CONTEXT_FIELDS = {
     'Deal Co-Owners', 'Deal Status', 'Address', 'Last Updated', 'Latest Remark', 'Deal Value',
     'Job No', 'Project Name', 'Consultant Name',
   ],
+  Quotation: [
+    'Quotation No.', 'Account Name', 'Quotation Date', 'Quotation Owner', 'Quotation Status',
+    'Grand Total', 'Added By', 'Last Updated',
+  ],
 }
 
 const STAFF_OPTIONS = [
@@ -113,9 +118,14 @@ const CLASSIFICATION_FIELDS_BY_CONTEXT = {
   Customer: ['Customer Category', 'Customer Owner', 'Customer Status', 'Customer Type', 'Product Category', 'Industry Type', 'Added By'],
   SR: ['Request Type', 'Owner', 'Status', 'Under Warranty', 'Added By'],
   Deal: ['Deal Status', 'Deal Owner', 'Deal Co-Owners', 'Deal Type', 'Consultant Name', 'Added By'],
+  Quotation: ['Quotation Status', 'Quotation Owner', 'Quotation Type', 'Added By'],
 }
 
 const CLASSIFICATION_OPTIONS_BY_FIELD = {
+  'Account Category': ['Direct', 'Channel', 'OEM'],
+  'Account Owner': STAFF_OPTIONS,
+  'Account Status': ['Active', 'Inactive', 'Lead'],
+  'Account Type': ['B2B', 'B2C'],
   'Customer Category': ['MARKETING-LUMOS', 'MARKETING-SWATI', 'CHANNEL', 'DIRECT', 'OEM'],
   'Customer Owner': STAFF_OPTIONS,
   'Customer Status': ['New', 'Active', 'Inactive', 'Lost'],
@@ -129,13 +139,10 @@ const CLASSIFICATION_OPTIONS_BY_FIELD = {
     'Print & Packaging', 'Pumping Stations', 'Residential', 'SEZ & Ports', 'Water Segment',
   ],
   'Added By': STAFF_OPTIONS,
-  'Account Category': ['Direct', 'Channel', 'OEM'],
-  'Account Owner': STAFF_OPTIONS,
-  'Account Status': ['Active', 'Inactive', 'Lead'],
-  'Account Type': ['B2B', 'B2C'],
   'Status': ['Active', 'Attending', 'On Site', 'In Progress', 'On Hold', 'Postponed'],
   'Priority': ['Low', 'Medium', 'High', 'Critical'],
   'Owner': STAFF_OPTIONS,
+  'SR Owner': STAFF_OPTIONS,
   'Request Type': [
     'Commissioning Support', 'Component Burned or Malfunctioning', 'Others',
     'Painting Issue', 'Parameter Setting', 'Retrofitting Job-Old to New', 'Short Material',
@@ -148,6 +155,9 @@ const CLASSIFICATION_OPTIONS_BY_FIELD = {
   'Deal Co-Owners': STAFF_OPTIONS,
   'Deal Type': ['MARKETING-SWATI', 'CHANNEL', 'OEM'],
   'Consultant Name': ['Internal', 'External'],
+  'Quotation Status': ['Draft', 'Sent', 'Accepted', 'Rejected', 'Revised'],
+  'Quotation Owner': STAFF_OPTIONS,
+  'Quotation Type': ['Standard', 'Custom', 'Revised'],
   'Converted By': STAFF_OPTIONS,
 }
 
@@ -299,14 +309,16 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
     })
   }
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     const category = mapContextToCategory(selectedContext)
     const trimmedTitle = title.trim() || 'Untitled chart'
     if (category) {
-      appendUserChart(category, {
+      const payload = {
         id: `chart-user-${Date.now()}`,
         title: trimmedTitle,
         type: selectedChartType || 'Card',
+        chartType: selectedChartType || 'Card',
+        entity: selectedContext,
         mobileEnabled: false,
         active: true,
         context: selectedContext,
@@ -322,7 +334,8 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
         orderByEnabled,
         orderByField,
         selectedFieldKeys,
-      })
+      }
+      await saveUserChartToDb(category, payload)
     }
     addNotification('success', 'Chart Created', `"${trimmedTitle}" was saved successfully.`)
     navigate(basePath, { state: { newChartCategory: category } })
@@ -652,75 +665,6 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div className={`cc-config-section ${additionalFiltersEnabled ? 'cc-config-section-on' : ''}`}>
-        <div className="cc-config-section-head">
-          <span className="cc-config-section-title">Add Additional Filters</span>
-          <button
-            type="button"
-            className={`cc-yesno-toggle ${additionalFiltersEnabled ? 'cc-yesno-toggle-on' : 'cc-yesno-toggle-off'}`}
-            onClick={() => setAdditionalFiltersEnabled((value) => !value)}
-          >
-            {additionalFiltersEnabled ? 'YES' : 'NO'}
-          </button>
-        </div>
-        {additionalFiltersEnabled ? (
-          <div className="cc-config-card">
-            <div className="cc-config-card-title">
-              <FaFilter /> Configure Filters
-            </div>
-            <div className="cc-config-card-body">
-              {filterRows.map((row, index) => (
-                <div key={row.id} className="cc-filter-row">
-                  <span className="cc-filter-prefix">{index === 0 ? 'If' : 'And'}</span>
-                  <select
-                    className="cc-select cc-filter-field"
-                    value={row.fieldKey}
-                    onChange={(event) => handleUpdateFilterRow(row.id, { fieldKey: event.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {contextFields.map((field) => (
-                      <option key={field} value={field}>{field}</option>
-                    ))}
-                  </select>
-                  <span className="cc-filter-is">is</span>
-                  <label className="cc-filter-not">
-                    <input
-                      type="checkbox"
-                      checked={row.negated}
-                      onChange={(event) => handleUpdateFilterRow(row.id, { negated: event.target.checked })}
-                    />
-                    <span>not</span>
-                  </label>
-                  <select
-                    className="cc-select cc-filter-value"
-                    value={row.value}
-                    onChange={(event) => handleUpdateFilterRow(row.id, { value: event.target.value })}
-                  >
-                    <option value="">select</option>
-                    {(CLASSIFICATION_OPTIONS_BY_FIELD[row.fieldKey] || []).map((option) => (
-                      <option key={option} value={option}>{option}</option>
-                    ))}
-                  </select>
-                  <button type="button" className="cc-filter-action-btn" onClick={handleAddFilterRow} aria-label="Add filter row">
-                    <FaPlus />
-                  </button>
-                  {filterRows.length > 1 ? (
-                    <button
-                      type="button"
-                      className="cc-filter-action-btn cc-filter-action-btn-danger"
-                      onClick={() => handleRemoveFilterRow(row.id)}
-                      aria-label="Remove filter row"
-                    >
-                      <FaTrash />
-                    </button>
-                  ) : null}
-                </div>
-              ))}
             </div>
           </div>
         ) : null}

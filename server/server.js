@@ -52,6 +52,8 @@ const ovrcRoutes = require('./routes/ovrcRoutes')
 const databaseRoutes = require('./routes/databaseRoutes')
 const userDeviceRoutes = require('./routes/userDeviceRoutes')
 const reportRoutes = require('./routes/reportRoutes')
+const chartRoutes = require('./routes/chartRoutes')
+const chartController = require('./controllers/chartController')
 
 const tryRequire = (moduleName) => {
   try { return require(moduleName) } catch (_) { return null }
@@ -277,6 +279,8 @@ app.use('/api/database', requireBackendReady, databaseRoutes)
 app.use('/api/devices', requireBackendReady, userDeviceRoutes)
 app.use('/api', requireBackendReady, remarkRoutes)
 app.use('/api/reports', requireBackendReady, reportRoutes)
+app.use('/api/charts', requireBackendReady, chartRoutes)
+app.get('/api/dashboard/charts', requireBackendReady, requireAuth, chartController.listDashboardCharts)
 app.use(express.static(clientDistPath))
 app.get(/^\/(?!api(?:\/|$)).*/, (req, res, next) => {
   if (fs.existsSync(clientIndexPath)) {

@@ -5,7 +5,7 @@ import {
   FaCopy, FaEye, FaMobileAlt, FaPencilAlt, FaTrash,
 } from 'react-icons/fa'
 import { ADMIN_CHART_CATEGORIES } from '../../../features/adminCharts/chartDefinitions'
-import { loadAllCharts } from '../../../features/adminCharts/chartStorage'
+import { loadAllCharts, fetchAllChartsFromDb } from '../../../features/adminCharts/chartStorage'
 import { useData } from '../../../context/DataContext'
 import ChartPreviewModal from './ChartPreviewModal'
 import './ChartsListPage.css'
@@ -18,6 +18,7 @@ const getCategoryLink = (category, basePath) => {
       case 'Customers': return '/customers/search'
       case 'SR': return '/support-requests/list'
       case 'Deals': return '/deals/view'
+      case 'Quotations': return '/quotations/list'
       default: return '/charts'
     }
   }
@@ -26,6 +27,7 @@ const getCategoryLink = (category, basePath) => {
     case 'Customers': return '/admin/customers/search'
     case 'SR': return '/admin/support-requests/list'
     case 'Deals': return '/admin/deals/view'
+    case 'Quotations': return '/admin/quotations'
     default: return '/admin/charts'
   }
 }
@@ -41,74 +43,78 @@ const ChartRow = ({
   onToggleMobile,
   onCopy,
   onDelete,
-}) => (
-  <div className={`cl-row ${isExpanded ? 'cl-row-expanded' : ''}`}>
-    <div className="cl-row-main">
-      <div className="cl-row-left">
-        <button
-          type="button"
-          className={`cl-row-toggle ${isExpanded ? 'cl-row-toggle-open' : ''}`}
-          onClick={onToggleExpand}
-          aria-label={isExpanded ? `Collapse ${chart.title}` : `Expand ${chart.title}`}
-        >
-          <FaChevronDown />
-        </button>
-        <button
-          type="button"
-          className="cl-row-title cl-row-title-link"
-          onClick={onView}
-          title={linkedLabel ? `Open in ${linkedLabel}` : 'View chart'}
-        >
-          {chart.title}
-        </button>
-      </div>
-
-      <div className="cl-row-right">
-        <span className="cl-row-badge">{chart.type}</span>
-        <div className="cl-row-actions">
-          <button type="button" className="cl-action cl-action--edit" title="Edit" onClick={onEdit}>
-            <FaPencilAlt />
-          </button>
-          <button type="button" className="cl-action cl-action--view" title="View" onClick={onView}>
-            <FaEye />
+}) => {
+  const displayTitle = chart.title || chart.name || 'Untitled Chart'
+  const displayType = chart.chartType || chart.type || 'Pie'
+  return (
+    <div className={`cl-row ${isExpanded ? 'cl-row-expanded' : ''}`}>
+      <div className="cl-row-main">
+        <div className="cl-row-left">
+          <button
+            type="button"
+            className={`cl-row-toggle ${isExpanded ? 'cl-row-toggle-open' : ''}`}
+            onClick={onToggleExpand}
+            aria-label={isExpanded ? `Collapse ${displayTitle}` : `Expand ${displayTitle}`}
+          >
+            <FaChevronDown />
           </button>
           <button
             type="button"
-            className={`cl-action ${chart.active ? 'cl-action--check-active' : 'cl-action--check'}`}
-            title={chart.active ? 'Deactivate' : 'Activate'}
-            onClick={onToggleActive}
+            className="cl-row-title cl-row-title-link"
+            onClick={onView}
+            title={linkedLabel ? `Open in ${linkedLabel}` : 'View chart'}
           >
-            <FaCheckCircle />
-          </button>
-          <button
-            type="button"
-            className={`cl-action ${chart.mobileEnabled ? 'cl-action--mobile' : 'cl-action--mobile-off'}`}
-            title={chart.mobileEnabled ? 'Hide from mobile' : 'Show on mobile'}
-            onClick={onToggleMobile}
-          >
-            <FaMobileAlt />
-          </button>
-          <button type="button" className="cl-action cl-action--copy" title="Duplicate" onClick={onCopy}>
-            <FaCopy />
-          </button>
-          <button type="button" className="cl-action cl-action--delete" title="Delete" onClick={onDelete}>
-            <FaTrash />
+            {displayTitle}
           </button>
         </div>
-      </div>
-    </div>
 
-    {isExpanded ? (
-      <div className="cl-row-details">
-        <dl className="cl-row-detail-grid">
-          <dt>Type</dt><dd>{chart.type}</dd>
-          <dt>Active</dt><dd>{chart.active ? 'Yes' : 'No'}</dd>
-          <dt>Visible on mobile</dt><dd>{chart.mobileEnabled ? 'Yes' : 'No'}</dd>
-        </dl>
+        <div className="cl-row-right">
+          <span className="cl-row-badge">{displayType}</span>
+          <div className="cl-row-actions">
+            <button type="button" className="cl-action cl-action--edit" title="Edit" onClick={onEdit}>
+              <FaPencilAlt />
+            </button>
+            <button type="button" className="cl-action cl-action--view" title="View" onClick={onView}>
+              <FaEye />
+            </button>
+            <button
+              type="button"
+              className={`cl-action ${chart.active ? 'cl-action--check-active' : 'cl-action--check'}`}
+              title={chart.active ? 'Deactivate' : 'Activate'}
+              onClick={onToggleActive}
+            >
+              <FaCheckCircle />
+            </button>
+            <button
+              type="button"
+              className={`cl-action ${chart.mobileEnabled ? 'cl-action--mobile' : 'cl-action--mobile-off'}`}
+              title={chart.mobileEnabled ? 'Hide from mobile' : 'Show on mobile'}
+              onClick={onToggleMobile}
+            >
+              <FaMobileAlt />
+            </button>
+            <button type="button" className="cl-action cl-action--copy" title="Duplicate" onClick={onCopy}>
+              <FaCopy />
+            </button>
+            <button type="button" className="cl-action cl-action--delete" title="Delete" onClick={onDelete}>
+              <FaTrash />
+            </button>
+          </div>
+        </div>
       </div>
-    ) : null}
-  </div>
-)
+
+      {isExpanded ? (
+        <div className="cl-row-details">
+          <dl className="cl-row-detail-grid">
+            <dt>Type</dt><dd>{displayType}</dd>
+            <dt>Active</dt><dd>{chart.active ? 'Yes' : 'No'}</dd>
+            <dt>Visible on mobile</dt><dd>{chart.mobileEnabled ? 'Yes' : 'No'}</dd>
+          </dl>
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 const ChartsListPage = ({ basePath = '/admin/charts' }) => {
   const navigate = useNavigate()
@@ -122,9 +128,13 @@ const ChartsListPage = ({ basePath = '/admin/charts' }) => {
   const [previewChart, setPreviewChart] = useState(null)
 
   useEffect(() => {
-    if (location.state?.newChartCategory) {
-      setChartData(loadAllCharts())
-    }
+    let isMounted = true
+    fetchAllChartsFromDb().then((data) => {
+      if (isMounted && data) {
+        setChartData(data)
+      }
+    })
+    return () => { isMounted = false }
   }, [location.state])
 
   const rows = useMemo(() => chartData[activeFilter] || [], [activeFilter, chartData])

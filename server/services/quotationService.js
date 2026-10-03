@@ -1,3 +1,6 @@
+const fs = require('fs')
+const path = require('path')
+const storageService = require('./storageService')
 const quotationRepository = require('../repositories/quotationRepository')
 const { createCrudService } = require('./crudServiceFactory')
 const { AppError } = require('../utils/appError')
@@ -677,6 +680,44 @@ const readAttachmentFields = (source = {}) => {
   return { storagePath, fileName, fileType, fileSize }
 }
 
+const findAttachmentOnDisk = (fileName, storagePath) => {
+  if (storagePath) {
+    const directPath = storageService.resolveStoredPath(storagePath)
+    if (directPath && fs.existsSync(directPath)) {
+      return directPath
+    }
+  }
+
+  if (!fileName) return null
+
+  const cleanName = path.basename(String(fileName).trim())
+  const searchDirs = [
+    path.join(storageService.getUploadsDir(), 'quotations'),
+    storageService.getUploadsDir(),
+  ]
+
+  for (const dir of searchDirs) {
+    if (!fs.existsSync(dir)) continue
+
+    const targetFile = path.join(dir, cleanName)
+    if (fs.existsSync(targetFile)) {
+      return targetFile
+    }
+
+    try {
+      const files = fs.readdirSync(dir)
+      const matched = files.find((f) => f.toLowerCase() === cleanName.toLowerCase())
+      if (matched) {
+        return path.join(dir, matched)
+      }
+    } catch {
+      // ignore directory read errors
+    }
+  }
+
+  return null
+}
+
 const buildAttachmentMetadata = (file = {}) => ({
   uploadedLineItemsName: file.originalname || file.filename || '',
   uploadedQuotationFileName: file.originalname || file.filename || '',
@@ -734,20 +775,23 @@ module.exports = {
       ? quotation.revisions
       : (Array.isArray(quotation.data?.revisions) ? quotation.data.revisions : [])
     const revision = revisions.find((item) => resolveQuotationRevisionCode(item) === requestedRevisionCode) || null
-    const quotationCode = resolveQuotationRevisionCode(quotation)
     const candidates = [
       revision,
-      quotationCode === requestedRevisionCode ? quotation : null,
-      quotationCode === requestedRevisionCode ? quotation.data : null,
+      quotation,
+      quotation.data,
     ].filter(Boolean)
 
     for (const source of candidates) {
       const attachment = readAttachmentFields(source)
-      if (attachment?.storagePath) {
-        return {
-          quotation,
-          revisionCode: requestedRevisionCode,
-          ...attachment,
+      if (attachment) {
+        const fullPath = findAttachmentOnDisk(attachment.fileName, attachment.storagePath)
+        if (fullPath) {
+          return {
+            quotation,
+            revisionCode: requestedRevisionCode,
+            ...attachment,
+            fullPath,
+          }
         }
       }
     }

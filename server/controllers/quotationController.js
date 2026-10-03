@@ -48,7 +48,7 @@ module.exports = {
   viewAttachment: async (req, res, next) => {
     try {
       const attachment = await quotationService.getQuotationAttachmentForView(req.user, req.params.id, req.params.revisionCode)
-      const fullPath = storageService.resolveStoredPath(attachment.storagePath)
+      const fullPath = attachment.fullPath || (attachment.storagePath ? storageService.resolveStoredPath(attachment.storagePath) : null)
       if (!fullPath || !fs.existsSync(fullPath)) {
         const error = new Error('Quotation attachment file is missing on disk.')
         error.statusCode = 410

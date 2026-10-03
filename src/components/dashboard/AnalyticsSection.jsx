@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -16,6 +16,9 @@ import {
 import Badge from '../common/Badge'
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
 import './AnalyticsSection.css'
+import { chartApi } from '../../services/chartApi'
+import DynamicChartWidget from './DynamicChartWidget'
+import ChartRenderer from './ChartRenderer'
 
 const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
 
@@ -69,6 +72,9 @@ const CustomChartTooltip = ({ active, payload, label }) => {
 
 const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activities = [], users = [] }) => {
   const [period, setPeriod] = useState('month')
+  const [dbCharts, setDbCharts] = useState([])
+  const [chartDataMap, setChartDataMap] = useState({})
+  const [loadingCharts, setLoadingCharts] = useState(true)
   const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
 
   const pipeline = useMemo(() => {
@@ -86,6 +92,47 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
   const totalDealsVal = useMemo(() => deals.reduce((sum, d) => sum + amountOf(d), 0), [deals])
   const totalQuotationVal = useMemo(() => quotations.reduce((sum, q) => sum + amountOf(q), 0), [quotations])
 
+  useEffect(() => {
+    let isMounted = true
+    const loadCharts = async () => {
+      try {
+        setLoadingCharts(true)
+        const charts = await chartApi.listCharts()
+        if (!isMounted) return
+        if (Array.isArray(charts) && charts.length > 0) {
+          setDbCharts(charts)
+          const dataPromises = charts.map(async (chart) => {
+            try {
+              const data = await chartApi.getChartData(chart._id || chart.id, { period })
+              return { id: chart._id || chart.id, data }
+            } catch (err) {
+              console.error(`Failed to load data for chart ${chart._id}:`, err)
+              return { id: chart._id || chart.id, data: null }
+            }
+          })
+          const results = await Promise.all(dataPromises)
+          if (!isMounted) return
+          const map = {}
+          results.forEach((r) => {
+            if (r.id) map[r.id] = r.data
+          })
+          setChartDataMap(map)
+        } else {
+          setDbCharts([])
+        }
+      } catch (err) {
+        console.warn('Could not load dynamic charts from DB:', err)
+        setDbCharts([])
+      } finally {
+        if (isMounted) setLoadingCharts(false)
+      }
+    }
+    loadCharts()
+    return () => {
+      isMounted = false
+    }
+  }, [period])
+
   return (
     <section className="analytics-section" aria-label="Analytics">
       <div className="analytics-section__header">
@@ -102,16 +149,20 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
         <div className="analytics-header-right">
           <div className="analytics-header-pills">
             <div className="analytics-header-pill">
+              <span className="analytics-pill-label">Accounts</span>
+              <span className="analytics-pill-val">{accounts.length}</span>
+            </div>
+            <div className="analytics-header-pill">
               <span className="analytics-pill-label">Deals</span>
               <span className="analytics-pill-val">{deals.length}</span>
             </div>
             <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Quotations</span>
-              <span className="analytics-pill-val">{quotations.length}</span>
+              <span className="analytics-pill-label">Customers</span>
+              <span className="analytics-pill-val">{accounts.length}</span>
             </div>
             <div className="analytics-header-pill">
-              <span className="analytics-pill-label">Accounts</span>
-              <span className="analytics-pill-val">{accounts.length}</span>
+              <span className="analytics-pill-label">Quotations</span>
+              <span className="analytics-pill-val">{quotations.length}</span>
             </div>
           </div>
 
@@ -131,6 +182,17 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
       </div>
 
       <div className="analytics-grid analytics-grid--charts">
+        {dbCharts.length > 0 ? (
+          dbCharts.map((chart) => (
+            <ChartRenderer
+              key={chart._id || chart.id}
+              config={chart}
+              data={chartDataMap[chart._id || chart.id]}
+              loading={loadingCharts}
+            />
+          ))
+        ) : (
+          <>
         <article className="analytics-card analytics-card--wide">
           <div className="analytics-card-header">
             <h3>
@@ -242,6 +304,8 @@ const AnalyticsSection = ({ accounts = [], deals = [], quotations = [], activiti
             </ResponsiveContainer>
           </div>
         </article>
+          </>
+        )}
       </div>
 
       <div className="analytics-grid analytics-grid--tables">

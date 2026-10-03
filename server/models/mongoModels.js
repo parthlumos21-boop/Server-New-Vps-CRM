@@ -138,6 +138,17 @@ const COLLECTION_INDEXES = {
     { fields: { connected: 1 } },
     { fields: { updatedAt: -1 } },
   ],
+  chart_templates: [
+    { fields: { companyId: 1, isSystem: 1 } },
+    { fields: { templateKey: 1 }, options: { sparse: true } },
+    { fields: { entity: 1 } },
+  ],
+  chart_configurations: [
+    { fields: { companyId: 1, createdBy: 1 } },
+    { fields: { entity: 1 } },
+    { fields: { active: 1 } },
+    { fields: { scope: 1 } },
+  ],
   settings: [
     { fields: { key: 1 }, options: { unique: true, sparse: true } },
     { fields: { companyId: 1, module: 1 } },
