@@ -305,9 +305,7 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
 
   const handleOpenReminderPanel = () => {
     closeHeaderPanels()
-    navigate(isAdmin ? '/admin/reminders/my' : '/reminders/my', {
-      state: { activeMyReminderTab: 'notifications' },
-    })
+    setAddReminderOpen(true)
   }
 
   const handleOpenQuickAdd = () => {

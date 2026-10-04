@@ -555,6 +555,7 @@
 }
 
 .hdr-badge {
+  pointer-events: none !important;
   position: absolute;
   top: -0.32rem;
   right: -0.32rem;

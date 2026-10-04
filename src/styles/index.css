@@ -2764,7 +2764,7 @@ html.is-user:not([data-theme="dark"]) .header.header--user .hdr-user-btn .hdr-ca
 }
 
 html.is-user:not([data-theme="dark"]) .header.header--user .hdr-badge,
-html.is-user:not([data-theme="dark"]) .layout--user :where(.badge, [class*="badge"], [class*="status"]):not(.sb-section-label) {
+html.is-user:not([data-theme="dark"]) .layout--user :where(.badge, [class*="badge"], [class*="status"]):not(.sb-section-label):not([class*="sr-"]) {
   border-color: #FFFFFF !important;
   background: #E51F25 !important;
   background-color: #E51F25 !important;
