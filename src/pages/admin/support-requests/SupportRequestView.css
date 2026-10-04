@@ -11,6 +11,50 @@
   box-sizing: border-box;
 }
 
+.layout--user .support-request-view-page {
+  padding: 0.75rem 1rem 1.5rem;
+}
+
+.layout--user .sr-status-board-shell {
+  min-height: calc(100vh - 7rem);
+  border-radius: 14px;
+}
+
+.layout--user .sr-status-board-toolbar {
+  align-items: flex-start;
+  background: var(--surface-app, #f8fafc);
+}
+
+.support-request-view-page {
+  --sr-accent: #c60016;
+  --sr-accent-soft: rgba(198, 0, 22, 0.08);
+  --sr-accent-border: rgba(198, 0, 22, 0.18);
+}
+
+.layout--user .sr-status-board-shell,
+.layout--admin .sr-status-board-shell {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.055);
+}
+
+.sr-header-icon-pill,
+.sr-new-request-btn,
+.sr-filter-apply-btn {
+  background: var(--sr-accent) !important;
+  box-shadow: 0 4px 12px rgba(198, 0, 22, 0.16);
+}
+
+.sr-count-badge {
+  background: var(--sr-accent-soft);
+  border-color: var(--sr-accent-border);
+  color: #b91c2b;
+}
+
+.sr-search-input:focus,
+.sr-status-filter-trigger--open {
+  border-color: var(--sr-accent);
+  box-shadow: 0 0 0 3px rgba(198, 0, 22, 0.1);
+}
+
 .sr-status-board-shell {
   display: flex;
   flex-direction: column;

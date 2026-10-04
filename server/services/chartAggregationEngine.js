@@ -196,9 +196,10 @@ const computeChartAggregation = async (chartConfig, options = {}) => {
     }
   }
 
-  if (Array.isArray(chartConfig.filters?.criteria)) {
-    chartConfig.filters.criteria.forEach((row) => {
-      if (row.fieldKey && row.value) {
+  const criteria = chartConfig.filters?.criteria || chartConfig.defaultFilters?.criteria
+  if (Array.isArray(criteria)) {
+    criteria.forEach((row) => {
+      if (row && row.fieldKey && row.value !== null && row.value !== undefined && row.value !== '') {
         const fieldPath = mapFieldKeyToDbPath(entity, row.fieldKey)
         if (row.negated) {
           matchStage[fieldPath] = { $ne: row.value }
@@ -210,7 +211,14 @@ const computeChartAggregation = async (chartConfig, options = {}) => {
   }
 
   // 2. Build $group stage
-  const rawClassificationField = chartConfig.classification?.field || 'status'
+  const selectedFields = chartConfig.defaultView?.selectedFieldKeys || chartConfig.selectedFieldKeys
+  const fallbackField = Array.isArray(selectedFields) && selectedFields.length > 0 ? selectedFields[0] : 'status'
+  const rawClassificationField =
+    chartConfig.classification?.field ||
+    chartConfig.groupBy ||
+    chartConfig.fieldKey ||
+    fallbackField ||
+    'status'
   const groupFieldPath = mapFieldKeyToDbPath(entity, rawClassificationField)
   const aggType = String(chartConfig.aggregation || 'Count').toLowerCase().trim()
   

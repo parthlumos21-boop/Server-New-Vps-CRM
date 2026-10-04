@@ -8,6 +8,8 @@ router.use(requireAuth)
 // Chart Templates
 router.get('/templates', chartController.listTemplates)
 router.post('/templates', chartController.createTemplate)
+router.put('/templates/:id', chartController.updateTemplate)
+router.delete('/templates/:id', chartController.deleteTemplate)
 
 // Dashboard aggregated charts
 router.get('/dashboard/charts', chartController.listDashboardCharts)

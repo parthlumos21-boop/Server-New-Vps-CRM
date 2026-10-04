@@ -12,6 +12,8 @@ const wrap = (fn) => async (req, res, next) => {
 const chartController = {
   listTemplates: wrap((user) => chartService.listTemplates(user)),
   createTemplate: wrap((user, req) => chartService.createTemplate(user, req.body)),
+  updateTemplate: wrap((user, req) => chartService.updateTemplate(user, req.params.id, req.body)),
+  deleteTemplate: wrap((user, req) => chartService.deleteTemplate(user, req.params.id)),
   listCharts: wrap((user) => chartService.listCharts(user)),
   getChartById: wrap((user, req) => chartService.getChartById(user, req.params.id)),
   createChart: wrap((user, req) => chartService.createChart(user, req.body)),
@@ -24,4 +26,3 @@ const chartController = {
 }
 
 module.exports = chartController
-

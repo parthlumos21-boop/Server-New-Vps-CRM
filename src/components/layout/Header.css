@@ -89,6 +89,14 @@
   filter: blur(6px);
 }
 
+.hdr-brand-logo {
+  width: clamp(70px, 5.1vw, 88px);
+  height: clamp(70px, 5.1vw, 88px);
+  object-fit: contain;
+  object-position: center;
+  flex: 0 0 auto;
+}
+
 .header-panel--center {
   gap: 0.2rem;
   flex-wrap: nowrap;

@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   FaArrowLeft, FaArrowRight, FaCheck, FaClock, FaCog,
   FaFilter, FaGripVertical, FaHandPointRight, FaInfoCircle, FaLayerGroup,
@@ -13,7 +13,8 @@ import {
   FunnelChart, Funnel, LabelList,
 } from 'recharts'
 import { useData } from '../../../context/DataContext'
-import { saveUserChartToDb, mapContextToCategory } from '../../../features/adminCharts/chartStorage'
+import { saveUserChartToDb, mapContextToCategory, fetchAllChartsFromDb } from '../../../features/adminCharts/chartStorage'
+import { chartApi } from '../../../services/chartApi'
 import './ChartsPage.css'
 
 const STEPS = [
@@ -193,7 +194,10 @@ const createFilterRow = () => ({
 
 const ChartsPage = ({ basePath = '/admin/charts' }) => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { addNotification } = useData()
+  const editChartId = location.state?.editChartId || ''
+  const [editingChart, setEditingChart] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
   const [selectedContext, setSelectedContext] = useState('Customer')
   const [selectedChartType, setSelectedChartType] = useState('Pie')
@@ -232,6 +236,46 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
     () => contextFields.filter((field) => !selectedFieldKeys.includes(field)),
     [contextFields, selectedFieldKeys]
   )
+
+  useEffect(() => {
+    if (!editChartId) return undefined
+
+    let isMounted = true
+    fetchAllChartsFromDb().then((chartBuckets) => {
+      if (!isMounted) return
+      const allCharts = Object.values(chartBuckets || {}).flat()
+      const foundChart = allCharts.find((chart) => (
+        String(chart.id || '') === String(editChartId)
+        || String(chart.templateId || '') === String(editChartId)
+      ))
+      if (!foundChart) return
+
+      setEditingChart(foundChart)
+      setSelectedContext(foundChart.entity || foundChart.context || 'Customer')
+      setSelectedChartType(foundChart.chartType || foundChart.type || 'Pie')
+      setSelectedAggregateType(foundChart.aggregation || 'Count')
+      setTitle(foundChart.title || foundChart.name || '')
+      setDescription(foundChart.description || '')
+      setClassificationField(foundChart.classificationField || '')
+      setClassificationOptions(foundChart.classificationOptions || {})
+      setChartOrderBy(foundChart.chartOrderBy || 'Count')
+      setTimeFilterEnabled(Boolean(foundChart.timeFilterEnabled))
+      setTimeFilterField(foundChart.timeFilterField || 'Added Date')
+      setTimeFilterPeriod(foundChart.timeFilterPeriod || 'This Month')
+      setFilterRows(Array.isArray(foundChart.filterRows) && foundChart.filterRows.length ? foundChart.filterRows : [createFilterRow()])
+      setSelectedActionKeys(foundChart.actions || foundChart.selectedActionKeys || [])
+      setOrderByEnabled(Boolean(foundChart.orderByEnabled))
+      setOrderByField(foundChart.orderByField || '')
+      setSelectedFieldKeys(foundChart.selectedFieldKeys || [])
+      setCurrentStep(2)
+    }).catch((error) => {
+      console.warn('Unable to load chart for editing:', error)
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [editChartId])
 
   const handleNext = () => {
     if (currentStep < STEPS.length) setCurrentStep((s) => s + 1)
@@ -336,9 +380,41 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
         orderByField,
         selectedFieldKeys,
       }
-      await saveUserChartToDb(category, payload)
+      if (editingChart) {
+        if (editingChart.source === 'template') {
+          await chartApi.updateTemplate(editingChart.templateId || editingChart.id, {
+            name: payload.title,
+            description: payload.description || `${payload.title} template`,
+            entity: payload.entity,
+            chartType: payload.chartType,
+            aggregation: payload.aggregation,
+            classification: {
+              field: payload.classificationField,
+              options: payload.classificationOptions,
+              orderBy: payload.chartOrderBy,
+            },
+            defaultFilters: {
+              timeFilter: {
+                enabled: payload.timeFilterEnabled,
+                field: payload.timeFilterField,
+                period: payload.timeFilterPeriod,
+              },
+              criteria: payload.filterRows || [],
+            },
+            defaultView: {
+              selectedFieldKeys: payload.selectedFieldKeys || [],
+              orderByEnabled: payload.orderByEnabled,
+              orderByField: payload.orderByField,
+            },
+          })
+        } else {
+          await chartApi.updateChart(editingChart.id, payload)
+        }
+      } else {
+        await saveUserChartToDb(category, payload)
+      }
     }
-    addNotification('success', 'Chart Created', `"${trimmedTitle}" was saved successfully.`)
+    addNotification('success', editingChart ? 'Chart Updated' : 'Chart Created', `"${trimmedTitle}" was saved successfully.`)
     navigate(basePath, { state: { newChartCategory: category } })
   }
 

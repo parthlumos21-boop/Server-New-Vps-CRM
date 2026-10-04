@@ -434,7 +434,16 @@ const SalesDashboard = () => {
         <Card className="sales-card full-width sales-chart-card" padding={false}>
           <div className="card-header">
             <h3>Pipeline Overview</h3>
-            <span className="deal-count">Deals by Stage</span>
+            <div className="sales-chart-header-actions">
+              <span className="deal-count">Deals by Stage</span>
+              <button
+                type="button"
+                className="view-all-btn"
+                onClick={() => navigate('/admin/charts')}
+              >
+                View Charts {'->'}
+              </button>
+            </div>
           </div>
           <div className="sales-chart-wrapper">
             <ResponsiveContainer width="100%" height="100%">

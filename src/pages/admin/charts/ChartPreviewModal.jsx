@@ -34,6 +34,7 @@ const CATEGORY_CONTEXT_MAP = {
 
 const guessClassificationField = (chart) => {
   if (chart.classificationField) return chart.classificationField
+  if (chart.classification?.field) return chart.classification.field
   const t = (chart.title || '').toLowerCase()
   if (t.includes('enquiry from')) return 'Lead Source'
   if (t.includes('status')) return 'Status'

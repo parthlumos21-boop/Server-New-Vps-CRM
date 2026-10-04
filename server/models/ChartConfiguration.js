@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const chartConfigurationSchema = new mongoose.Schema(
   {
-    companyId: { type: Number, default: 1 },
+    companyId: { type: Number, required: false },
     title: { type: String, required: true },
     description: { type: String, default: '' },
     entity: { type: String, required: true, enum: ['Account', 'Customer', 'SR', 'Deal', 'Quotation'] },

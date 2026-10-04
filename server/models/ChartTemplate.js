@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const chartTemplateSchema = new mongoose.Schema(
   {
-    companyId: { type: Number, default: 1 },
+    companyId: { type: Number, required: false },
     templateKey: { type: String, required: true },
     name: { type: String, required: true },
     description: { type: String, default: '' },

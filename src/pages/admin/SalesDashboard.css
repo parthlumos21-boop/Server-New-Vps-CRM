@@ -870,6 +870,14 @@
   letter-spacing: 0.04em;
 }
 
+.sales-dashboard .sales-chart-header-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
 .sales-dashboard .view-all-btn {
   display: inline-flex;
   align-items: center;

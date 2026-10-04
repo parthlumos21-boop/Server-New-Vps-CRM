@@ -10,13 +10,33 @@ const chartService = {
     if (!payload.templateKey || !payload.name || !payload.entity) {
       throw new AppError('templateKey, name, and entity are required.', 400)
     }
-    return chartRepository.createTemplate({
+    if (!actor?.id) {
+      throw new AppError('Authenticated user is required to create chart templates.', 401)
+    }
+    const templateData = {
       ...payload,
-      companyId: actor.companyId || 1,
       createdBy: actor.id,
       createdByEmail: String(actor.email || '').trim().toLowerCase(),
       createdByName: actor.name || actor.username || '',
-    })
+    }
+    if (actor?.companyId) {
+      templateData.companyId = actor.companyId
+    }
+    return chartRepository.createTemplate(templateData)
+  },
+  updateTemplate: async (actor, id, payload) => {
+    const updated = await chartRepository.updateTemplate(id, payload)
+    if (!updated) {
+      throw new AppError('Chart template not found.', 404)
+    }
+    return updated
+  },
+  deleteTemplate: async (actor, id) => {
+    const deleted = await chartRepository.deleteTemplate(id)
+    if (!deleted) {
+      throw new AppError('Chart template not found.', 404)
+    }
+    return deleted
   },
   listCharts: async (actor) => {
     return chartRepository.listCharts(actor)
@@ -32,16 +52,17 @@ const chartService = {
     if (!payload.title || !payload.entity) {
       throw new AppError('Chart title and entity context are required.', 400)
     }
+    if (!actor?.id) {
+      throw new AppError('Authenticated user is required to create charts.', 401)
+    }
 
-    const companyId = actor.companyId || 1
-    const createdBy = actor.id || 16
+    const createdBy = actor.id
     const createdByEmail = String(actor.email || '').trim().toLowerCase()
-    const createdByName = actor.name || actor.username || 'Admin User'
+    const createdByName = actor.name || actor.username || ''
 
     // 1. Save template definition into chart_templates MongoDB collection
     const templateKey = `${String(payload.entity).toLowerCase()}-${String(payload.title).toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`
-    const template = await chartRepository.createTemplate({
-      companyId,
+    const templatePayload = {
       templateKey,
       name: payload.title,
       description: payload.description || `${payload.title} template`,
@@ -71,12 +92,17 @@ const chartService = {
       createdBy,
       createdByEmail,
       createdByName,
-    })
+    }
+
+    if (actor?.companyId) {
+      templatePayload.companyId = actor.companyId
+    }
+
+    const template = await chartRepository.createTemplate(templatePayload)
 
     // 2. Save chart configuration into chart_configurations MongoDB collection
-    const chartConfig = await chartRepository.createChart({
+    const chartConfigPayload = {
       ...payload,
-      companyId,
       templateId: template._id,
       chartType: payload.chartType || payload.type || 'Pie',
       classification: {
@@ -101,7 +127,13 @@ const chartService = {
       createdBy,
       createdByEmail,
       createdByName,
-    })
+    }
+
+    if (actor?.companyId) {
+      chartConfigPayload.companyId = actor.companyId
+    }
+
+    const chartConfig = await chartRepository.createChart(chartConfigPayload)
 
     return chartConfig
   },

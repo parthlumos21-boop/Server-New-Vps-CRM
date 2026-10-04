@@ -10,20 +10,8 @@ const toNumberOrNull = (value) => {
 const chartRepository = {
   // Template CRUD
   listTemplates: async (actor = {}) => {
-    const email = normalizeEmail(actor.email)
-    const userId = toNumberOrNull(actor.id)
-    const visibility = [{ isSystem: true }]
-    if (email) {
-      visibility.push({ createdByEmail: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } })
-    }
-    if (userId !== null) {
-      visibility.push({ createdBy: userId })
-    }
-
-    return ChartTemplate.find({
-      $or: visibility,
-      isActive: true,
-    }).sort({ createdAt: -1, _id: -1 }).lean()
+    const query = { isActive: { $ne: false } }
+    return ChartTemplate.find(query).sort({ createdAt: -1, _id: -1 }).lean()
   },
   getTemplateById: async (id) => {
     return ChartTemplate.findById(id).lean()
@@ -32,20 +20,35 @@ const chartRepository = {
     const doc = new ChartTemplate(data)
     return doc.save()
   },
+  updateTemplate: async (id, data) => {
+    return ChartTemplate.findByIdAndUpdate(id, { $set: data }, { new: true }).lean()
+  },
+  deleteTemplate: async (id) => {
+    const deleted = await ChartTemplate.findByIdAndDelete(id).lean()
+    if (deleted?._id) {
+      await ChartConfiguration.deleteMany({ templateId: { $in: [deleted._id, String(deleted._id)] } })
+    }
+    return deleted
+  },
 
   // Chart Configuration CRUD
-  listCharts: async (actor) => {
-    const companyId = actor?.companyId || 1
+  listCharts: async (actor = {}) => {
+    const userEmail = normalizeEmail(actor?.email)
     const userId = actor?.id
-    return ChartConfiguration.find({
-      companyId,
-      $or: [
+    const query = { active: { $ne: false } }
+
+    if (userEmail || userId) {
+      query.$or = [
         { scope: 'company' },
         { scope: 'shared' },
-        { createdBy: userId },
-      ],
-      active: true,
-    }).sort({ createdAt: -1 }).lean()
+        ...(userEmail ? [{ createdByEmail: { $regex: `^${userEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' } }] : []),
+        ...(userId ? [{ createdBy: userId }] : []),
+        { createdByEmail: { $exists: false } },
+        { scope: { $exists: false } },
+      ]
+    }
+
+    return ChartConfiguration.find(query).sort({ createdAt: -1 }).lean()
   },
   getChartById: async (id) => {
     return ChartConfiguration.findById(id).lean()

@@ -1,10 +1,11 @@
 import React from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ResponsiveContainer,
   PieChart, Pie, Cell, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
-import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser } from 'react-icons/fa'
+import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser, FaEye } from 'react-icons/fa'
 
 const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
 
@@ -35,6 +36,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const chartType = config.chartType || config.type || 'Pie'
   const title = config.title || config.name || 'Analytics Chart'
   const entity = config.entity || config.context || 'Metrics'
@@ -156,6 +159,7 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
     entity.toLowerCase().includes('quotation') ? 'quotations' :
     entity.toLowerCase().includes('sr') ? 'support_requests' : 'data'
   )
+  const chartsPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
 
   return (
     <article className="analytics-card" style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
@@ -166,9 +170,20 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
           </span>
           {title}
         </h3>
-        <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
-          {entity} ({collectionName}) ({totalVal})
-        </span>
+        <div className="analytics-card-header-actions">
+          <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
+            {entity} ({collectionName}) ({totalVal})
+          </span>
+          <button
+            type="button"
+            className="analytics-chart-view-btn"
+            onClick={() => navigate(chartsPath)}
+            title="View chart templates"
+          >
+            <FaEye />
+            <span>View</span>
+          </button>
+        </div>
       </div>
       <div className="analytics-chart-body">
         {renderContent()}

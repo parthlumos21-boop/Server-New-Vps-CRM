@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -79,11 +80,15 @@ const CustomChartTooltip = ({ active, payload, label }) => {
 }
 
 const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotations = [], activities = [], users = [] }) => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const [period, setPeriod] = useState('month')
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
   const [loadingCharts, setLoadingCharts] = useState(true)
   const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
+  const visibleDbCharts = useMemo(() => dbCharts.slice(0, 4), [dbCharts])
+  const chartListPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
 
   const pipeline = useMemo(() => {
     const counts = deals.reduce((result, deal) => {
@@ -188,6 +193,16 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         </div>
 
         <div className="analytics-header-right">
+          {dbCharts.length > 4 ? (
+            <button
+              type="button"
+              className="analytics-view-all-charts-btn"
+              onClick={() => navigate(chartListPath)}
+            >
+              View All Charts
+            </button>
+          ) : null}
+
           <div className="analytics-header-pills">
             {kpiCards.map((card) => (
               <div key={card.key} className="analytics-header-pill">
@@ -233,7 +248,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
 
       <div className="analytics-grid analytics-grid--charts">
         {dbCharts.length > 0 ? (
-          dbCharts.map((chart) => (
+          visibleDbCharts.map((chart) => (
             <ChartRenderer
               key={chart._id || chart.id}
               config={chart}

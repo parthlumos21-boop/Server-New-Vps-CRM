@@ -580,3 +580,25 @@ html:not([data-theme="dark"]) .layout--admin .cl-filter-panel button.cl-category
   color: #ffffff !important;
   -webkit-text-fill-color: #ffffff !important;
 }
+
+.cl-horizontal-filter-item--active,
+.cl-row-toggle-open {
+  background: #c60016 !important;
+  box-shadow: 0 4px 12px rgba(198, 0, 22, 0.2);
+}
+
+.cl-row:hover,
+.cl-row-expanded {
+  border-color: rgba(198, 0, 22, 0.28) !important;
+}
+
+.cl-row-toggle,
+.cl-row-title-link:hover,
+.cl-row-badge {
+  color: #b91c2b;
+}
+
+.cl-row-toggle:hover {
+  background: #c60016;
+  color: #ffffff;
+}
