@@ -46,7 +46,7 @@ import './Header.css'
 const ADMIN_USER_MENU = [
   { label: 'Dashboard', icon: FaDesktop, route: '/admin/monitoring' },
   { label: 'Sales Dashboard', icon: FaDesktop, route: '/admin/sales-dashboard' },
-  { label: 'My Profile', icon: FaUserCircle, route: '/admin/user-management' },
+  { label: 'My Profile', icon: FaUserCircle, route: '/admin/monitoring?view=myCrm' },
   { label: 'LaunchPad', icon: FaTh, route: '/admin/launchpad' },
   { label: 'Settings', icon: FaCog, route: '/admin/settings' },
   { label: 'Quotation Summary', icon: FaCreditCard, route: '/admin/reports/quotation-summary' },

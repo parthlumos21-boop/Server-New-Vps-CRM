@@ -8,7 +8,6 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaClock,
-  FaExternalLinkAlt,
   FaFilter,
   FaPhoneAlt,
   FaPlus,
@@ -356,7 +355,6 @@ const SupportRequestView = () => {
                   <th style={{ textAlign: 'center' }}>Status</th>
                   <th>Contact & Phone</th>
                   <th>Date & Age</th>
-                  <th style={{ textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -437,36 +435,12 @@ const SupportRequestView = () => {
                           </span>
                         </div>
                       </td>
-                      <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="sr-table-actions-cell">
-                          <button
-                            type="button"
-                            className="sr-action-btn-view"
-                            onClick={() => navigate(`${basePath}/details/${supportRequest.id}`)}
-                            title="View details"
-                          >
-                            <FaExternalLinkAlt size={11} />
-                            <span>View</span>
-                          </button>
-                          {isAuthorizedToClose && (
-                            <button
-                              type="button"
-                              className="sr-action-btn-close"
-                              onClick={(e) => handleCloseRequest(e, supportRequest.id)}
-                              title="Close ticket"
-                            >
-                              <FaCheck size={11} />
-                              <span>Close</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
                     </tr>
                   )
                 })}
                 {filteredRequests.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="sr-table-empty-cell">
+                    <td colSpan={7} className="sr-table-empty-cell">
                       <div className="sr-empty-message">
                         <FaTicketAlt size={28} className="sr-empty-icon" />
                         <strong>No support requests found</strong>

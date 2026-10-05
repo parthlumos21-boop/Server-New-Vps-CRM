@@ -23,6 +23,7 @@ import apiClient from '../../services/apiClient'
 import { remarkApi } from '../../services/remarkApi'
 import { customerService } from '../../services/customerService'
 import { formatCurrency, formatDate } from '../../utils/helpers'
+import { filterCommunicationActivitiesForUser } from '../../utils/communicationActivityAccess'
 import './UserDashboardPage.css'
 import AnalyticsSection from '../../components/dashboard/AnalyticsSection'
 
@@ -69,11 +70,11 @@ const UserDashboardPage = () => {
     let isMounted = true
     remarkApi.getAllRemarks({ limit: 10 }).then((res) => {
       if (isMounted && Array.isArray(res)) {
-        setCommunicationRemarks(res)
+        setCommunicationRemarks(filterCommunicationActivitiesForUser(res, user).slice(0, 10))
       }
     }).catch(() => {})
     return () => { isMounted = false }
-  }, [fetchTodoReplies])
+  }, [fetchTodoReplies, user])
 
   const stats = useMemo(() => {
     const pendingTasks = tasks.filter((task) => task.status === 'pending')

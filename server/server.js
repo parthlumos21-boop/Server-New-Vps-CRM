@@ -53,6 +53,7 @@ const databaseRoutes = require('./routes/databaseRoutes')
 const userDeviceRoutes = require('./routes/userDeviceRoutes')
 const reportRoutes = require('./routes/reportRoutes')
 const chartRoutes = require('./routes/chartRoutes')
+const accountProjectRoutes = require('./routes/accountProjectRoutes')
 const chartController = require('./controllers/chartController')
 
 const tryRequire = (moduleName) => {
@@ -249,6 +250,7 @@ app.get('/api/activities', requireAuth, (req, res) => {
 app.use('/api/auth', requireBackendReady, authRoutes)
 app.use('/api/audit', requireBackendReady, auditRoutes)
 app.use('/api/leads', requireBackendReady, leadRoutes)
+app.use('/api/account-projects', requireBackendReady, accountProjectRoutes)
 app.use('/api/notifications', requireBackendReady, notificationRoutes)
 app.use('/api/users', requireBackendReady, userRoutes)
 app.use('/api/messages', requireBackendReady, messageRoutes)

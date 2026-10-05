@@ -31,8 +31,10 @@ import { useClickOutside } from '../../hooks'
 import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import apiClient from '../../services/apiClient'
+import { remarkApi } from '../../services/remarkApi'
 import { customerService } from '../../services/customerService'
 import { APP_NAME } from '../../utils/constants'
+import { filterCommunicationActivitiesForUser } from '../../utils/communicationActivityAccess'
 import { getAdminBookmarks, subscribeAdminBookmarks, toggleAdminBookmark } from '../../features/adminBookmarks/adminBookmarkStorage'
 import {
   DASHBOARD_TAB_TEMPLATES,
@@ -229,6 +231,7 @@ const AdminPanel = () => {
   const [selectedPerformanceMetric, setSelectedPerformanceMetric] = useState('won')
   const [collapsedMyCrmCards, setCollapsedMyCrmCards] = useState([])
   const [todoReplies, setTodoReplies] = useState([])
+  const [communicationRemarks, setCommunicationRemarks] = useState([])
   const [activeTodoTab, setActiveTodoTab] = useState('all')
   const [todoFilter, setTodoFilter] = useState('all')
   const [reminderStatesById, setReminderStatesById] = useState(() => getAdminReminderStates())
@@ -244,6 +247,16 @@ const AdminPanel = () => {
       console.error('Failed to fetch todo replies:', error)
     }
   }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    remarkApi.getAllRemarks({ limit: 10 }).then((res) => {
+      if (isMounted && Array.isArray(res)) {
+        setCommunicationRemarks(filterCommunicationActivitiesForUser(res, user).slice(0, 10))
+      }
+    }).catch(() => {})
+    return () => { isMounted = false }
+  }, [user])
 
   useEffect(() => {
     fetchTodoReplies()
@@ -995,6 +1008,44 @@ const AdminPanel = () => {
           <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem' }}>
             Track and monitor all recent call logs, general remarks, feedback, and interactive team discussion threads across Accounts and Deals.
           </p>
+          {communicationRemarks.length === 0 ? (
+            <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '8px', color: '#94a3b8', fontSize: '0.875rem', textAlign: 'center' }}>
+              No recent communication activities found.
+            </div>
+          ) : (
+            <div className="ap-communication-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+              {communicationRemarks.slice(0, 5).map((rmk) => (
+                <div
+                  key={rmk.id || rmk._id}
+                  style={{
+                    padding: '0.625rem 0.875rem',
+                    background: '#f8fafc',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #740a03',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.25rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: '#740a03' }}>
+                      {String(rmk.category || 'General').toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                      {rmk.createdAt ? new Date(rmk.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#1e293b', fontWeight: '500' }}>
+                    {rmk.content || '-'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#64748b', marginTop: '0.125rem', flexWrap: 'wrap' }}>
+                    <span><strong>Account/Deal:</strong> {rmk.accountName || rmk.dealName || `ID: ${rmk.accountId || rmk.dealId || '-'}`}</span>
+                    <span><strong>By:</strong> {rmk.createdByName || 'User'} ({rmk.createdByEmail || rmk.accountOwnerEmail || '-'})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <AnalyticsSection
@@ -1433,7 +1484,7 @@ const AdminPanel = () => {
           onClick={handleSelectHome}
         >
           <FaHome />
-          <span>Monitoring Home</span>
+          <span>Home</span>
         </button>
 
         <div className="ap-tabs">

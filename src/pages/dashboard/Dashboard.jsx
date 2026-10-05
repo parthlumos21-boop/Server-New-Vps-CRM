@@ -37,6 +37,7 @@ import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
 import { remarkApi } from '../../services/remarkApi'
+import { filterCommunicationActivitiesForUser } from '../../utils/communicationActivityAccess'
 import './Dashboard.css'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -83,11 +84,11 @@ const Dashboard = () => {
     let mounted = true
     remarkApi.getAllRemarks({ limit: 10 }).then((res) => {
       if (mounted && Array.isArray(res)) {
-        setCommunicationRemarks(res)
+        setCommunicationRemarks(filterCommunicationActivitiesForUser(res, user).slice(0, 10))
       }
     }).catch(() => {})
     return () => { mounted = false }
-  }, [])
+  }, [user])
 
   const stats = useMemo(() => ({
     totalAccounts: accounts.length,

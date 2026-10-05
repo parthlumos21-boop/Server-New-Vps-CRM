@@ -25,6 +25,7 @@ import {
   DEAL_LIFECYCLE_STATUS_OPTIONS,
 } from '../../features/adminDeals/config/dealUtils'
 import { userApi } from '../../services/userApi'
+import { accountProjectApi } from '../../services/accountProjectApi'
 import {
   getAccountOwnerOptionLabel,
   loadAccountOwnerOptions,
@@ -216,6 +217,8 @@ const AddAccountWizard = () => {
   const [isExistingCustomer, setIsExistingCustomer] = useState(false)
   const [customerSearch, setCustomerSearch] = useState('')
   const [selectedCustomerId, setSelectedCustomerId] = useState('')
+  const [selectedSource, setSelectedSource] = useState(null)
+  const [sourceOptions, setSourceOptions] = useState([])
   const [customers, setCustomers] = useState(() => customerService.getCustomers())
 
   useEffect(() => {
@@ -281,6 +284,35 @@ const AddAccountWizard = () => {
     customerService.loadCustomers().then((nextCustomers) => setCustomers([...nextCustomers])).catch(() => {})
     return unsubscribe
   }, [])
+
+  useEffect(() => {
+    if (!isExistingCustomer) {
+      setSourceOptions([])
+      return undefined
+    }
+
+    const searchValue = customerSearch.trim()
+    if (searchValue.length < 2 || selectedCustomerId) {
+      setSourceOptions([])
+      return undefined
+    }
+
+    let cancelled = false
+    const timeoutId = window.setTimeout(() => {
+      accountProjectApi.searchSources(searchValue)
+        .then((records) => {
+          if (!cancelled) setSourceOptions(Array.isArray(records) ? records : [])
+        })
+        .catch(() => {
+          if (!cancelled) setSourceOptions([])
+        })
+    }, 250)
+
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeoutId)
+    }
+  }, [customerSearch, isExistingCustomer, selectedCustomerId])
 
   const categoryUpper = String(formData.accountCategory || '').toUpperCase().trim()
   const activeOwners = filterAccountOwnerOptionsByVertical(ownerOptions, formData.accountCategory).map(owner => ({
@@ -360,6 +392,10 @@ const AddAccountWizard = () => {
   }, [accounts, customers, deals])
 
   const filteredCustomers = useMemo(() => {
+    if (isExistingCustomer && sourceOptions.length > 0) {
+      return sourceOptions
+    }
+
     const searchValue = customerSearch.trim().toLowerCase()
     if (!searchValue) return []
     return customerOptions
@@ -383,11 +419,16 @@ const AddAccountWizard = () => {
       .filter((entry) => entry.matched)
       .map((entry) => entry.customer)
       .slice(0, 12)
-  }, [customerOptions, customerSearch])
+  }, [customerOptions, customerSearch, isExistingCustomer, sourceOptions])
 
   const handleSelectCustomer = (customer) => {
     const primaryContact = customer.contacts?.[0] || {}
     setSelectedCustomerId(customer.id)
+    const sourceType = customer.sourceType === 'account' ? 'lead' : (customer.sourceType || 'customer')
+    setSelectedSource({
+      sourceType,
+      sourceId: customer.sourceId || String(customer.id || '').replace(/^(lead|deal|customer|account)-/, ''),
+    })
     setCustomerSearch(customer.customerName)
     setErrors((prev) => {
       const next = { ...prev }
@@ -564,6 +605,65 @@ const AddAccountWizard = () => {
     const selectedOwner = activeOwners.find(o => o.value === formData.accountOwner)
     const finalOwnerName = selectedOwner ? selectedOwner.userObj.name : formData.accountOwner
     const finalOwnerCode = selectedOwner && selectedOwner.userObj ? (selectedOwner.userObj.ownerCode || '') : ''
+
+    if (isExistingCustomer) {
+      try {
+        const result = await accountProjectApi.createExistingSourceProject({
+          sourceType: selectedSource?.sourceType,
+          sourceId: selectedSource?.sourceId,
+          formData: {
+            ...formData,
+            accountOwner: finalOwnerName || formData.accountOwner,
+            accountOwnerCode: finalOwnerCode || formData.accountOwnerCode,
+            dealOwner: formData.dealOwner || finalOwnerName,
+          },
+        })
+
+        if (formData.reminderDate || formData.remark) {
+          await createReminder({
+            title: 'Account Follow-up',
+            message: formData.remark?.trim() || '',
+            remindAt: formData.reminderDate ? `${formData.reminderDate}T10:00:00` : new Date().toISOString(),
+            status: 'scheduled',
+            relatedEntityType: 'account',
+            relatedEntityId: result?.lead?.id || '',
+            assignedTo: finalOwnerName,
+            reminderDate: formData.reminderDate,
+            reminderTime: '10:00',
+            reminderMode: formData.reminderMode,
+          }).catch((err) => console.error('Failed to create reminder', err))
+        }
+
+        addNotification(
+          'success',
+          'Project Deal Created',
+          `${formData.projectName || formData.dealName || formData.customerName || 'Project'} is now saved in Accounts and Deals.`
+        )
+
+        const createdLead = result?.lead ? normalizeAccountRecord(result.lead) : null
+        if (createdLead?.id) {
+          const nextParams = new URLSearchParams({
+            stage: createdLead.stage || 'new',
+            accountId: createdLead.id,
+            page: '1',
+          })
+          navigate(`${backPath}?${nextParams.toString()}`, {
+            state: {
+              newAccountId: createdLead.id,
+              newAccountName: createdLead.name,
+              newDealId: result?.deal?.id || '',
+            },
+          })
+        } else {
+          navigate(backPath)
+        }
+      } catch (error) {
+        addNotification('error', 'Save Failed', error?.response?.data?.message || error?.message || 'Unable to create project deal.')
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
 
     const accountPayload = {
       name: formData.accountName,
@@ -830,6 +930,9 @@ const AddAccountWizard = () => {
                   onChange={(e) => {
                     const checked = e.target.checked
                     setIsExistingCustomer(checked)
+                    setSelectedCustomerId('')
+                    setSelectedSource(null)
+                    setSourceOptions([])
                     setErrors({})
                     setValidationNotice([])
                   }} 
@@ -848,6 +951,7 @@ const AddAccountWizard = () => {
                     onChange={(e) => {
                       setCustomerSearch(e.target.value)
                       setSelectedCustomerId('')
+                      setSelectedSource(null)
                     }}
                     placeholder="Start typing the customer name (e.g. Tata, Demo)"
                     className={`w-full max-w-md py-1.5 px-2 text-sm border rounded outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-shadow ${errors.customer ? 'border-red-500 admin-add-deal-input-error' : 'border-gray-300'}`}
@@ -859,7 +963,7 @@ const AddAccountWizard = () => {
                         <div key={c.id} onClick={() => handleSelectCustomer(c)} className="p-3 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-0">
                           <div className="font-semibold text-sm text-slate-800">{c.customerName}</div>
                           <div className="text-xs text-slate-500">
-                            <span className="bg-gray-100 px-1 py-0.5 rounded mr-2">{c.sourceType === 'account' ? 'Account' : c.sourceType === 'deal' ? 'Deal' : 'Customer'}</span>
+                            <span className="bg-gray-100 px-1 py-0.5 rounded mr-2">{c.sourceType === 'lead' || c.sourceType === 'account' ? 'Account' : c.sourceType === 'deal' ? 'Deal' : 'Customer'}</span>
                             {c.customerNumber || 'No number'} | {c.customerOwnerDisplay || 'No owner'}
                           </div>
                         </div>

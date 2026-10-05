@@ -18,6 +18,7 @@ import { dealApi } from '../../services/dealApi'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { formatDate } from '../../utils/helpers'
+import { filterCommunicationActivitiesForUser } from '../../utils/communicationActivityAccess'
 import './CommunicationActivitiesPage.css'
 
 const CATEGORY_OPTIONS = [
@@ -94,7 +95,9 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
         }
       })
 
-      setRemarks(enriched)
+      setRemarks(filterCommunicationActivitiesForUser(enriched, user, {
+        allowAll: false,
+      }))
     } catch (err) {
       console.error('Failed to load communication activities:', err)
       addNotification('error', 'Error Loading Data', 'Failed to load communication activities.')
@@ -105,7 +108,7 @@ const CommunicationActivitiesPage = ({ isAdmin = false }) => {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [user])
 
   useEffect(() => {
     setCurrentPage(1)

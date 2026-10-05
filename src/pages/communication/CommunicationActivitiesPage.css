@@ -195,3 +195,12 @@
   color: #0f172a;
   vertical-align: middle;
 }
+
+html.is-user:not([data-theme="dark"]) .comm-activities-table thead tr,
+html.is-user:not([data-theme="dark"]) .comm-activities-table thead th,
+html.is-admin:not([data-theme="dark"]) .comm-activities-table thead tr,
+html.is-admin:not([data-theme="dark"]) .comm-activities-table thead th {
+  background: #c60016 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}

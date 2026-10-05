@@ -2,7 +2,6 @@ import {
   FaBell,
   FaCalendarAlt,
   FaChartPie,
-  FaCloud,
   FaClipboardList,
   FaDesktop,
   FaHandshake,
@@ -15,13 +14,6 @@ import {
 } from 'react-icons/fa'
 
 export const USER_SIDEBAR_TOOLBAR = [
-  {
-    key: 'data-manager',
-    to: '/data-manager',
-    title: 'Data Manager',
-    ariaLabel: 'Data Manager',
-    icon: FaCloud,
-  },
   {
     key: 'calendar',
     to: '/calendar',
@@ -144,11 +136,5 @@ export const USER_SIDEBAR_PLAIN_LINKS = [
     to: '/view-settings',
     label: 'View Settings',
     icon: FaTh,
-  },
-  {
-    key: 'data-manager',
-    to: '/data-manager',
-    label: 'Data Manager',
-    icon: FaCloud,
   },
 ]

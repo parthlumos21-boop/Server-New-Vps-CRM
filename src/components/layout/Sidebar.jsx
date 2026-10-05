@@ -7,7 +7,6 @@ import {
   FaCalendarAlt,
   FaChartPie,
   FaClipboardList,
-  FaCloud,
   FaDesktop,
   FaHandshake,
   FaHeadset,
@@ -320,7 +319,6 @@ const Sidebar = ({ isAdmin = false }) => {
             {USER_SIDEBAR_TOOLBAR.map((item) => {
               const Icon = item.icon
               const isRouteActive = (
-                (item.key === 'data-manager' && (location.pathname.startsWith('/data-manager') || location.pathname.startsWith('/image-gallery') || location.pathname.startsWith('/bulk-uploads'))) ||
                 (item.key === 'calendar' && location.pathname.startsWith('/calendar')) ||
                 (item.key === 'dashboard' && (location.pathname === '/dashboard' || location.pathname === '/monitoring' || location.pathname === '/' || location.pathname === '/home'))
               )
@@ -329,7 +327,6 @@ const Sidebar = ({ isAdmin = false }) => {
                 <NavLink
                   key={item.key}
                   to={item.to}
-                  onClick={(e) => handleToolbarNav(e, item.to)}
                   className={({ isActive }) => `sb-view-toolbar-button ${isRouteActive || isActive ? 'sb-view-toolbar-button--route-active active' : ''}`}
                   title={item.title}
                   aria-label={item.ariaLabel}
@@ -495,7 +492,6 @@ const Sidebar = ({ isAdmin = false }) => {
         <div className="sb-view-toolbar" aria-label="Sidebar view options">
           <NavLink
             to="/admin/calendar"
-            onClick={(e) => handleToolbarNav(e, '/admin/calendar')}
             className={({ isActive }) => `sb-view-toolbar-button ${location.pathname.startsWith('/admin/calendar') || isActive ? 'sb-view-toolbar-button--route-active active' : ''}`}
             title="Calendar"
             aria-label="Calendar"
@@ -671,15 +667,6 @@ const Sidebar = ({ isAdmin = false }) => {
           >
             <span className="sb-link-icon"><FaTh /></span>
             <span>View Settings</span>
-          </NavLink>
-
-          <NavLink
-            to="/admin/data-manager"
-            className={({ isActive }) => `sb-link sb-workspace-tool-link ${isActive ? 'sb-link--active' : ''}`}
-            title="Data Manager"
-          >
-            <span className="sb-link-icon"><FaCloud /></span>
-            <span>Data Manager</span>
           </NavLink>
 
           {(user?.role === 'super_admin' || user?.actualRole === 'super_admin') ? (
