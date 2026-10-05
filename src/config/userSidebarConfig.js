@@ -86,6 +86,7 @@ export const USER_SIDEBAR_GROUPS = [
     icon: FaBell,
     routePrefix: '/reminders',
     items: [
+      { label: 'Add Reminder', to: '/reminders/add' },
       { label: 'My Reminders', to: '/reminders/my' },
       { label: 'Active Reminders', to: '/reminders/active' },
       { label: 'Closed Reminders', to: '/reminders/closed' },

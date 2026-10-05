@@ -35,14 +35,18 @@ const AddReminderModal = ({
   contextLabel = '',
   createdBy = '',
   onSaved,
-  relatedEntityType,
-  relatedEntityId,
+  relatedEntityType: initialRelatedEntityType,
+  relatedEntityId: initialRelatedEntityId,
   assignedTo,
+  showEntitySelector = false,
 }) => {
   const { user } = useAuth()
-  const { createReminder, createTask, addNotification } = useData()
+  const { accounts = [], deals = [], createReminder, createTask, addNotification } = useData()
   const [form, setForm] = useState(getInitialFormState)
   const [saving, setSaving] = useState(false)
+  const [entityType, setEntityType] = useState('account')
+  const [selectedAccountId, setSelectedAccountId] = useState('')
+  const [selectedDealId, setSelectedDealId] = useState('')
 
   if (!isOpen) return null
 
@@ -70,6 +74,44 @@ const AddReminderModal = ({
     const remindAt = `${form.reminderDate}T${reminderTime}:00`
     const finalAssignedTo = assignedTo || user?.id
 
+    let finalRelatedEntityType = initialRelatedEntityType
+    let finalRelatedEntityId = initialRelatedEntityId
+    let extraMeta = {}
+
+    if (showEntitySelector) {
+      if (entityType === 'account') {
+        if (!selectedAccountId) {
+          alert('Please select an Account.')
+          setSaving(false)
+          return
+        }
+        const acc = accounts.find((a) => String(a.id || a._id) === String(selectedAccountId))
+        finalRelatedEntityType = 'account'
+        finalRelatedEntityId = selectedAccountId
+        extraMeta = {
+          accountId: selectedAccountId,
+          accountName: acc?.name || acc?.accountName || acc?.companyName || '',
+          accountNumber: acc?.accountNumber || acc?.accountNo || '',
+        }
+      } else if (entityType === 'deal') {
+        if (!selectedDealId) {
+          alert('Please select a Deal.')
+          setSaving(false)
+          return
+        }
+        const deal = deals.find((d) => String(d.id || d._id) === String(selectedDealId))
+        finalRelatedEntityType = 'deal'
+        finalRelatedEntityId = selectedDealId
+        extraMeta = {
+          dealId: selectedDealId,
+          dealName: deal?.name || deal?.title || deal?.dealName || '',
+          dealNumber: deal?.dealNumber || deal?.dealNo || '',
+          accountId: deal?.accountId || '',
+          accountName: deal?.accountName || '',
+        }
+      }
+    }
+
     const reminderPayload = {
       title: form.title.trim(),
       message: form.note.trim(),
@@ -79,8 +121,9 @@ const AddReminderModal = ({
       reminderTime,
       reminderMode: form.reminderMode,
       assignedTo: finalAssignedTo,
-      ...(relatedEntityType && { relatedEntityType }),
-      ...(relatedEntityId && { relatedEntityId }),
+      ...(finalRelatedEntityType && { relatedEntityType: finalRelatedEntityType }),
+      ...(finalRelatedEntityId && { relatedEntityId: finalRelatedEntityId }),
+      ...extraMeta,
     }
 
     const result = await createReminder(reminderPayload)
@@ -156,6 +199,73 @@ const AddReminderModal = ({
 
         {/* ── Body ── */}
         <form className="arm-body" onSubmit={handleSubmit} id="add-reminder-form">
+          {showEntitySelector && (
+            <div className="arm-section arm-entity-selector-box" style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '12px', marginBottom: '14px' }}>
+              <label className="arm-label" style={{ fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Select Entity Context *</label>
+              <div style={{ display: 'flex', gap: '20px', marginBottom: '10px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: '#1e293b' }}>
+                  <input
+                    type="radio"
+                    name="armEntityTypeRadio"
+                    value="account"
+                    checked={entityType === 'account'}
+                    onChange={() => { setEntityType('account'); setSelectedDealId(''); }}
+                  />
+                  Account (Leads Collection)
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: '#1e293b' }}>
+                  <input
+                    type="radio"
+                    name="armEntityTypeRadio"
+                    value="deal"
+                    checked={entityType === 'deal'}
+                    onChange={() => { setEntityType('deal'); setSelectedAccountId(''); }}
+                  />
+                  Deal (Deals Collection)
+                </label>
+              </div>
+
+              {entityType === 'account' && (
+                <div>
+                  <label className="arm-label" htmlFor="arm-select-account">Select Account *</label>
+                  <select
+                    id="arm-select-account"
+                    className="arm-mode-select"
+                    value={selectedAccountId}
+                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Choose Account --</option>
+                    {accounts.map((acc) => (
+                      <option key={acc.id || acc._id} value={acc.id || acc._id}>
+                        {acc.name || acc.accountName || acc.companyName || 'Account'} {acc.accountNumber || acc.accountNo ? `(${acc.accountNumber || acc.accountNo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {entityType === 'deal' && (
+                <div>
+                  <label className="arm-label" htmlFor="arm-select-deal">Select Deal *</label>
+                  <select
+                    id="arm-select-deal"
+                    className="arm-mode-select"
+                    value={selectedDealId}
+                    onChange={(e) => setSelectedDealId(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Choose Deal --</option>
+                    {deals.map((deal) => (
+                      <option key={deal.id || deal._id} value={deal.id || deal._id}>
+                        {deal.name || deal.title || deal.dealName || 'Deal'} {deal.dealNumber || deal.dealNo ? `(${deal.dealNumber || deal.dealNo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Title */}
           <div className="arm-section">

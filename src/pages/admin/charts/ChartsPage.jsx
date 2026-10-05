@@ -589,10 +589,6 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
   )
 
   const renderStep2 = () => {
-    const classificationFieldState = classificationOptions[classificationField] || {}
-    const allOn = classificationCurrentOptions.length > 0
-      && classificationCurrentOptions.every((option) => classificationFieldState[option])
-
     return (
       <div className="cc-body cc-body-step2">
         <div className="cc-summary-grid">
@@ -626,78 +622,6 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
               onChange={(event) => setDescription(event.target.value)}
               rows={3}
             />
-          </div>
-        </div>
-
-        {/* Classification Field Removed */}
-        {false ? <>
-            {/* Classification Field removed */}
-            <select
-              id="cc-classification-select"
-              className="cc-select"
-              value={classificationField}
-              onChange={(event) => handleSelectClassificationField(event.target.value)}
-            >
-              <option value="">Select</option>
-              {classificationFieldOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          </div>
-
-          {classificationField ? (
-            <div className="cc-classification-options">
-              <div className="cc-classification-options-title">
-                Choose the {classificationField} to be listed in the view
-              </div>
-
-              <div className="cc-classification-master-row">
-                <button
-                  type="button"
-                  className={`cc-toggle-pill ${allOn ? 'cc-toggle-pill-on' : 'cc-toggle-pill-off'}`}
-                  onClick={handleToggleAllClassificationOptions}
-                >
-                  {allOn ? 'ON' : 'OFF'}
-                </button>
-                <span className="cc-classification-option-label cc-classification-option-label-link">Select all</span>
-              </div>
-
-              <div className="cc-classification-options-grid">
-                {classificationCurrentOptions.map((option) => {
-                  const isOn = Boolean(classificationFieldState[option])
-                  return (
-                    <div key={option} className="cc-classification-toggle-row">
-                      <button
-                        type="button"
-                        className={`cc-toggle-pill ${isOn ? 'cc-toggle-pill-on' : 'cc-toggle-pill-off'}`}
-                        onClick={() => handleToggleClassificationOption(option)}
-                      >
-                        {isOn ? 'ON' : 'OFF'}
-                      </button>
-                      <span className="cc-classification-option-label">{option}</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ) : null}
-        </> : null}
-
-        {/* Chart Order By & Classification Removed */}
-          {/* Chart Order By Removed */}
-        {/* Chart Order By Block Removed */}
-            {false && CHART_ORDER_BY_OPTIONS.map((option) => (
-              <label key={option} className="cc-chart-orderby-radio">
-                <input
-                  type="radio"
-                  name="cc-chart-orderby"
-                  value={option}
-                  checked={chartOrderBy === option}
-                  onChange={() => setChartOrderBy(option)}
-                />
-                <span>{option}</span>
-              </label>
-            ))}
           </div>
         </div>
       </div>

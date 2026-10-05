@@ -4,6 +4,7 @@ import {
   FaArrowLeft,
   FaBell,
   FaBriefcase,
+  FaCalendarAlt,
   FaCog,
   FaCreditCard,
   FaDesktop,
@@ -305,7 +306,7 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
 
   const handleOpenReminderPanel = () => {
     closeHeaderPanels()
-    setAddReminderOpen(true)
+    navigate(isAdmin ? '/admin/reminders/my' : '/reminders/my')
   }
 
   const handleOpenQuickAdd = () => {
@@ -347,7 +348,7 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
 
   const handleOpenRemindersPage = () => {
     closeHeaderPanels()
-    navigate(isAdmin ? '/admin/reminders/my' : '/reminders')
+    navigate(isAdmin ? '/admin/reminders/my' : '/reminders/my')
   }
 
   const handleQuickAddNavigate = (item) => {
@@ -566,6 +567,21 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
                   })}
                 </div>
               )}
+            </div>
+
+            <div className="hdr-message-wrap">
+              <button
+                type="button"
+                className={`hdr-icon-btn hdr-icon-btn--circle ${isAdmin ? 'hdr-icon-btn--admin-quick-add' : ''}`}
+                title="Calendar"
+                aria-label="Calendar"
+                onClick={() => {
+                  closeHeaderPanels()
+                  navigate(isAdmin ? '/admin/calendar' : '/calendar')
+                }}
+              >
+                <FaCalendarAlt />
+              </button>
             </div>
 
             <div className="hdr-message-wrap" ref={messageWrapRef}>

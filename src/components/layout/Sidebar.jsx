@@ -95,11 +95,12 @@ const SectionLabel = ({ children, isCollapsed }) => (
   isCollapsed ? null : <div className="sb-section-label">{children}</div>
 )
 
-const SubLink = ({ to, label, accent, end, isActiveMatch }) => (
+const SubLink = ({ to, label, accent, end, isActiveMatch, onClick }) => (
   <NavLink
     to={to}
     end={end}
     title={label}
+    onClick={onClick}
     className={({ isActive, isPending }) => {
       const match = typeof isActiveMatch === 'function' ? isActiveMatch() : isActive
       return `sb-sub-link ${match ? 'sb-sub-link--active' : ''} ${accent ? 'sb-sub-link--accent' : ''}`
@@ -244,6 +245,7 @@ const Sidebar = ({ isAdmin = false }) => {
   ]
 
   const remindersMenuItems = [
+    { label: 'Add Reminder', to: '/admin/reminders/add' },
     { label: 'My Reminders', to: '/admin/reminders/my' },
     { label: 'Active Reminders', to: '/admin/reminders/active' },
     { label: 'Closed Reminders', to: '/admin/reminders/closed' },
@@ -315,27 +317,7 @@ const Sidebar = ({ isAdmin = false }) => {
         <nav className="sb-nav">
           
 
-          <div className="sb-view-toolbar" aria-label="Sidebar view options">
-            {USER_SIDEBAR_TOOLBAR.map((item) => {
-              const Icon = item.icon
-              const isRouteActive = (
-                (item.key === 'calendar' && location.pathname.startsWith('/calendar')) ||
-                (item.key === 'dashboard' && (location.pathname === '/dashboard' || location.pathname === '/monitoring' || location.pathname === '/' || location.pathname === '/home'))
-              )
 
-              return (
-                <NavLink
-                  key={item.key}
-                  to={item.to}
-                  className={({ isActive }) => `sb-view-toolbar-button ${isRouteActive || isActive ? 'sb-view-toolbar-button--route-active active' : ''}`}
-                  title={item.title}
-                  aria-label={item.ariaLabel}
-                >
-                  <Icon />
-                </NavLink>
-              )
-            })}
-          </div>
 
           <div className="sb-nav-section">
             <SectionLabel isCollapsed={isSidebarCollapsed}>Monitoring</SectionLabel>
@@ -442,6 +424,7 @@ const Sidebar = ({ isAdmin = false }) => {
               isCollapsed={isSidebarCollapsed}
               onToggle={() => setUserRemindersOpen(!userRemindersOpen)}
             >
+              <SubLink to="/reminders/add" label="Add Reminder" />
               <SubLink to="/reminders/my" label="My Reminders" />
               <SubLink to="/reminders/active" label="Active Reminders" />
               <SubLink to="/reminders/closed" label="Closed Reminders" />
@@ -489,25 +472,7 @@ const Sidebar = ({ isAdmin = false }) => {
       <nav className="sb-nav">
         
 
-        <div className="sb-view-toolbar" aria-label="Sidebar view options">
-          <NavLink
-            to="/admin/calendar"
-            className={({ isActive }) => `sb-view-toolbar-button ${location.pathname.startsWith('/admin/calendar') || isActive ? 'sb-view-toolbar-button--route-active active' : ''}`}
-            title="Calendar"
-            aria-label="Calendar"
-          >
-            <FaCalendarAlt />
-          </NavLink>
-          <NavLink
-            to="/admin/dashboard"
-            onClick={(e) => handleToolbarNav(e, '/admin/dashboard')}
-            className={({ isActive }) => `sb-view-toolbar-button ${location.pathname === '/admin/dashboard' || location.pathname === '/admin/monitoring' || location.pathname === '/admin/sales-dashboard' || location.pathname === '/admin' || location.pathname === '/admin/home' || isActive ? 'sb-view-toolbar-button--route-active active' : ''}`}
-            title="Dashboard"
-            aria-label="Dashboard"
-          >
-            <FaDesktop />
-          </NavLink>
-        </div>
+
 
         <div className="sb-nav-section">
           <SectionLabel isCollapsed={isSidebarCollapsed}>Monitoring</SectionLabel>

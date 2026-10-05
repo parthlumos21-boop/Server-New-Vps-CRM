@@ -490,9 +490,6 @@ const UserDashboardPage = () => {
           </button>
         </div>
         <div className="ud-card-body" style={{ padding: '1.25rem' }}>
-          <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 1rem 0' }}>
-            Track all recent calls, general remarks, feedback notes, and discussion threads across Accounts and Deals.
-          </p>
 
           {communicationRemarks.length === 0 ? (
             <div style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', color: '#94a3b8', fontSize: '0.875rem', textAlign: 'center' }}>

@@ -236,7 +236,7 @@ const Dashboard = () => {
         </div>
         <div className="md-topbar-right">
           <div className="md-topbar-icons">
-            <button className="md-icon-btn-round" data-count="3">
+            <button className="md-icon-btn-round" data-count="3" onClick={() => navigate(user?.role === 'admin' ? '/admin/reminders/my' : '/reminders/my')} title="Notifications">
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
@@ -270,12 +270,6 @@ const Dashboard = () => {
           <div className="md-quotes-wrapper">
             <span className="md-quote-pills">IDEAS.<br />PEOPLE.<br />PROGRESS.</span>
             <span className="md-quote-accent" aria-hidden="true" />
-          </div>
-          <div className="md-date-card">
-            <span className="md-date-day">{new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date())}</span>
-            <strong>{new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date())}</strong>
-            <span className="md-date-note">Make today count</span>
-            <button type="button" aria-label="Open calendar" onClick={() => navigate('/reminders/my')}>→</button>
           </div>
         </div>
       </div>
@@ -461,9 +455,6 @@ const Dashboard = () => {
             </button>
           </div>
           <div className="md-communication-content">
-            <p style={{ color: '#64748b', fontSize: '0.875rem', margin: '0 0 0.75rem 0' }}>
-              Track all recent calls, general remarks, feedback notes, and discussion threads across Accounts and Deals.
-            </p>
 
             {communicationRemarks.length === 0 ? (
               <div style={{ padding: '0.75rem', background: '#f8fafc', borderRadius: '8px', color: '#94a3b8', fontSize: '0.875rem', textAlign: 'center' }}>

@@ -4,6 +4,7 @@ import {
   ResponsiveContainer,
   PieChart, Pie, Cell, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  LineChart, Line, AreaChart, Area,
 } from 'recharts'
 import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser, FaEye } from 'react-icons/fa'
 
@@ -107,6 +108,37 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
                 ))}
               </Bar>
             </BarChart>
+          </ResponsiveContainer>
+        )
+      }
+      case 'Line':
+      case 'Area': {
+        const isArea = chartType === 'Area'
+        return (
+          <ResponsiveContainer width="100%" height={240}>
+            {isArea ? (
+              <AreaChart data={chartItems} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="value" name="Total" stroke="#0284c7" strokeWidth={2.5} fillOpacity={1} fill="url(#chartAreaGrad)" />
+              </AreaChart>
+            ) : (
+              <LineChart data={chartItems} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line type="monotone" dataKey="value" name="Total" stroke="#0284c7" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+              </LineChart>
+            )}
           </ResponsiveContainer>
         )
       }

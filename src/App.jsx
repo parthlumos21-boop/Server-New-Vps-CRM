@@ -21,6 +21,7 @@ import CustomerActionPage from './pages/admin/customers/CustomerActionPage'
 import AdminSettingsPage from './pages/admin/settings/AdminSettingsPage'
 import AdminWorkStatusPage from './pages/admin/work/AdminWorkStatusPage'
 import AdminRemindersPage from './pages/admin/reminders/AdminRemindersPage'
+import AddReminderPage from './pages/admin/reminders/AddReminderPage'
 import CRMActionPage from './pages/admin/crm-actions/CRMActionPage'
 import ClosedSupportRequest from './pages/admin/support-requests/ClosedSupportRequest'
 import SupportRequestDetailsPage from './pages/admin/support-requests/SupportRequestDetailsPage'
@@ -259,6 +260,7 @@ function App() {
                 <Route path="support-requests/closed" element={<ClosedSupportRequest basePath="/support-requests" showActionMenu={false} />} />
                 <Route path="search" element={<AdminAdvancedSearchPage />} />
                 <Route path="reminders" element={<Navigate to="/reminders/my" replace />} />
+                <Route path="reminders/add" element={<AddReminderPage />} />
                 <Route path="reminders/my" element={<UserRemindersPage variantKey="my" />} />
                 <Route path="reminders/active" element={<UserRemindersPage variantKey="active" />} />
                 <Route path="reminders/closed" element={<UserRemindersPage variantKey="closed" />} />
@@ -345,6 +347,7 @@ function App() {
                 <Route path="search" element={<AdminAdvancedSearchPage />} />
                 <Route path="projects/:projectId" element={<ProjectDetailsPage />} />
                 <Route path="reminders" element={<Navigate to="/admin/reminders/active" replace />} />
+                <Route path="reminders/add" element={<AddReminderPage />} />
                 <Route path="reminders/my" element={<AdminRemindersPage variantKey="my" />} />
                 <Route path="reminders/active" element={<AdminRemindersPage variantKey="active" />} />
                 <Route path="reminders/closed" element={<AdminRemindersPage variantKey="closed" />} />
