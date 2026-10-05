@@ -21,6 +21,7 @@ import './AnalyticsSection.css'
 import { chartApi } from '../../services/chartApi'
 import DynamicChartWidget from './DynamicChartWidget'
 import ChartRenderer from './ChartRenderer'
+import { useAuth } from '../../context/AuthContext'
 
 const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
 
@@ -57,7 +58,7 @@ const buildMonthlyData = (deals, quotations) => {
   })
 }
 
-const CustomChartTooltip = ({ active, payload, label }) => {
+const CustomChartTooltip = ({ active, payload, label, isAdmin = true, currentUser = null }) => {
   if (active && payload && payload.length) {
     return (
       <div className="analytics-tooltip">
@@ -82,6 +83,7 @@ const CustomChartTooltip = ({ active, payload, label }) => {
 const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotations = [], activities = [], users = [] }) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, isAdmin } = useAuth()
   const [period, setPeriod] = useState('month')
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
@@ -143,7 +145,10 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
     const loadCharts = async () => {
       try {
         setLoadingCharts(true)
-        const charts = await chartApi.listCharts()
+        const [chartsRes, templatesRes] = await Promise.allSettled([chartApi.listCharts(), chartApi.listTemplates()])
+        const chartsList = chartsRes.status === 'fulfilled' && Array.isArray(chartsRes.value) ? chartsRes.value : []
+        const templatesList = templatesRes.status === 'fulfilled' && Array.isArray(templatesRes.value) ? templatesRes.value : []
+        const charts = [...chartsList, ...templatesList]
         if (!isMounted) return
         if (Array.isArray(charts) && charts.length > 0) {
           setDbCharts(charts)
@@ -193,6 +198,20 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         </div>
 
         <div className="analytics-header-right">
+          <div className="analytics-filter-wrap">
+            <select
+              value={period}
+              onChange={(event) => setPeriod(event.target.value)}
+              aria-label="Analytics period"
+              className="analytics-select"
+            >
+              <option value="month">Month wise</option>
+              <option value="week">Week wise</option>
+              <option value="day">Day wise</option>
+            </select>
+          </div>
+
+
           <button
             type="button"
             className="analytics-view-all-charts-btn"
@@ -212,18 +231,18 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
             </div>
           )}
 
-          <div className="analytics-filter-wrap">
-            <select
-              value={period}
-              onChange={(event) => setPeriod(event.target.value)}
-              aria-label="Analytics period"
-              className="analytics-select"
-            >
-              <option value="month">Month wise</option>
-              <option value="week">Week wise</option>
-              <option value="day">Day wise</option>
-            </select>
-          </div>
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
       </div>
 
@@ -260,117 +279,137 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
           ))
         ) : (
           <>
-        <article className="analytics-card analytics-card--wide">
-          <div className="analytics-card-header">
-            <h3>
-              <span className="analytics-card-badge-icon"><FaChartLine /></span>
-              Deal Volume Trend
-            </h3>
-            <span className="analytics-card-subbadge">{chartData.length} Months</span>
-          </div>
-          <div className="analytics-chart-body">
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gradNewDeals" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gradWonDeals" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <Tooltip content={<CustomChartTooltip />} />
-                <Legend wrapperStyle={{ paddingTop: 10, fontSize: 12 }} />
-                <Line type="monotone" dataKey="newDeals" name="New Deals" stroke="#0284c7" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="wonDeals" name="Won Deals" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                <Line type="monotone" dataKey="lostDeals" name="Lost Deals" stroke="#dc2626" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </article>
+            <ChartRenderer
+              config={{ _id: 'fallback-funnel', title: 'Sales Conversion Funnel', chartType: 'Funnel', entity: 'Deals' }}
+              data={{ data: pipeline.length ? pipeline : [{ name: 'Lead Qualified', value: 45 }, { name: 'Proposal Sent', value: 30 }, { name: 'Negotiation', value: 18 }, { name: 'Deal Won', value: 12 }] }}
+              loading={loadingCharts}
+            />
+            <ChartRenderer
+              config={{ _id: 'fallback-trend', title: 'Deal Volume Trend', chartType: 'Line', entity: 'Deals' }}
+              data={{ labels: chartData.map((d) => d.name), values: chartData.map((d) => d.newDeals) }}
+              loading={loadingCharts}
+            />
+            <ChartRenderer
+              config={{ _id: 'fallback-pipeline', title: 'Pipeline Stages', chartType: 'Bar', entity: 'Deals' }}
+              data={{ labels: pipeline.map((d) => d.name), values: pipeline.map((d) => d.value) }}
+              loading={loadingCharts}
+            />
+            <ChartRenderer
+              config={{ _id: 'fallback-quotation', title: 'Quotation Value Trend', chartType: 'Bar', entity: 'Quotations' }}
+              data={{ labels: chartData.map((d) => d.name), values: chartData.map((d) => d.quotationValue) }}
+              loading={loadingCharts}
+            />
+            /* start-sweep */
 
-        <article className="analytics-card">
-          <div className="analytics-card-header">
-            <h3>
-              <span className="analytics-card-badge-icon"><FaChartBar /></span>
-              Pipeline Stages
-            </h3>
-            <span className="analytics-card-subbadge">{pipeline.length} Stages</span>
-          </div>
-          <div className="analytics-chart-body">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={pipeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} />
-                <Tooltip content={<CustomChartTooltip />} />
-                <Bar dataKey="value" name="Deals" radius={[8, 8, 0, 0]}>
-                  {pipeline.map((entry, index) => (
-                    <Cell key={`cell-${entry.name}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </article>
 
-        <article className="analytics-card analytics-card--wide">
-          <div className="analytics-card-header">
-            <h3>
-              <span className="analytics-card-badge-icon"><FaFileInvoiceDollar /></span>
-              Quotation Value Trend
-            </h3>
-            <span className="analytics-card-subbadge">{formatCurrency(totalQuotationVal)}</span>
-          </div>
-          <div className="analytics-chart-body">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value) => formatCurrency(value)} content={<CustomChartTooltip />} />
-                <Bar dataKey="quotationValue" name="Quotation Value" fill="#dc2626" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </article>
 
-        <article className="analytics-card">
-          <div className="analytics-card-header">
-            <h3>
-              <span className="analytics-card-badge-icon"><FaChartPie /></span>
-              Distribution Summary
-            </h3>
-            <span className="analytics-card-subbadge">Overview</span>
-          </div>
-          <div className="analytics-chart-body">
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie
-                  data={users.length ? users.map((user) => ({ name: user.department || user.role || 'Other', value: 1 })).reduce((all, item) => { const found = all.find((entry) => entry.name === item.name); if (found) found.value += 1; else all.push(item); return all }, []) : pipeline}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={52}
-                  outerRadius={85}
-                  paddingAngle={4}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {(users.length ? users : pipeline).map((entry, index) => (
-                    <Cell key={`pie-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomChartTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </article>
+
+
+
+
+          /* start-cut */
+            /* cut-middle */
+              /* line-chart-1 */
+
+
+
+
+
+
+
+
+
+
+                /* cartesian-cut */
+                /* xaxis-cut */
+                /* yaxis-cut */
+                /* tooltip-cut */
+                /* legend-cut */
+                /* new-deals-cut */
+                /* won-deals-cut */
+                /* lost-deals-cut */
+              /* end-middle */
+
+
+        /* end-card-1 */
+
+        /* remove-card-2 */
+
+
+
+
+
+            /* mark-2-cut */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* mark-sweep-point */
+
+        /* card-3 */
+
+
+
+
+
+            /* mark-3 */
+
+
+
+
+
+
+
+
+
+
+
+
+        /* cut-card-3-end */
+
+        /* card-4 */
+
+
+
+
+
+            /* mark-4 */
+
+
+
+              /* pie-chart-mark */
+
+
+
+
+
+
+                  /* inner-radius-mark */
+
+
+
+
+
+
+
+
+
+
+
+
+
           </>
         )}
       </div>

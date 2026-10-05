@@ -6,7 +6,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line, AreaChart, Area,
 } from 'recharts'
-import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser, FaEye } from 'react-icons/fa'
+import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser } from 'react-icons/fa'
+import { useAuth } from '../../context/AuthContext'
 
 const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
 
@@ -19,17 +20,30 @@ const getEntityIcon = (entity) => {
   return <FaChartPie />
 }
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label, isAdmin = true, currentUser = null }) => {
   if (active && payload && payload.length) {
     const item = payload[0]
+    const rawPayload = item.payload || {}
+    const ownerName = rawPayload.ownerName || rawPayload.owner || rawPayload.accountOwner || rawPayload.dealOwner || (currentUser?.name || 'My Self')
     return (
-      <div className="analytics-tooltip" style={{ background: '#0f172a', color: '#ffffff', padding: '8px 12px', borderRadius: '6px', fontSize: '12px' }}>
-        <div style={{ fontWeight: 600 }}>{label || item.name}</div>
-        <div style={{ marginTop: '4px' }}>
-          <span style={{ color: item.color || item.fill }}>● </span>
-          <span>{item.name}: </span>
+      <div className="analytics-tooltip" style={{ background: '#0f172a', color: '#ffffff', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)' }}>
+        <div style={{ fontWeight: 700, color: '#f8fafc', marginBottom: '4px', borderBottom: '1px solid #334155', paddingBottom: '3px' }}>
+          {label || item.name}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+          <span style={{ color: item.color || item.fill, fontSize: '14px' }}>● </span>
+          <span>{item.name || 'Count'}: </span>
           <strong>{item.value}</strong>
         </div>
+        {isAdmin && ownerName ? (
+          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px', fontStyle: 'italic' }}>
+            Owner: {ownerName}
+          </div>
+        ) : (!isAdmin && currentUser?.name ? (
+          <div style={{ fontSize: '11px', color: '#38bdf8', marginTop: '4px' }}>
+            Owner: {currentUser.name}
+          </div>
+        ) : null)}
       </div>
     )
   }
@@ -39,6 +53,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, isAdmin } = useAuth()
   const chartType = config.chartType || config.type || 'Pie'
   const title = config.title || config.name || 'Analytics Chart'
   const entity = config.entity || config.context || 'Metrics'
@@ -48,6 +63,26 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
   const chartItems = data?.data || labels.map((label, index) => ({ name: label, value: values[index] || 0 }))
 
   const totalVal = values.reduce((sum, v) => sum + (Number(v) || 0), 0)
+
+  const handleChartClick = (entry, customEntity) => {
+    const normEntity = String(customEntity || entity || '').toLowerCase()
+    const isAdminPath = location.pathname.startsWith('/admin')
+    const prefix = isAdminPath ? '/admin' : ''
+    const stageName = entry?.name ? String(entry.name).toLowerCase() : 'new'
+    const stageParam = encodeURIComponent(stageName)
+
+    if (normEntity.includes('account') || chartType === 'Funnel') {
+      navigate(`${prefix}/accounts/my-accounts?stage=${stageParam}&page=1`)
+    } else if (normEntity.includes('deal')) {
+      navigate(`${prefix}/deals/view`)
+    } else if (normEntity.includes('quotation')) {
+      navigate(`${prefix}/quotation-manager/view`)
+    } else if (normEntity.includes('customer')) {
+      navigate(`${prefix}/customers/my-customers`)
+    } else {
+      navigate(`${prefix}/accounts/my-accounts?stage=new&page=1`)
+    }
+  }
 
   const renderContent = () => {
     if (loading) {
@@ -83,12 +118,14 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
                 outerRadius={80}
                 paddingAngle={4}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                onClick={(entry) => handleChartClick(entry, entity)}
+                style={{ cursor: 'pointer' }}
               >
                 {chartItems.map((entry, index) => (
                   <Cell key={`cell-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip isAdmin={isAdmin} currentUser={user} />} />
             </PieChart>
           </ResponsiveContainer>
         )
@@ -101,8 +138,8 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
               <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="value" name="Total" radius={[6, 6, 0, 0]}>
+              <Tooltip content={<CustomTooltip isAdmin={isAdmin} currentUser={user} />} />
+              <Bar dataKey="value" name="Total" radius={[6, 6, 0, 0]} onClick={(entry) => handleChartClick(entry, entity)} style={{ cursor: 'pointer' }}>
                 {chartItems.map((entry, index) => (
                   <Cell key={`bar-${entry.name}-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
@@ -127,7 +164,7 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip isAdmin={isAdmin} currentUser={user} />} />
                 <Area type="monotone" dataKey="value" name="Total" stroke="#0284c7" strokeWidth={2.5} fillOpacity={1} fill="url(#chartAreaGrad)" />
               </AreaChart>
             ) : (
@@ -135,7 +172,7 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip isAdmin={isAdmin} currentUser={user} />} />
                 <Line type="monotone" dataKey="value" name="Total" stroke="#0284c7" strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
             )}
@@ -143,21 +180,35 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
         )
       }
       case 'Funnel': {
+        const maxVal = Math.max(...values, 1)
         return (
-          <div style={{ padding: '12px 0' }}>
+          <div className="analytics-vertical-funnel" style={{ padding: '12px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             {chartItems.map((item, index) => {
-              const maxVal = Math.max(...values, 1)
-              const widthPct = Math.max(15, Math.min(100, Math.round((item.value / maxVal) * 100)))
+              const widthPct = Math.max(25, Math.min(100, Math.round((item.value / maxVal) * 100)))
               const color = COLORS[index % COLORS.length]
               return (
-                <div key={item.name} style={{ marginBottom: '10px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px', color: '#334155', fontWeight: 600 }}>
-                    <span>{item.name}</span>
-                    <span>{item.value}</span>
-                  </div>
-                  <div style={{ background: '#f1f5f9', borderRadius: '4px', height: '18px', overflow: 'hidden' }}>
-                    <div style={{ width: `${widthPct}%`, background: color, height: '100%', transition: 'width 0.3s ease' }} />
-                  </div>
+                <div
+                  key={item.name}
+                  onClick={() => handleChartClick(item, entity)}
+                  title={`Click to view ${item.name} details`}
+                  style={{
+                    width: `${widthPct}%`,
+                    background: `linear-gradient(135deg, ${color} 0%, #1e293b 140%)`,
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    color: '#ffffff',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span style={{ fontSize: '12px', fontWeight: 600 }}>{item.name}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 700, background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px' }}>
+                    {item.value}
+                  </span>
                 </div>
               )
             })}
@@ -169,7 +220,11 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
         return (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '10px', padding: '10px 0' }}>
             {chartItems.map((item, index) => (
-              <div key={item.name} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', textAlign: 'center' }}>
+              <div
+                key={item.name}
+                onClick={() => handleChartClick(item, entity)}
+                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px', textAlign: 'center', cursor: 'pointer' }}
+              >
                 <div style={{ fontSize: '1.25rem', fontWeight: 700, color: COLORS[index % COLORS.length] }}>
                   {item.value}
                 </div>
@@ -191,7 +246,6 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
     entity.toLowerCase().includes('quotation') ? 'quotations' :
     entity.toLowerCase().includes('sr') ? 'support_requests' : 'data'
   )
-  const chartsPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
 
   return (
     <article className="analytics-card" style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
@@ -206,15 +260,6 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
           <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
             {entity} ({collectionName}) ({totalVal})
           </span>
-          <button
-            type="button"
-            className="analytics-chart-view-btn"
-            onClick={() => navigate(chartsPath)}
-            title="View chart templates"
-          >
-            <FaEye />
-            <span>View</span>
-          </button>
         </div>
       </div>
       <div className="analytics-chart-body">
