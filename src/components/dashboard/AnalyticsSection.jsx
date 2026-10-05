@@ -28,6 +28,18 @@ const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2'
 const normalize = (value) => String(value || '').trim().toLowerCase()
 const amountOf = (item) => Number(item?.total || item?.grandTotal || item?.value || item?.amount || 0) || 0
 const dateOf = (item) => item?.createdAt || item?.accountDate || item?.customerDate || item?.date || item?.dealDate || item?.quotationDate || item?.updatedAt
+const ownerOf = (item) => (
+  item?.ownerName
+  || item?.accountOwner
+  || item?.accountOwnerName
+  || item?.dealOwner
+  || item?.dealOwnerName
+  || item?.customerOwner
+  || item?.createdByName
+  || item?.assignedToName
+  || item?.owner
+  || ''
+)
 
 const monthKey = (date) => {
   const parsed = new Date(date)
@@ -58,6 +70,95 @@ const buildMonthlyData = (deals, quotations) => {
   })
 }
 
+const formatStatusLabel = (value, fallback = 'Status') => {
+  const text = String(value || '').trim()
+  if (!text) return fallback
+  return text
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+const matchesOwner = (item, ownerFilter) => {
+  if (!ownerFilter || ownerFilter === 'all') return true
+  const owner = normalize(ownerOf(item))
+  return owner && owner === normalize(ownerFilter)
+}
+
+const buildOwnerOptions = (records, user) => {
+  const ownerSet = new Set()
+  if (user?.name) ownerSet.add(String(user.name).trim())
+  records.forEach((record) => {
+    const owner = String(ownerOf(record) || '').trim()
+    if (owner) ownerSet.add(owner)
+  })
+  return ['all', ...Array.from(ownerSet).sort((a, b) => a.localeCompare(b))]
+}
+
+const buildWorkTrendData = (records, ownerFilter, period = 'month') => {
+  const now = new Date()
+  const buckets = Array.from({ length: period === 'day' ? 7 : 6 }).map((_, index) => {
+    const date = new Date(now)
+    if (period === 'day') {
+      date.setDate(now.getDate() - (6 - index))
+      return { key: date.toISOString().slice(0, 10), name: date.toLocaleDateString('en-IN', { weekday: 'short' }), value: 0 }
+    }
+    if (period === 'week') {
+      date.setDate(now.getDate() - ((5 - index) * 7))
+      const start = new Date(date)
+      start.setDate(date.getDate() - date.getDay())
+      return { key: start.toISOString().slice(0, 10), name: `W${index + 1}`, value: 0 }
+    }
+    date.setMonth(now.getMonth() - (5 - index), 1)
+    return { key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`, name: date.toLocaleDateString('en-IN', { month: 'short' }), value: 0 }
+  })
+  const lookup = buckets.reduce((acc, bucket) => ({ ...acc, [bucket.key]: bucket }), {})
+
+  records.filter((record) => matchesOwner(record, ownerFilter)).forEach((record) => {
+    const parsed = new Date(dateOf(record))
+    if (Number.isNaN(parsed.getTime())) return
+    let key = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`
+    if (period === 'day') {
+      key = parsed.toISOString().slice(0, 10)
+    } else if (period === 'week') {
+      const start = new Date(parsed)
+      start.setDate(parsed.getDate() - parsed.getDay())
+      key = start.toISOString().slice(0, 10)
+    }
+    if (lookup[key]) lookup[key].value += 1
+  })
+
+  return buckets
+}
+
+const buildOwnerWiseData = (records) => {
+  const counts = records.reduce((acc, record) => {
+    const owner = ownerOf(record) || 'Unassigned'
+    acc[owner] = (acc[owner] || 0) + 1
+    return acc
+  }, {})
+
+  return Object.entries(counts)
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 8)
+    .map(([name, value]) => ({ name, value }))
+}
+
+const buildFunnelData = (deals, ownerFilter) => {
+  const counts = deals
+    .filter((deal) => matchesOwner(deal, ownerFilter))
+    .reduce((acc, deal) => {
+      const stage = formatStatusLabel(deal.stage || deal.status || deal.dealStatus, 'No Status')
+      acc[stage] = (acc[stage] || 0) + 1
+      return acc
+    }, {})
+
+  return Object.entries(counts)
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 5)
+    .map(([name, value]) => ({ name, value }))
+}
+
 const CustomChartTooltip = ({ active, payload, label, isAdmin = true, currentUser = null }) => {
   if (active && payload && payload.length) {
     return (
@@ -85,21 +186,30 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
   const location = useLocation()
   const { user, isAdmin } = useAuth()
   const [period, setPeriod] = useState('month')
+  const [ownerFilter, setOwnerFilter] = useState(() => user?.name || 'all')
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
   const [loadingCharts, setLoadingCharts] = useState(true)
   const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
   const visibleDbCharts = useMemo(() => dbCharts.slice(0, 5), [dbCharts])
   const chartListPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
+  const allAnalyticsRecords = useMemo(() => (
+    [...accounts, ...deals, ...customers, ...quotations]
+  ), [accounts, customers, deals, quotations])
+  const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user), [allAnalyticsRecords, user])
+  const ownerScopedDeals = useMemo(() => deals.filter((deal) => matchesOwner(deal, ownerFilter)), [deals, ownerFilter])
+  const workTrendData = useMemo(() => buildWorkTrendData(allAnalyticsRecords, ownerFilter, period), [allAnalyticsRecords, ownerFilter, period])
+  const ownerWiseWorkData = useMemo(() => buildOwnerWiseData(allAnalyticsRecords), [allAnalyticsRecords])
+  const funnelData = useMemo(() => buildFunnelData(deals, ownerFilter), [deals, ownerFilter])
 
   const pipeline = useMemo(() => {
-    const counts = deals.reduce((result, deal) => {
+    const counts = ownerScopedDeals.reduce((result, deal) => {
       const key = String(deal.stage || deal.status || 'unknown').replace(/_/g, ' ')
       result[key] = (result[key] || 0) + 1
       return result
     }, {})
     return Object.entries(counts).map(([name, value]) => ({ name, value }))
-  }, [deals])
+  }, [ownerScopedDeals])
 
   const recentDeals = useMemo(() => [...deals].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [deals])
   const recentQuotations = useMemo(() => [...quotations].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [quotations])
@@ -211,6 +321,21 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
             </select>
           </div>
 
+          <div className="analytics-filter-wrap">
+            <select
+              value={ownerFilter}
+              onChange={(event) => setOwnerFilter(event.target.value)}
+              aria-label="Analytics owner"
+              className="analytics-select analytics-select--owner"
+            >
+              {ownerOptions.map((owner) => (
+                <option key={owner} value={owner}>
+                  {owner === 'all' ? 'All Users' : owner}
+                </option>
+              ))}
+            </select>
+          </div>
+
 
           <button
             type="button"
@@ -268,6 +393,40 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
       )}
 
       <div className="analytics-grid analytics-grid--charts">
+        <ChartRenderer
+          config={{
+            _id: 'live-owner-funnel',
+            title: `Sales Conversion Funnel - ${ownerFilter === 'all' ? 'All Users' : ownerFilter}`,
+            chartType: 'Funnel',
+            entity: 'Deals',
+          }}
+          data={{
+            data: funnelData.length ? funnelData : [{ name: 'No Deals', value: 0 }],
+            labels: (funnelData.length ? funnelData : [{ name: 'No Deals', value: 0 }]).map((entry) => entry.name),
+            values: (funnelData.length ? funnelData : [{ name: 'No Deals', value: 0 }]).map((entry) => entry.value),
+          }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-owner-wise-work',
+            title: 'Owner Wise Work',
+            chartType: 'Bar',
+            entity: 'Accounts',
+          }}
+          data={{ data: ownerWiseWorkData.length ? ownerWiseWorkData : [{ name: 'No Work', value: 0 }] }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-daily-work',
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Work - ${ownerFilter === 'all' ? 'All Users' : ownerFilter}`,
+            chartType: 'Line',
+            entity: 'Accounts',
+          }}
+          data={{ data: workTrendData }}
+          loading={false}
+        />
         {dbCharts.length > 0 ? (
           visibleDbCharts.map((chart) => (
             <ChartRenderer

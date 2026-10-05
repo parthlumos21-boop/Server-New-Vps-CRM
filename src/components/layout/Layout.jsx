@@ -16,7 +16,9 @@ const Layout = ({ isAdmin = false }) => {
   const location = useLocation()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const { theme } = useTheme()
-  const showRightPanel = isAdmin && !['/admin', '/admin/', '/admin/monitoring', '/admin/dashboard'].includes(location.pathname)
+  const isAdminShellHome = ['/admin', '/admin/'].includes(location.pathname)
+  const isUserDashboardPath = ['/dashboard', '/monitoring'].includes(location.pathname)
+  const showRightPanel = isAdmin ? !isAdminShellHome : isUserDashboardPath
 
   useEffect(() => {
     setMobileSidebarOpen(false)
@@ -31,7 +33,7 @@ const Layout = ({ isAdmin = false }) => {
   }, [location.pathname, location.search, theme, isAdmin])
 
   return (
-    <div className={`layout ${isAdmin ? 'layout--admin' : 'layout--user'}${isAdmin && !showRightPanel ? ' layout--admin-no-right-panel' : ''}`}>
+    <div className={`layout ${isAdmin ? 'layout--admin' : 'layout--user'}${isAdmin && !showRightPanel ? ' layout--admin-no-right-panel' : ''}${!isAdmin && !showRightPanel ? ' layout--user-no-right-panel' : ''}`}>
       <div className="layout-aura layout-aura--one" aria-hidden="true" />
       <div className="layout-aura layout-aura--two" aria-hidden="true" />
       <div className="layout-aura layout-aura--three" aria-hidden="true" />

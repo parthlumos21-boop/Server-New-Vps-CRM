@@ -323,8 +323,10 @@
 .sb-plain-link,
 .sb-group-trigger {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
+  width: 100%;
   min-width: 0;
   gap: 0.65rem;
   min-height: 33px;
@@ -337,6 +339,8 @@
   font-weight: 600;
   line-height: 1.38;
   overflow: hidden;
+  cursor: pointer;
+  pointer-events: auto;
   transition:
     background var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out),
@@ -376,14 +380,28 @@
   content: '';
   position: absolute;
   inset: 5px auto 5px 4px;
+  width: 3px;
+  border-radius: 999px;
   background: var(--admin-red, #dc2626) !important;
+  pointer-events: none;
 }
 
 .sb-link > span,
 .sb-plain-link > span {
+  position: relative;
+  z-index: 1;
   min-width: 0;
   flex: 1 1 auto;
   overflow-wrap: anywhere;
+}
+
+.sb-link-icon,
+.sb-plain-icon,
+.sb-group-icon,
+.sb-group-chevron {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .sb-group {

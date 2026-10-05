@@ -1,18 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  FaArrowRight,
   FaBell,
   FaBriefcase,
   FaCalendarAlt,
   FaCheckCircle,
   FaClipboardList,
-  FaEnvelope,
   FaFileAlt,
   FaHandshake,
-  FaHeadset,
   FaHome,
-  FaThLarge,
   FaUser,
   FaUsers,
   FaComments,
@@ -213,13 +209,6 @@ const UserDashboardPage = () => {
     return todoItems
   }, [todoItems, todoFilter])
 
-  const currentFormattedDateTime = useMemo(() => {
-    const now = new Date()
-    const dateStr = now.toLocaleDateString('en-GB')
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase()
-    return `${dateStr}, ${timeStr}`
-  }, [])
-
   return (
     <div className="ud-page">
       {/* Welcome Section */}
@@ -419,61 +408,6 @@ const UserDashboardPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Integrations & Live Activity Row */}
-      <div className="ud-side-widgets-row">
-        {/* Integrations Card */}
-        <div className="ud-card ud-integrations-card">
-          <div className="ud-card-header">
-            <div className="ud-card-header-left">
-              <FaThLarge className="ud-card-header-icon" />
-              <h3>Integrations</h3>
-            </div>
-          </div>
-          <div className="ud-integrations-grid">
-            <div className="ud-integration-box" onClick={() => navigate('/support-requests/add')}>
-              <div className="ud-integ-icon-box ud-integ-icon-box--red">
-                <FaHeadset />
-              </div>
-              <div className="ud-integ-info">
-                <div className="ud-integ-title">CRM Support</div>
-                <div className="ud-integ-subtext">Open help desk & tickets...</div>
-              </div>
-              <FaArrowRight className="ud-integ-arrow" />
-            </div>
-          </div>
-        </div>
-
-        {/* Live Activity Card */}
-        <div className="ud-card ud-live-card">
-          <div className="ud-card-header">
-            <div className="ud-card-header-left">
-              <span className="ud-green-dot" />
-              <h3>Live Activity</h3>
-            </div>
-            <button
-              type="button"
-              className="ud-link-btn"
-              onClick={() => navigate('/team-view')}
-            >
-              Team View &rarr;
-            </button>
-          </div>
-          <div className="ud-live-card-body">
-            <div className="ud-live-user-pill">
-              <div className="ud-live-user-left">
-                <span className="ud-live-status-chip">• LIVE</span>
-                <div className="ud-live-user-details">
-                  <span className="ud-live-user-name">{user?.name || 'Keval V Shah...'}</span>
-                  <span className="ud-live-user-sub">{user?.role || 'Director'} • Active...</span>
-                </div>
-              </div>
-              <span className="ud-live-time-chip">{currentFormattedDateTime}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Communication Activity Section */}
       <div className="ud-card ud-communication-card" style={{ marginTop: '1.25rem', marginBottom: '1.5rem' }}>
         <div className="ud-card-header">

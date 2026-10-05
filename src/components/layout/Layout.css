@@ -48,7 +48,7 @@
   grid-template-columns:
     minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
     minmax(760px, 1fr)
-    minmax(260px, var(--right-panel-width));
+    minmax(300px, 320px);
 }
 
 .layout--admin.layout--admin-no-right-panel .layout-body {
@@ -61,6 +61,13 @@
   grid-template-columns:
     minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
     minmax(760px, 1fr);
+}
+
+.layout--user:not(.layout--user-no-right-panel) .layout-body {
+  grid-template-columns:
+    minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
+    minmax(0, 1fr)
+    minmax(300px, 320px);
 }
 
 .layout-column,

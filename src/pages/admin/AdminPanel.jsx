@@ -3,24 +3,20 @@ import { createPortal } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   FaAddressCard,
-  FaArrowRight,
   FaCalendarAlt,
   FaBell,
   FaBriefcase,
   FaClipboardList,
   FaDesktop,
-  FaEnvelope,
   FaFileAlt,
   FaFilter,
   FaHandshake,
-  FaHeadset,
   FaHome,
   FaRegClock,
   FaStar,
   FaSyncAlt,
   FaTable,
   FaTasks,
-  FaThLarge,
   FaUser,
   FaUsers,
   FaComments,
@@ -218,7 +214,7 @@ const DashboardTabModal = ({
 const AdminPanel = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { accounts, deals, quotations = [], activities = [], supportRequests, tasks = [], reminders = [], refreshData, addNotification } = useData()
+  const { accounts, deals, quotations = [], activities = [], supportRequests, tasks = [], reminders = [], refreshData, addNotification, updateReminder } = useData()
   const { user, socket } = useAuth()
   const [dashboardTabs, setDashboardTabs] = useState(() => getDashboardTabs())
   const [activeSection, setActiveSection] = useState('home')
@@ -507,8 +503,20 @@ const AdminPanel = () => {
     })
   }, [navigate])
 
-  const handleTodoReminderClose = useCallback((reminder, event) => {
+  const handleTodoReminderClose = useCallback(async (reminder, event) => {
     event?.stopPropagation()
+    if (reminder?.id && !reminder?.sourceType) {
+      await updateReminder(reminder.id, { status: 'closed' })
+      navigate('/admin/reminders/closed', {
+        replace: false,
+        state: {
+          reminderId: reminder.id,
+          selectedOwner: reminder.ownerName,
+        },
+      })
+      return
+    }
+
     const closedState = closeAdminReminder({
       sourceType: reminder.sourceType,
       sourceId: reminder.sourceId,
@@ -525,7 +533,7 @@ const AdminPanel = () => {
         selectedOwner: reminder.ownerName,
       },
     })
-  }, [navigate, user?.name, user?.username])
+  }, [navigate, updateReminder, user?.name, user?.username])
 
   const todoItems = useMemo(() => {
     const reminderItems = getAdminReminders({
@@ -665,25 +673,6 @@ const AdminPanel = () => {
   ), [tasks])
 
   const renderHomeContent = () => {
-    const formattedNow = new Date().toLocaleString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    }).toLowerCase()
-
-    const liveUserActivity = {
-      id: 'live-current-user',
-      isLive: true,
-      title: `${user?.name || 'Keval V Shah'} is online`,
-      subtitle: user?.role === 'admin' || user?.actualRole === 'admin' ? 'Director • Active Session' : 'Workspace User • Active Session',
-      time: formattedNow,
-    }
-
-    const displayedActivities = [liveUserActivity]
-
     return (
       <div className="ap-home-layout">
         {/* 4 Equal Horizontal KPI Cards */}
@@ -906,79 +895,6 @@ const AdminPanel = () => {
             </div>
           </div>
         </div>
-
-        {/* Integrations & Live Activity Row */}
-        <div className="ap-side-widgets-row">
-          {/* Integrations Card */}
-          <div className="ap-card-box ap-integrations-card">
-            <div className="ap-card-head">
-              <div className="ap-card-head-title">
-                <FaThLarge className="ap-card-head-icon" />
-                <h3 className="text-base font-bold text-slate-800 m-0">Integrations</h3>
-              </div>
-              <button
-                type="button"
-                className="ap-link-btn"
-                onClick={() => navigate('/admin/settings')}
-              >
-                Manage &rarr;
-              </button>
-            </div>
-            <div className="ap-integrations-grid">
-              <div className="ap-integration-box" onClick={() => navigate('/admin/settings')}>
-                <div className="ap-integ-icon-box ap-integ-icon-box--blue">
-                  <FaEnvelope />
-                </div>
-                <div className="ap-integ-info">
-                  <div className="ap-integ-title">Outlook Mail</div>
-                  <div className="ap-integ-subtext">Connect & sync emails...</div>
-                </div>
-                <FaArrowRight className="ap-integ-arrow" />
-              </div>
-
-              <div className="ap-integration-box" onClick={() => navigate('/admin/tickets')}>
-                <div className="ap-integ-icon-box ap-integ-icon-box--red">
-                  <FaHeadset />
-                </div>
-                <div className="ap-integ-info">
-                  <div className="ap-integ-title">CRM Support</div>
-                  <div className="ap-integ-subtext">Open help desk & tickets...</div>
-                </div>
-                <FaArrowRight className="ap-integ-arrow" />
-              </div>
-            </div>
-          </div>
-
-          {/* Live Activity Card */}
-          <div className="ap-card-box ap-live-card">
-            <div className="ap-card-head">
-              <div className="ap-card-head-title">
-                <span className="ap-live-pulse-dot" />
-                <h3 className="text-base font-bold text-slate-800 m-0">Live Activity</h3>
-              </div>
-              <button
-                type="button"
-                className="ap-link-btn"
-                onClick={() => navigate('/admin/team-view')}
-              >
-                Team View &rarr;
-              </button>
-            </div>
-            <div className="ap-live-card-body">
-              <div className="ap-live-user-pill">
-                <div className="ap-live-user-left">
-                  <span className="ap-live-status-chip">• LIVE</span>
-                  <div className="ap-live-user-details">
-                    <span className="ap-live-user-name">{user?.name || 'Keval V Shah'}</span>
-                    <span className="ap-live-user-sub">{user?.role === 'admin' || user?.actualRole === 'admin' ? 'Director • Active Session' : 'Workspace User • Active Session'}</span>
-                  </div>
-                </div>
-                <span className="ap-live-time-chip">{formattedNow}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Communication Activity Summary Section */}
         <div className="ap-card-box ap-communication-summary-card" style={{ marginTop: '1.25rem', marginBottom: '1.25rem', padding: '1.25rem', background: '#ffffff', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -1619,5 +1535,3 @@ const AdminPanel = () => {
 }
 
 export default AdminPanel
-
-
