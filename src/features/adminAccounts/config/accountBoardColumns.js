@@ -67,6 +67,28 @@ const formatAccountOwnerDisplay = (value, row = {}) => {
   return code ? `${code} -- ${name}` : name
 }
 const formatAddedByDisplay = (value, row = {}) => row.addedBy || row.addedByDisplay || value || emptyValue
+const formatQuotationNumberDisplay = (value, row = {}) => (
+  value
+  || row.quotationNumber
+  || row.quotationNo
+  || row.quoteNumber
+  || row.raw?.quotationNumber
+  || row.raw?.quotationNo
+  || row.raw?.quoteNumber
+  || row.formData?.quotationNumber
+  || row.formData?.['Quotation No']
+  || emptyValue
+)
+const formatQuotationOwnerDisplay = (value, row = {}) => (
+  value
+  || row.quotationOwner
+  || row.quotationOwnerName
+  || row.raw?.quotationOwner
+  || row.raw?.quotationOwnerName
+  || row.formData?.quotationOwner
+  || row.formData?.['Quotation Owner']
+  || emptyValue
+)
 
 const formatLegacyBoardDate = (value, row = {}) => {
   const dateVal = value || row.accountDate || row.accountDateDisplay || row.createdAt || row.created_at || row.raw?.accountDate || row.raw?.createdAt || row.raw?.created_at
@@ -122,6 +144,8 @@ export const NO_FOLLOW_LEAD_COLUMNS = [
   { key: 'accountSource', label: 'Account Source', filterPlaceholder: 'Search Account Source', width: '150px', searchable: true, exportable: true },
   { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'jobNo', label: 'Job No', filterPlaceholder: 'Search Job No', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
+  { key: 'quotationNumber', label: 'Quotation No.', filterPlaceholder: 'Search Quotation No.', width: '165px', searchable: true, exportable: true, cellFormatter: formatQuotationNumberDisplay, exportFormatter: formatQuotationNumberDisplay },
+  { key: 'quotationOwner', label: 'Quotation Owner', filterPlaceholder: 'Search Quotation Owner', width: '180px', searchable: true, exportable: true, cellFormatter: formatQuotationOwnerDisplay, exportFormatter: formatQuotationOwnerDisplay },
   { key: 'reasonForLost', label: 'Reason For Lost', filterPlaceholder: 'Search Reason For Lost', width: '210px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue, exportFormatter: (value) => value || '' },
 ]
 
@@ -423,13 +447,13 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     exportFormatter: formatAddedByDisplay,
   },
   {
-    key: 'latestRemark',
-    label: 'Latest Remark',
-    filterPlaceholder: 'Search Latest Remark',
-    width: '210px',
+    key: 'poValue',
+    label: 'PO Value',
+    filterPlaceholder: 'Search PO Value',
+    width: '155px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => value || emptyValue,
+    cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue,
   },
   {
     key: 'quotationNumber',
@@ -448,6 +472,15 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     searchable: true,
     exportable: true,
     cellFormatter: (value, row) => value || row?.quotationOwner || row?.quotationOwnerName || row?.latestQuotationOwner || emptyValue,
+  },
+  {
+    key: 'latestRemark',
+    label: 'Latest Remark',
+    filterPlaceholder: 'Search Latest Remark',
+    width: '210px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: (value) => value || emptyValue,
   },
   {
     key: 'reasonForLost',

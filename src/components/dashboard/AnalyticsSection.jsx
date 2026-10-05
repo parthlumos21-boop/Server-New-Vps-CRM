@@ -19,7 +19,7 @@ import Badge from '../common/Badge'
 import { formatCurrency, formatDate, getStatusColor } from '../../utils/helpers'
 import './AnalyticsSection.css'
 import { chartApi } from '../../services/chartApi'
-import DynamicChartWidget from './DynamicChartWidget'
+import { userApi } from '../../services/userApi'
 import ChartRenderer from './ChartRenderer'
 import { useAuth } from '../../context/AuthContext'
 
@@ -36,7 +36,14 @@ const ownerOf = (item) => (
   || item?.dealOwnerName
   || item?.customerOwner
   || item?.createdByName
+  || item?.createdBy
+  || item?.createdByEmail
   || item?.assignedToName
+  || item?.assignedTo
+  || item?.accountOwnerEmail
+  || item?.dealOwnerEmail
+  || item?.ownerEmail
+  || item?.userEmail
   || item?.owner
   || ''
 )
@@ -86,20 +93,33 @@ const matchesOwner = (item, ownerFilter) => {
 }
 
 const buildOwnerOptions = (records, user, systemUsers = [], isAdmin = true) => {
-  if (!isAdmin && user?.name) {
-    return [String(user.name).trim()]
+  const currentUserName = String(user?.name || user?.ownerDisplayName || user?.fullName || user?.displayName || user?.username || user?.email || '').trim()
+  if (!isAdmin && currentUserName) {
+    return [currentUserName]
   }
-  const ownerSet = new Set()
-  if (user?.name) ownerSet.add(String(user.name).trim())
+  const ownerMap = new Map()
+  const addOwner = (value) => {
+    const name = String(value || '').trim()
+    if (!name) return
+    const key = normalize(name)
+    if (!ownerMap.has(key)) ownerMap.set(key, name)
+  }
+  addOwner(currentUserName)
   records.forEach((record) => {
-    const owner = String(ownerOf(record) || '').trim()
-    if (owner) ownerSet.add(owner)
+    addOwner(ownerOf(record))
   })
   systemUsers.forEach((u) => {
-    const name = String(u?.name || u?.username || u?.fullName || '').trim()
-    if (name) ownerSet.add(name)
+    const names = [
+      u?.name,
+      u?.ownerDisplayName,
+      u?.fullName,
+      u?.username,
+      u?.displayName,
+      u?.email,
+    ]
+    names.forEach(addOwner)
   })
-  return ['all', ...Array.from(ownerSet).sort((a, b) => a.localeCompare(b))]
+  return ['all', ...Array.from(ownerMap.values()).sort((a, b) => a.localeCompare(b))]
 }
 
 const buildWorkTrendData = (records, ownerFilter, period = 'month') => {
@@ -136,19 +156,6 @@ const buildWorkTrendData = (records, ownerFilter, period = 'month') => {
   })
 
   return buckets
-}
-
-const buildOwnerWiseData = (records) => {
-  const counts = records.reduce((acc, record) => {
-    const owner = ownerOf(record) || 'Unassigned'
-    acc[owner] = (acc[owner] || 0) + 1
-    return acc
-  }, {})
-
-  return Object.entries(counts)
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
-    .slice(0, 8)
-    .map(([name, value]) => ({ name, value }))
 }
 
 const buildFunnelData = (deals, ownerFilter) => {
@@ -203,39 +210,44 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
   const { user, isAdmin } = useAuth()
   const [period, setPeriod] = useState('month')
   const [liveEntity, setLiveEntity] = useState('Accounts')
-  const [ownerFilter, setOwnerFilter] = useState(() => (isAdmin ? 'all' : user?.name || 'all'))
-  const activeOwnerFilter = isAdmin ? ownerFilter : (user?.name || 'all')
+  const currentUserName = String(user?.name || user?.ownerDisplayName || user?.fullName || user?.displayName || user?.username || user?.email || '').trim()
+  const [ownerFilter, setOwnerFilter] = useState(() => (isAdmin ? 'all' : currentUserName || 'all'))
+  const [directoryUsers, setDirectoryUsers] = useState([])
+  const activeOwnerFilter = isAdmin ? ownerFilter : (currentUserName || 'all')
 
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
   const [loadingCharts, setLoadingCharts] = useState(true)
-  const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
-  const visibleDbCharts = useMemo(() => dbCharts.slice(0, 5), [dbCharts])
+  const scopedAccounts = useMemo(() => (isAdmin ? accounts : accounts.filter((item) => matchesOwner(item, activeOwnerFilter))), [accounts, activeOwnerFilter, isAdmin])
+  const scopedDeals = useMemo(() => (isAdmin ? deals : deals.filter((item) => matchesOwner(item, activeOwnerFilter))), [deals, activeOwnerFilter, isAdmin])
+  const scopedCustomers = useMemo(() => (isAdmin ? customers : customers.filter((item) => matchesOwner(item, activeOwnerFilter))), [customers, activeOwnerFilter, isAdmin])
+  const scopedQuotations = useMemo(() => (isAdmin ? quotations : quotations.filter((item) => matchesOwner(item, activeOwnerFilter))), [quotations, activeOwnerFilter, isAdmin])
+  const chartData = useMemo(() => buildMonthlyData(scopedDeals, scopedQuotations), [scopedDeals, scopedQuotations])
+  const visibleDbCharts = useMemo(() => (isAdmin ? dbCharts.slice(0, 2) : []), [dbCharts, isAdmin])
   const chartListPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
 
   const liveRecords = useMemo(() => {
     switch (liveEntity) {
       case 'Deals':
-        return deals
+        return scopedDeals
       case 'Quotations':
-        return quotations
+        return scopedQuotations
       case 'Customers':
-        return customers
+        return scopedCustomers
       case 'Accounts':
       default:
-        return accounts
+        return scopedAccounts
     }
-  }, [accounts, deals, quotations, customers, liveEntity])
+  }, [liveEntity, scopedAccounts, scopedDeals, scopedQuotations, scopedCustomers])
 
   const allAnalyticsRecords = useMemo(() => (
-    [...accounts, ...deals, ...customers, ...quotations]
-  ), [accounts, customers, deals, quotations])
+    [...scopedAccounts, ...scopedDeals, ...scopedCustomers, ...scopedQuotations]
+  ), [scopedAccounts, scopedCustomers, scopedDeals, scopedQuotations])
 
-  const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user, users, isAdmin), [allAnalyticsRecords, user, users, isAdmin])
-  const ownerScopedDeals = useMemo(() => deals.filter((deal) => matchesOwner(deal, activeOwnerFilter)), [deals, activeOwnerFilter])
+  const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user, [...users, ...directoryUsers], isAdmin), [allAnalyticsRecords, directoryUsers, user, users, isAdmin])
+  const ownerScopedDeals = useMemo(() => scopedDeals.filter((deal) => matchesOwner(deal, activeOwnerFilter)), [scopedDeals, activeOwnerFilter])
   const workTrendData = useMemo(() => buildWorkTrendData(liveRecords, activeOwnerFilter, period), [liveRecords, activeOwnerFilter, period])
-  const ownerWiseWorkData = useMemo(() => buildOwnerWiseData(allAnalyticsRecords), [allAnalyticsRecords])
-  const funnelData = useMemo(() => buildFunnelData(deals, activeOwnerFilter), [deals, activeOwnerFilter])
+  const funnelData = useMemo(() => buildFunnelData(scopedDeals, activeOwnerFilter), [scopedDeals, activeOwnerFilter])
 
   const pipeline = useMemo(() => {
     const counts = ownerScopedDeals.reduce((result, deal) => {
@@ -246,44 +258,58 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
     return Object.entries(counts).map(([name, value]) => ({ name, value }))
   }, [ownerScopedDeals])
 
-  const recentDeals = useMemo(() => [...deals].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [deals])
-  const recentQuotations = useMemo(() => [...quotations].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [quotations])
+  const recentDeals = useMemo(() => [...scopedDeals].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [scopedDeals])
+  const recentQuotations = useMemo(() => [...scopedQuotations].sort((a, b) => new Date(dateOf(b)) - new Date(dateOf(a))).slice(0, 8), [scopedQuotations])
 
-  const totalQuotationVal = useMemo(() => quotations.reduce((sum, q) => sum + amountOf(q), 0), [quotations])
+  const totalQuotationVal = useMemo(() => scopedQuotations.reduce((sum, q) => sum + amountOf(q), 0), [scopedQuotations])
   const kpiCards = useMemo(() => ([
     {
       key: 'accounts',
       label: 'Accounts',
       collection: 'leads',
-      value: accounts.length,
-      monthValue: accounts.filter((item) => isCurrentMonth(dateOf(item))).length,
+      value: scopedAccounts.length,
+      monthValue: scopedAccounts.filter((item) => isCurrentMonth(dateOf(item))).length,
       icon: FaBuilding,
     },
     {
       key: 'deals',
       label: 'Deals',
       collection: 'deals',
-      value: deals.length,
-      monthValue: deals.filter((item) => isCurrentMonth(dateOf(item))).length,
+      value: scopedDeals.length,
+      monthValue: scopedDeals.filter((item) => isCurrentMonth(dateOf(item))).length,
       icon: FaHandshake,
     },
     {
       key: 'customers',
       label: 'Customers',
       collection: 'customers',
-      value: customers.length,
-      monthValue: customers.filter((item) => isCurrentMonth(dateOf(item))).length,
+      value: scopedCustomers.length,
+      monthValue: scopedCustomers.filter((item) => isCurrentMonth(dateOf(item))).length,
       icon: FaUsers,
     },
     {
       key: 'quotations',
       label: 'Quotations',
       collection: 'quotations',
-      value: quotations.length,
-      monthValue: quotations.filter((item) => isCurrentMonth(dateOf(item))).length,
+      value: scopedQuotations.length,
+      monthValue: scopedQuotations.filter((item) => isCurrentMonth(dateOf(item))).length,
       icon: FaFileInvoiceDollar,
     },
-  ]), [accounts, customers, deals, quotations])
+  ]), [scopedAccounts, scopedCustomers, scopedDeals, scopedQuotations])
+
+  useEffect(() => {
+    let isMounted = true
+    userApi.listDirectory()
+      .then((result) => {
+        if (isMounted && Array.isArray(result)) setDirectoryUsers(result)
+      })
+      .catch(() => {
+        if (isMounted) setDirectoryUsers([])
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -458,16 +484,6 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         />
         <ChartRenderer
           config={{
-            _id: 'live-owner-wise-work',
-            title: 'Owner Wise Work',
-            chartType: 'Bar',
-            entity: 'Accounts',
-          }}
-          data={{ data: ownerWiseWorkData.length ? ownerWiseWorkData : [{ name: 'No Work', value: 0 }] }}
-          loading={false}
-        />
-        <ChartRenderer
-          config={{
             _id: 'live-daily-work',
             title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} ${liveEntity} Work - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
             chartType: 'Line',
@@ -476,7 +492,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
           data={{ data: workTrendData }}
           loading={false}
         />
-        {dbCharts.length > 0 ? (
+        {visibleDbCharts.length > 0 ? (
           visibleDbCharts.map((chart) => (
             <ChartRenderer
               key={chart._id || chart.id}
@@ -489,7 +505,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
           <>
             <ChartRenderer
               config={{ _id: 'fallback-funnel', title: 'Sales Conversion Funnel', chartType: 'Funnel', entity: 'Deals' }}
-              data={{ data: pipeline.length ? pipeline : [{ name: 'Lead Qualified', value: 45 }, { name: 'Proposal Sent', value: 30 }, { name: 'Negotiation', value: 18 }, { name: 'Deal Won', value: 12 }] }}
+              data={{ data: pipeline.length ? pipeline : [{ name: 'No Deals', value: 0 }] }}
               loading={loadingCharts}
             />
             <ChartRenderer
@@ -507,117 +523,6 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
               data={{ labels: chartData.map((d) => d.name), values: chartData.map((d) => d.quotationValue) }}
               loading={loadingCharts}
             />
-            /* start-sweep */
-
-
-
-
-
-
-
-          /* start-cut */
-            /* cut-middle */
-              /* line-chart-1 */
-
-
-
-
-
-
-
-
-
-
-                /* cartesian-cut */
-                /* xaxis-cut */
-                /* yaxis-cut */
-                /* tooltip-cut */
-                /* legend-cut */
-                /* new-deals-cut */
-                /* won-deals-cut */
-                /* lost-deals-cut */
-              /* end-middle */
-
-
-        /* end-card-1 */
-
-        /* remove-card-2 */
-
-
-
-
-
-            /* mark-2-cut */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /* mark-sweep-point */
-
-        /* card-3 */
-
-
-
-
-
-            /* mark-3 */
-
-
-
-
-
-
-
-
-
-
-
-
-        /* cut-card-3-end */
-
-        /* card-4 */
-
-
-
-
-
-            /* mark-4 */
-
-
-
-              /* pie-chart-mark */
-
-
-
-
-
-
-                  /* inner-radius-mark */
-
-
-
-
-
-
-
-
-
-
-
-
-
           </>
         )}
       </div>

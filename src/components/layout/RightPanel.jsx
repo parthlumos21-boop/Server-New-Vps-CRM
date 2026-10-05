@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FaEnvelope,
@@ -9,7 +9,6 @@ import {
 } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
-import { customerService } from '../../services/customerService'
 import integrationApi from '../../services/integrationApi'
 import './RightPanel.css'
 
@@ -122,25 +121,6 @@ const getRecordDate = (record = {}) => (
   || ''
 )
 
-const buildMonthlyBars = (records = [], now = new Date()) => {
-  const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-  const counts = monthLabels.map((label, index) => ({
-    label,
-    value: records.filter((record) => {
-      const date = new Date(getRecordDate(record))
-      return !Number.isNaN(date.getTime())
-        && date.getFullYear() === now.getFullYear()
-        && date.getMonth() === index
-    }).length,
-  }))
-  const maxValue = Math.max(1, ...counts.map((entry) => entry.value))
-
-  return counts.map((entry) => ({
-    ...entry,
-    height: Math.max(12, Math.round((entry.value / maxValue) * 52)),
-  }))
-}
-
 const RightPanel = () => {
   const navigate = useNavigate()
   const { user, isAdmin } = useAuth()
@@ -156,7 +136,6 @@ const RightPanel = () => {
   const [integrationStatus, setIntegrationStatus] = useState(null)
   const [isLoadingIntegrations, setIsLoadingIntegrations] = useState(false)
   const [busyIntegration, setBusyIntegration] = useState('')
-  const [monthMetric, setMonthMetric] = useState('deals')
 
   useEffect(() => {
     const tick = () => setNow(new Date())
@@ -194,16 +173,6 @@ const RightPanel = () => {
   const liveActivityLog = buildLiveEntries(onlineUsers, activities, nowLabel)
   const activityLog = isDemo ? DEMO_ACTIVITY : liveActivityLog
   const supportActions = buildSupportActions(isAdmin, integrationStatus, isLoadingIntegrations)
-  const customers = useMemo(() => customerService.getCustomers(), [])
-  const monthMetricRecords = {
-    accounts,
-    deals,
-    quotations,
-    customers,
-  }
-  const monthBars = useMemo(() => (
-    buildMonthlyBars(monthMetricRecords[monthMetric] || deals, now)
-  ), [accounts, customers, deals, monthMetric, now, quotations])
 
   const handleActionClick = async (action) => {
     if (action.key === 'outlook') {
@@ -213,43 +182,6 @@ const RightPanel = () => {
 
   return (
     <aside className="right-panel">
-      <div className="right-panel-section right-panel-section--month">
-        <div className="right-panel-section-head">
-          <span>THIS MONTH</span>
-          <select
-            className="rp-month-select"
-            value={monthMetric}
-            onChange={(event) => setMonthMetric(event.target.value)}
-            aria-label="Select right panel monthly metric"
-          >
-            <option value="accounts">Accounts</option>
-            <option value="deals">Deals</option>
-            <option value="quotations">Quotations</option>
-            <option value="customers">Customers</option>
-          </select>
-        </div>
-        <div className="rp-month-chart" aria-label="Deals by month">
-          <div className="rp-month-axis">
-            <span>30</span>
-            <span>20</span>
-            <span>10</span>
-            <span>0</span>
-          </div>
-          <div className="rp-month-bars">
-            {monthBars.map((bar) => (
-              <div key={bar.label} className="rp-month-bar-wrap">
-                <span
-                  className="rp-month-bar"
-                  style={{ height: `${bar.height}px` }}
-                  title={`${bar.label}: ${bar.value}`}
-                />
-                <span className="rp-month-label">{bar.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       <div className="right-panel-section right-panel-section--actions">
         <div className="right-panel-section-head right-panel-section-head--integrations">
           <span>INTEGRATIONS</span>

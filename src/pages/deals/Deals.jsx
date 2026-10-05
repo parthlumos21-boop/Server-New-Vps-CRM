@@ -172,6 +172,8 @@ const SEARCH_DEAL_REQUIRED_GRID_KEYS = [
   'convertToPo',
   'poValue',
   'jobNo',
+  'quotationNumber',
+  'quotationOwnerName',
   'reasonForLostOrder',
 ]
 
@@ -784,6 +786,18 @@ const getQuotationNumberFromRecord = (record = {}) => (
     || record.latestQuoteNumber
     || record.data?.quotationNumber
     || record.data?.quoteNumber
+    || ''
+  ).trim()
+)
+
+const getQuotationOwnerFromRecord = (record = {}) => (
+  String(
+    record.quotationOwnerName
+    || record.quotationOwner
+    || record.ownerName
+    || record.createdByName
+    || record.data?.quotationOwnerName
+    || record.data?.quotationOwner
     || ''
   ).trim()
 )
@@ -1412,6 +1426,31 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
       return lookup
     }, {})
   ), [quotations])
+  const quotationOwnerByDealId = useMemo(() => (
+    (quotations || []).reduce((lookup, quotation) => {
+      const quotationOwner = getQuotationOwnerFromRecord(quotation)
+      if (!quotationOwner) return lookup
+
+      const linkedDealIds = [
+        quotation.dealId,
+        quotation.selectedDealId,
+        quotation.linkedDealId,
+        quotation.sourceDealId,
+        quotation.data?.dealId,
+        quotation.data?.selectedDealId,
+        quotation.data?.linkedDealId,
+      ]
+
+      linkedDealIds.forEach((dealId) => {
+        const key = String(dealId || '').trim()
+        if (key && !lookup[key]) {
+          lookup[key] = quotationOwner
+        }
+      })
+
+      return lookup
+    }, {})
+  ), [quotations])
   const quotationNumberByDealNumber = useMemo(() => (
     (quotations || []).reduce((lookup, quotation) => {
       const quotationNumber = getQuotationNumberFromRecord(quotation)
@@ -1430,6 +1469,30 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         const key = String(dealNumber || '').trim()
         if (key && !lookup[key]) {
           lookup[key] = quotationNumber
+        }
+      })
+
+      return lookup
+    }, {})
+  ), [quotations])
+  const quotationOwnerByDealNumber = useMemo(() => (
+    (quotations || []).reduce((lookup, quotation) => {
+      const quotationOwner = getQuotationOwnerFromRecord(quotation)
+      if (!quotationOwner) return lookup
+
+      const linkedDealNumbers = [
+        quotation.dealNumber,
+        quotation.selectedDealNumber,
+        quotation.linkedDealNumber,
+        quotation.data?.dealNumber,
+        quotation.data?.selectedDealNumber,
+        quotation.data?.linkedDealNumber,
+      ]
+
+      linkedDealNumbers.forEach((dealNumber) => {
+        const key = String(dealNumber || '').trim()
+        if (key && !lookup[key]) {
+          lookup[key] = quotationOwner
         }
       })
 
@@ -1741,6 +1804,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         dealId: deal.id || '',
         dealNumber: formatDealSequenceNumber(deal, index),
         quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
+        quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
         location: deal.city || deal.location || linkedCustomer?.city || linkedCustomer?.location || '',
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
         accountName: deal.linkedAccountName || deal.accountName || '',
@@ -1789,7 +1853,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         updatedDate: formatGridDate(deal.updatedAt || deal.lastUpdated || deal.createdAt || ''),
       }
     })
-  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber])
+  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber, quotationOwnerByDealId, quotationOwnerByDealNumber])
   const adminGridRowById = useMemo(
     () => adminGridRows.reduce((lookup, row) => {
       lookup[row.id] = row
@@ -2131,6 +2195,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         dealId: deal.id || '',
         dealNumber: deal.dealNumber || `DL-${String(index + 1).padStart(3, '0')}`,
         quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
+        quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
         location: getDealBranchLocation(deal, linkedCustomer),
         customerName: getDealCustomerName(deal, linkedCustomer),
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
@@ -2161,7 +2226,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         latestRemark: deal.remark || deal.description || linkedCustomer?.remark || '',
       }
     })
-  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber])
+  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber, quotationOwnerByDealId, quotationOwnerByDealNumber])
 
   const projectDetailsAllRows = useMemo(() => (
     displayedDeals
@@ -2175,6 +2240,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           dealId: deal.id || '',
           dealNumber: deal.dealNumber || `DL-${String(index + 1).padStart(3, '0')}`,
           quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
+          quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
           location: getDealBranchLocation(deal, linkedCustomer),
           customerName: getDealCustomerName(deal, linkedCustomer),
           customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
@@ -2203,7 +2269,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           latestRemark: deal.remark || deal.description || linkedCustomer?.remark || '',
         }
       })
-  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber])
+  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber, quotationOwnerByDealId, quotationOwnerByDealNumber])
 
   const ahmadabadAllRows = useMemo(() => (
     displayedDeals.map((deal, index) => {
@@ -2216,6 +2282,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         dealId: deal.id || '',
         dealNumber: deal.dealNumber || `DL-${String(index + 1).padStart(3, '0')}`,
         quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
+        quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
         location: getDealBranchLocation(deal, linkedCustomer),
         customerName: getDealCustomerName(deal, linkedCustomer),
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
@@ -2245,7 +2312,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         latestRemark: deal.remark || deal.description || linkedCustomer?.remark || '',
       }
     })
-  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber])
+  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber, quotationOwnerByDealId, quotationOwnerByDealNumber])
 
   const vadodaraAllRows = useMemo(() => (
     displayedDeals.map((deal, index) => {
@@ -2258,6 +2325,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         dealId: deal.id || '',
         dealNumber: deal.dealNumber || `DL-${String(index + 1).padStart(3, '0')}`,
         quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
+        quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
         location: getDealBranchLocation(deal, linkedCustomer),
         customerName: getDealCustomerName(deal, linkedCustomer),
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
@@ -2287,7 +2355,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         latestRemark: deal.remark || deal.description || linkedCustomer?.remark || '',
       }
     })
-  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber])
+  ), [customerDirectory, displayedDeals, quotationNumberByDealId, quotationNumberByDealNumber, quotationOwnerByDealId, quotationOwnerByDealNumber])
 
   const ownerScopedColumns = useMemo(
     () => {

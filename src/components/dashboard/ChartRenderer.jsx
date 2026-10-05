@@ -62,7 +62,7 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
   const values = data?.values || []
   const chartItems = data?.data || labels.map((label, index) => ({ name: label, value: values[index] || 0 }))
 
-  const totalVal = values.reduce((sum, v) => sum + (Number(v) || 0), 0)
+  const totalVal = chartItems.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
 
   const handleChartClick = (entry, customEntity) => {
     const normEntity = String(customEntity || entity || '').toLowerCase()
@@ -180,55 +180,44 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
         )
       }
       case 'Funnel': {
-        const totalItemsVal = chartItems.reduce((acc, curr) => acc + (Number(curr.value) || 0), 0)
-        const maxVal = Math.max(...chartItems.map((i) => Number(i.value) || 0), 1)
-        const FUNNEL_COLORS = ['#0284c7', '#2563eb', '#ea580c', '#16a34a', '#dc2626']
+        const FUNNEL_COLORS = ['#3f63aa', '#e58634', '#469b3a', '#e14b4b', '#8b5cf6']
 
         return (
-          <div className="analytics-vertical-funnel" style={{ padding: '16px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', width: '100%' }}>
+          <div className="analytics-vertical-funnel" style={{ padding: '12px 8px 18px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', width: '100%' }}>
             {chartItems.map((item, index) => {
               const val = Number(item.value) || 0
-              const stepMaxPct = 100 - index * 14
-              const stepMinPct = 40 - index * 5
-              const calculatedPct = maxVal > 0 ? Math.round((val / maxVal) * stepMaxPct) : stepMaxPct
-              const widthPct = Math.max(stepMinPct, Math.min(stepMaxPct, calculatedPct))
+              const widthPct = Math.max(34, 100 - index * 16)
               const color = FUNNEL_COLORS[index % FUNNEL_COLORS.length] || COLORS[index % COLORS.length]
-              const conversionRate = totalItemsVal > 0 ? ((val / totalItemsVal) * 100).toFixed(0) : '0'
+              const percent = totalVal > 0 ? Math.round((val / totalVal) * 100) : 0
 
               return (
                 <div
                   key={item.name || index}
                   onClick={() => handleChartClick(item, entity)}
-                  title={`Click to view ${item.name} details (${val} records)`}
+                  title={`${item.name}: ${val} records (${percent}%)`}
                   style={{
                     width: `${widthPct}%`,
                     minWidth: '180px',
-                    background: `linear-gradient(135deg, ${color} 0%, #1e293b 160%)`,
-                    clipPath: 'polygon(0% 0%, 100% 0%, 94% 100%, 6% 100%)',
-                    padding: '10px 18px',
+                    minHeight: index === chartItems.length - 1 ? '54px' : '64px',
+                    background: color,
+                    clipPath: 'polygon(0% 0%, 100% 0%, 88% 100%, 12% 100%)',
+                    padding: '0 18px',
                     color: '#ffffff',
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justifyContent: 'center',
                     alignItems: 'center',
                     cursor: 'pointer',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)',
+                    boxShadow: 'none',
                     transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                     margin: '0 auto',
+                    textAlign: 'center',
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.02)' }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
                 >
-                  <span style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.3px', textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>
-                    {item.name}
+                  <span style={{ fontSize: '14px', fontWeight: 700, lineHeight: 1.25, textShadow: '0 1px 2px rgba(0,0,0,0.28)' }}>
+                    {item.name}: {val}
                   </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '10px', opacity: 0.85, background: 'rgba(0,0,0,0.3)', padding: '1px 6px', borderRadius: '8px' }}>
-                      {conversionRate}%
-                    </span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, background: 'rgba(255,255,255,0.25)', padding: '2px 10px', borderRadius: '12px' }}>
-                      {val}
-                    </span>
-                  </div>
                 </div>
               )
             })}
