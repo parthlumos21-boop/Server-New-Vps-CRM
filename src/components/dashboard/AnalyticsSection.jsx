@@ -85,12 +85,19 @@ const matchesOwner = (item, ownerFilter) => {
   return owner && owner === normalize(ownerFilter)
 }
 
-const buildOwnerOptions = (records, user) => {
+const buildOwnerOptions = (records, user, systemUsers = [], isAdmin = true) => {
+  if (!isAdmin && user?.name) {
+    return [String(user.name).trim()]
+  }
   const ownerSet = new Set()
   if (user?.name) ownerSet.add(String(user.name).trim())
   records.forEach((record) => {
     const owner = String(ownerOf(record) || '').trim()
     if (owner) ownerSet.add(owner)
+  })
+  systemUsers.forEach((u) => {
+    const name = String(u?.name || u?.username || u?.fullName || '').trim()
+    if (name) ownerSet.add(name)
   })
   return ['all', ...Array.from(ownerSet).sort((a, b) => a.localeCompare(b))]
 }
@@ -145,18 +152,27 @@ const buildOwnerWiseData = (records) => {
 }
 
 const buildFunnelData = (deals, ownerFilter) => {
-  const counts = deals
-    .filter((deal) => matchesOwner(deal, ownerFilter))
-    .reduce((acc, deal) => {
-      const stage = formatStatusLabel(deal.stage || deal.status || deal.dealStatus, 'No Status')
-      acc[stage] = (acc[stage] || 0) + 1
-      return acc
-    }, {})
+  const filtered = deals.filter((deal) => matchesOwner(deal, ownerFilter))
+  const counts = filtered.reduce((acc, deal) => {
+    const stage = formatStatusLabel(deal.stage || deal.status || deal.dealStatus, 'Lead Qualified')
+    acc[stage] = (acc[stage] || 0) + 1
+    return acc
+  }, {})
 
-  return Object.entries(counts)
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
-    .slice(0, 5)
-    .map(([name, value]) => ({ name, value }))
+  const stagesInOrder = [
+    { name: 'Lead Qualified', value: counts['Lead Qualified'] || counts['Lead'] || counts['New'] || 0 },
+    { name: 'Proposal Sent', value: counts['Proposal Sent'] || counts['Proposal'] || counts['Quotation'] || 0 },
+    { name: 'Negotiation', value: counts['Negotiation'] || counts['In Negotiation'] || 0 },
+    { name: 'Deal Won', value: counts['Deal Won'] || counts['Won'] || counts['Converted'] || 0 },
+    { name: 'Deal Lost', value: counts['Deal Lost'] || counts['Lost'] || counts['Rejected'] || 0 },
+  ]
+
+  const hasAnyData = stagesInOrder.some((s) => s.value > 0)
+  if (!hasAnyData && filtered.length > 0) {
+    return Object.entries(counts).slice(0, 5).map(([name, value]) => ({ name, value }))
+  }
+
+  return stagesInOrder
 }
 
 const CustomChartTooltip = ({ active, payload, label, isAdmin = true, currentUser = null }) => {
@@ -186,21 +202,40 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
   const location = useLocation()
   const { user, isAdmin } = useAuth()
   const [period, setPeriod] = useState('month')
-  const [ownerFilter, setOwnerFilter] = useState(() => user?.name || 'all')
+  const [liveEntity, setLiveEntity] = useState('Accounts')
+  const [ownerFilter, setOwnerFilter] = useState(() => (isAdmin ? 'all' : user?.name || 'all'))
+  const activeOwnerFilter = isAdmin ? ownerFilter : (user?.name || 'all')
+
   const [dbCharts, setDbCharts] = useState([])
   const [chartDataMap, setChartDataMap] = useState({})
   const [loadingCharts, setLoadingCharts] = useState(true)
   const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
   const visibleDbCharts = useMemo(() => dbCharts.slice(0, 5), [dbCharts])
   const chartListPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
+
+  const liveRecords = useMemo(() => {
+    switch (liveEntity) {
+      case 'Deals':
+        return deals
+      case 'Quotations':
+        return quotations
+      case 'Customers':
+        return customers
+      case 'Accounts':
+      default:
+        return accounts
+    }
+  }, [accounts, deals, quotations, customers, liveEntity])
+
   const allAnalyticsRecords = useMemo(() => (
     [...accounts, ...deals, ...customers, ...quotations]
   ), [accounts, customers, deals, quotations])
-  const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user), [allAnalyticsRecords, user])
-  const ownerScopedDeals = useMemo(() => deals.filter((deal) => matchesOwner(deal, ownerFilter)), [deals, ownerFilter])
-  const workTrendData = useMemo(() => buildWorkTrendData(allAnalyticsRecords, ownerFilter, period), [allAnalyticsRecords, ownerFilter, period])
+
+  const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user, users, isAdmin), [allAnalyticsRecords, user, users, isAdmin])
+  const ownerScopedDeals = useMemo(() => deals.filter((deal) => matchesOwner(deal, activeOwnerFilter)), [deals, activeOwnerFilter])
+  const workTrendData = useMemo(() => buildWorkTrendData(liveRecords, activeOwnerFilter, period), [liveRecords, activeOwnerFilter, period])
   const ownerWiseWorkData = useMemo(() => buildOwnerWiseData(allAnalyticsRecords), [allAnalyticsRecords])
-  const funnelData = useMemo(() => buildFunnelData(deals, ownerFilter), [deals, ownerFilter])
+  const funnelData = useMemo(() => buildFunnelData(deals, activeOwnerFilter), [deals, activeOwnerFilter])
 
   const pipeline = useMemo(() => {
     const counts = ownerScopedDeals.reduce((result, deal) => {
@@ -323,8 +358,23 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
 
           <div className="analytics-filter-wrap">
             <select
-              value={ownerFilter}
-              onChange={(event) => setOwnerFilter(event.target.value)}
+              value={liveEntity}
+              onChange={(event) => setLiveEntity(event.target.value)}
+              aria-label="Live Chart Entity"
+              className="analytics-select"
+            >
+              <option value="Accounts">Accounts</option>
+              <option value="Deals">Deals</option>
+              <option value="Quotations">Quotations</option>
+              <option value="Customers">Customers</option>
+            </select>
+          </div>
+
+          <div className="analytics-filter-wrap">
+            <select
+              value={activeOwnerFilter}
+              onChange={(event) => isAdmin && setOwnerFilter(event.target.value)}
+              disabled={!isAdmin}
               aria-label="Analytics owner"
               className="analytics-select analytics-select--owner"
             >
@@ -335,7 +385,6 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
               ))}
             </select>
           </div>
-
 
           <button
             type="button"
@@ -396,7 +445,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         <ChartRenderer
           config={{
             _id: 'live-owner-funnel',
-            title: `Sales Conversion Funnel - ${ownerFilter === 'all' ? 'All Users' : ownerFilter}`,
+            title: `Sales Conversion Funnel - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
             chartType: 'Funnel',
             entity: 'Deals',
           }}
@@ -420,9 +469,9 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         <ChartRenderer
           config={{
             _id: 'live-daily-work',
-            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Work - ${ownerFilter === 'all' ? 'All Users' : ownerFilter}`,
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} ${liveEntity} Work - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
             chartType: 'Line',
-            entity: 'Accounts',
+            entity: liveEntity,
           }}
           data={{ data: workTrendData }}
           loading={false}

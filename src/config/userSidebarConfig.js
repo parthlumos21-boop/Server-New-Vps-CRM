@@ -43,7 +43,7 @@ export const USER_ACCOUNT_MENU_ITEMS = [
   { label: 'Add Account', to: '/accounts/new' },
   { label: 'Search Account', to: '/accounts/search' },
   { label: 'My Accounts', to: '/accounts/my-accounts' },
-  { label: 'My Deal', to: '/deals/view' },
+  { label: 'My Deals', to: '/deals/view' },
   { label: 'Search Deal', to: '/deals/search' },
 ]
 

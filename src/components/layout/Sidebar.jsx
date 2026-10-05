@@ -229,7 +229,7 @@ const Sidebar = ({ isAdmin = false }) => {
     { label: 'Add Account', to: '/admin/accounts/new' },
     { label: 'Search Account', to: '/admin/accounts/search' },
     { label: 'My Accounts', to: '/admin/accounts/my-accounts' },
-    { label: 'My Deal', to: '/admin/deals/view' },
+    { label: 'My Deals', to: '/admin/deals/view' },
     { label: 'Search Deal', to: '/admin/deals/search' },
   ]), [isKevalVShah])
 

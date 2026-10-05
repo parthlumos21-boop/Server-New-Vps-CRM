@@ -137,6 +137,8 @@ const DEAL_TABLE_COLUMNS = [
   { key: 'convertToPo', label: 'Convert PO', placeholder: 'Search Convert PO', sourceField: 'convert_to_po' },
   { key: 'poValue', label: 'PO Value', placeholder: 'Search PO Value', sourceField: 'po_value' },
   { key: 'jobNo', label: 'Job No.', placeholder: 'Search Job No.', sourceField: 'job_no' },
+  { key: 'quotationNumber', label: 'Quotation No.', placeholder: 'Search Quotation No.', sourceField: 'quotation_number' },
+  { key: 'quotationOwnerName', label: 'Quotation Owner Name', placeholder: 'Search Quotation Owner Name', sourceField: 'quotation_owner_name' },
   { key: 'reasonForLostOrder', label: 'Lost Order Reason', placeholder: 'Search Lost Order Reason', sourceField: 'reason_for_lost_order' },
 ]
 
@@ -1516,6 +1518,8 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           orderCustomerStatus: deal.orderCustomerStatus || '',
           poValue: deal.poValue || '',
           jobNo: deal.jobNo || linkedAccount?.jobNo || '',
+          quotationNumber: deal.quotationNumber || deal.quotationNo || deal.latestQuotationNo || linkedAccount?.quotationNumber || '',
+          quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || deal.latestQuotationOwner || linkedAccount?.quotationOwnerName || '',
           consultantName: deal.consultantName || linkedAccount?.consultantName || '',
           reasonForLost: deal.reasonForLost || '',
           reminderDate: deal.reminderDate || '',
@@ -4202,6 +4206,8 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
       render: (value, row) => value !== null && value !== undefined && value !== '' ? formatCurrency(value, row.currency) : '-',
     },
     { key: 'jobNo', label: 'Job No.' },
+    { key: 'quotationNumber', label: 'Quotation No.' },
+    { key: 'quotationOwnerName', label: 'Quotation Owner Name' },
     { key: 'customerName', label: 'Customer Name' },
   ]
 

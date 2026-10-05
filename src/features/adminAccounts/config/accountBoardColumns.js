@@ -431,6 +431,33 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     exportable: true,
     cellFormatter: (value) => value || emptyValue,
   },
+  {
+    key: 'quotationNumber',
+    label: 'Quotation No.',
+    filterPlaceholder: 'Search Quotation No.',
+    width: '160px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: (value, row) => value || row?.quotationNo || row?.quotationNumber || row?.latestQuotationNo || emptyValue,
+  },
+  {
+    key: 'quotationOwnerName',
+    label: 'Quotation Owner Name',
+    filterPlaceholder: 'Search Quotation Owner Name',
+    width: '180px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: (value, row) => value || row?.quotationOwner || row?.quotationOwnerName || row?.latestQuotationOwner || emptyValue,
+  },
+  {
+    key: 'reasonForLost',
+    label: 'Reason Lost',
+    filterPlaceholder: 'Search Reason Lost',
+    width: '180px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: (value) => value || emptyValue,
+  },
 ]
 
 export const MY_ACCOUNTS_BOARD_COLUMNS = [
