@@ -109,32 +109,34 @@ const buildOwnerOptions = (records, user, systemUsers = [], isAdmin = true) => {
     addOwner(ownerOf(record))
   })
   systemUsers.forEach((u) => {
-    const names = [
-      u?.name,
-      u?.ownerDisplayName,
-      u?.fullName,
-      u?.username,
-      u?.displayName,
-      u?.email,
-    ]
-    names.forEach(addOwner)
+    const primaryName = u?.name || u?.ownerDisplayName || u?.fullName || u?.displayName || u?.username || u?.email
+    if (primaryName) addOwner(primaryName)
   })
   return ['all', ...Array.from(ownerMap.values()).sort((a, b) => a.localeCompare(b))]
 }
 
 const buildWorkTrendData = (records, ownerFilter, period = 'month') => {
   const now = new Date()
-  const buckets = Array.from({ length: period === 'day' ? 7 : 6 }).map((_, index) => {
+  const isYear = period === 'year'
+  const isDay = period === 'day'
+  const isWeek = period === 'week'
+  const length = isDay ? 7 : isYear ? 5 : 6
+
+  const buckets = Array.from({ length }).map((_, index) => {
     const date = new Date(now)
-    if (period === 'day') {
+    if (isDay) {
       date.setDate(now.getDate() - (6 - index))
       return { key: date.toISOString().slice(0, 10), name: date.toLocaleDateString('en-IN', { weekday: 'short' }), value: 0 }
     }
-    if (period === 'week') {
+    if (isWeek) {
       date.setDate(now.getDate() - ((5 - index) * 7))
       const start = new Date(date)
       start.setDate(date.getDate() - date.getDay())
       return { key: start.toISOString().slice(0, 10), name: `W${index + 1}`, value: 0 }
+    }
+    if (isYear) {
+      const targetYear = now.getFullYear() - (4 - index)
+      return { key: String(targetYear), name: String(targetYear), value: 0 }
     }
     date.setMonth(now.getMonth() - (5 - index), 1)
     return { key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`, name: date.toLocaleDateString('en-IN', { month: 'short' }), value: 0 }
@@ -145,12 +147,14 @@ const buildWorkTrendData = (records, ownerFilter, period = 'month') => {
     const parsed = new Date(dateOf(record))
     if (Number.isNaN(parsed.getTime())) return
     let key = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, '0')}`
-    if (period === 'day') {
+    if (isDay) {
       key = parsed.toISOString().slice(0, 10)
-    } else if (period === 'week') {
+    } else if (isWeek) {
       const start = new Date(parsed)
       start.setDate(parsed.getDate() - parsed.getDay())
       key = start.toISOString().slice(0, 10)
+    } else if (isYear) {
+      key = String(parsed.getFullYear())
     }
     if (lookup[key]) lookup[key].value += 1
   })
@@ -247,6 +251,10 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
   const ownerOptions = useMemo(() => buildOwnerOptions(allAnalyticsRecords, user, [...users, ...directoryUsers], isAdmin), [allAnalyticsRecords, directoryUsers, user, users, isAdmin])
   const ownerScopedDeals = useMemo(() => scopedDeals.filter((deal) => matchesOwner(deal, activeOwnerFilter)), [scopedDeals, activeOwnerFilter])
   const workTrendData = useMemo(() => buildWorkTrendData(liveRecords, activeOwnerFilter, period), [liveRecords, activeOwnerFilter, period])
+  const dailyAccountsData = useMemo(() => buildWorkTrendData(scopedAccounts, activeOwnerFilter, period), [scopedAccounts, activeOwnerFilter, period])
+  const dailyDealsData = useMemo(() => buildWorkTrendData(scopedDeals, activeOwnerFilter, period), [scopedDeals, activeOwnerFilter, period])
+  const dailyQuotationsData = useMemo(() => buildWorkTrendData(scopedQuotations, activeOwnerFilter, period), [scopedQuotations, activeOwnerFilter, period])
+  const dailyCustomersData = useMemo(() => buildWorkTrendData(scopedCustomers, activeOwnerFilter, period), [scopedCustomers, activeOwnerFilter, period])
   const funnelData = useMemo(() => buildFunnelData(scopedDeals, activeOwnerFilter), [scopedDeals, activeOwnerFilter])
 
   const pipeline = useMemo(() => {
@@ -328,7 +336,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
               const data = await chartApi.getChartData(chart._id || chart.id, { period })
               return { id: chart._id || chart.id, data }
             } catch (err) {
-              console.error(`Failed to load data for chart ${chart._id}:`, err)
+              console.warn(`Chart data note for chart ${chart._id}:`, err?.message || err)
               return { id: chart._id || chart.id, data: null }
             }
           })
@@ -377,8 +385,8 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
               className="analytics-select"
             >
               <option value="month">Month wise</option>
-              <option value="week">Week wise</option>
               <option value="day">Day wise</option>
+              <option value="year">Year wise</option>
             </select>
           </div>
 
@@ -396,21 +404,22 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
             </select>
           </div>
 
-          <div className="analytics-filter-wrap">
-            <select
-              value={activeOwnerFilter}
-              onChange={(event) => isAdmin && setOwnerFilter(event.target.value)}
-              disabled={!isAdmin}
-              aria-label="Analytics owner"
-              className="analytics-select analytics-select--owner"
-            >
-              {ownerOptions.map((owner) => (
-                <option key={owner} value={owner}>
-                  {owner === 'all' ? 'All Users' : owner}
-                </option>
-              ))}
-            </select>
-          </div>
+          {isAdmin && (
+            <div className="analytics-filter-wrap">
+              <select
+                value={activeOwnerFilter}
+                onChange={(event) => setOwnerFilter(event.target.value)}
+                aria-label="Analytics owner"
+                className="analytics-select analytics-select--owner"
+              >
+                {ownerOptions.map((owner) => (
+                  <option key={owner} value={owner}>
+                    {owner === 'all' ? 'All Users' : owner}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <button
             type="button"
@@ -490,6 +499,46 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
             entity: liveEntity,
           }}
           data={{ data: workTrendData }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-daily-accounts',
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Accounts Added - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
+            chartType: 'Bar',
+            entity: 'Accounts',
+          }}
+          data={{ data: dailyAccountsData }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-daily-deals',
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Deals Created - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
+            chartType: 'Bar',
+            entity: 'Deals',
+          }}
+          data={{ data: dailyDealsData }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-daily-quotations',
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Quotations Generated - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
+            chartType: 'Line',
+            entity: 'Quotations',
+          }}
+          data={{ data: dailyQuotationsData }}
+          loading={false}
+        />
+        <ChartRenderer
+          config={{
+            _id: 'live-daily-customers',
+            title: `${period === 'day' ? 'Daily' : period === 'week' ? 'Weekly' : 'Monthly'} Customers Added - ${activeOwnerFilter === 'all' ? 'All Users' : activeOwnerFilter}`,
+            chartType: 'Bar',
+            entity: 'Customers',
+          }}
+          data={{ data: dailyCustomersData }}
           loading={false}
         />
         {visibleDbCharts.length > 0 ? (

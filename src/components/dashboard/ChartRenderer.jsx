@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ResponsiveContainer,
@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   LineChart, Line, AreaChart, Area,
 } from 'recharts'
-import { FaChartPie, FaChartBar, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser } from 'react-icons/fa'
+import { FaChartPie, FaChartBar, FaChartLine, FaFilter, FaFileInvoiceDollar, FaHandshake, FaBuilding, FaUser } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 
 const COLORS = ['#0284c7', '#16a34a', '#ea580c', '#9333ea', '#dc2626', '#0891b2', '#4f46e5', '#ca8a04']
@@ -18,6 +18,15 @@ const getEntityIcon = (entity) => {
   if (norm.includes('quotation')) return <FaFileInvoiceDollar />
   if (norm.includes('customer')) return <FaUser />
   return <FaChartPie />
+}
+
+const getChartIcon = (chartType, entity) => {
+  const normType = String(chartType || '').toLowerCase().trim()
+  if (normType.includes('line') || normType.includes('area')) return <FaChartLine />
+  if (normType.includes('bar') || normType.includes('stack')) return <FaChartBar />
+  if (normType.includes('funnel')) return <FaFilter />
+  if (normType.includes('pie') || normType.includes('donut')) return <FaChartPie />
+  return getEntityIcon(entity)
 }
 
 const CustomTooltip = ({ active, payload, label, isAdmin = true, currentUser = null }) => {
@@ -54,6 +63,8 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAdmin } = useAuth()
+  const cardRef = useRef(null)
+
   const chartType = config.chartType || config.type || 'Pie'
   const title = config.title || config.name || 'Analytics Chart'
   const entity = config.entity || config.context || 'Metrics'
@@ -256,16 +267,125 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
     entity.toLowerCase().includes('sr') ? 'support_requests' : 'data'
   )
 
+  const handleDownloadCSV = (event) => {
+    event.stopPropagation()
+    const rows = [['Category / Stage', 'Count']]
+    chartItems.forEach((item) => {
+      rows.push([`"${String(item.name || '').replace(/"/g, '""')}"`, item.value])
+    })
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `${String(title).toLowerCase().replace(/\s+/g, '_')}_report.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleDownloadExcel = (event) => {
+    event.stopPropagation()
+    const rows = [
+      ['Report Title', `"${String(title).replace(/"/g, '""')}"`],
+      ['Entity Context', entity],
+      ['Collection', collectionName],
+      ['Total Metric Count', totalVal],
+      [],
+      ['Category / Stage', 'Count', 'Percentage']
+    ]
+    chartItems.forEach((item) => {
+      const val = Number(item.value) || 0
+      const pct = totalVal > 0 ? ((val / totalVal) * 100).toFixed(1) + '%' : '0%'
+      rows.push([`"${String(item.name || '').replace(/"/g, '""')}"`, val, `"${pct}"`])
+    })
+    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + rows.map((e) => e.join(',')).join('\n')
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `${String(title).toLowerCase().replace(/\s+/g, '_')}_report.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const handleDownloadPNG = (event) => {
+    event.stopPropagation()
+    try {
+      const cardEl = cardRef.current
+      if (!cardEl) return
+      const svgEl = cardEl.querySelector('svg')
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const width = cardEl.offsetWidth || 500
+      const height = cardEl.offsetHeight || 300
+      canvas.width = width * 2
+      canvas.height = height * 2
+      ctx.scale(2, 2)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, width, height)
+
+      if (svgEl) {
+        const xml = new XMLSerializer().serializeToString(svgEl)
+        const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' })
+        const url = URL.createObjectURL(svgBlob)
+        const img = new Image()
+        img.onload = () => {
+          ctx.fillStyle = '#0f172a'
+          ctx.font = 'bold 14px sans-serif'
+          ctx.fillText(title, 16, 24)
+          ctx.drawImage(img, 10, 36, width - 20, height - 46)
+          URL.revokeObjectURL(url)
+          const a = document.createElement('a')
+          a.download = `${String(title).toLowerCase().replace(/\s+/g, '_')}_snapshot.png`
+          a.href = canvas.toDataURL('image/png')
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+        }
+        img.src = url
+      } else {
+        ctx.fillStyle = '#0f172a'
+        ctx.font = 'bold 16px sans-serif'
+        ctx.fillText(title, 20, 30)
+        ctx.font = '12px sans-serif'
+        ctx.fillStyle = '#64748b'
+        ctx.fillText(`Entity: ${entity} | Total: ${totalVal}`, 20, 50)
+
+        let y = 80
+        const funnelColors = ['#3f63aa', '#e58634', '#469b3a', '#e14b4b', '#8b5cf6']
+        chartItems.forEach((item, idx) => {
+          const itemVal = Number(item.value) || 0
+          const barWidth = Math.max(20, (itemVal / (totalVal || 1)) * (width - 160))
+          ctx.fillStyle = funnelColors[idx % funnelColors.length]
+          ctx.fillRect(20, y, barWidth, 24)
+          ctx.fillStyle = '#0f172a'
+          ctx.font = '500 12px sans-serif'
+          ctx.fillText(`${item.name}: ${itemVal}`, barWidth + 30, y + 16)
+          y += 34
+        })
+
+        const a = document.createElement('a')
+        a.download = `${String(title).toLowerCase().replace(/\s+/g, '_')}_snapshot.png`
+        a.href = canvas.toDataURL('image/png')
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      }
+    } catch (err) {
+      console.error('Failed to export PNG snapshot:', err)
+    }
+  }
+
   return (
-    <article className="analytics-card" style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
+    <article ref={cardRef} className="analytics-card" style={{ background: '#ffffff', borderRadius: '12px', padding: '16px', border: '1px solid #e2e8f0' }}>
       <div className="analytics-card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ color: '#0284c7' }}>
-            {getEntityIcon(entity)}
+            {getChartIcon(chartType, entity)}
           </span>
           {title}
         </h3>
-        <div className="analytics-card-header-actions">
+        <div className="analytics-card-header-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontSize: '11px', background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>
             {entity} ({collectionName}) ({totalVal})
           </span>
@@ -279,3 +399,4 @@ const ChartRenderer = ({ config = {}, data = null, loading = false }) => {
 }
 
 export default ChartRenderer
+

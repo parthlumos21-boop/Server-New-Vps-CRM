@@ -246,6 +246,7 @@ export const ACCOUNT_LIST_BOARD_COLUMNS = [
   },
   {
     key: 'userGroup',
+    hidden: true,
     label: 'User Group',
     filterPlaceholder: 'Search User Group',
     width: '160px',
@@ -462,7 +463,16 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     width: '160px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value, row) => value || row?.quotationNo || row?.quotationNumber || row?.latestQuotationNo || emptyValue,
+    cellFormatter: (value, row) => (
+      value
+      || row?.quotationNumber
+      || row?.quotationNo
+      || row?.latestQuotationNo
+      || row?.raw?.quotationNumber
+      || row?.raw?.quotationNo
+      || row?.raw?.number
+      || emptyValue
+    ),
   },
   {
     key: 'quotationOwnerName',
@@ -471,7 +481,16 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     width: '180px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value, row) => value || row?.quotationOwner || row?.quotationOwnerName || row?.latestQuotationOwner || emptyValue,
+    cellFormatter: (value, row) => (
+      value
+      || row?.quotationOwnerName
+      || row?.quotationOwner
+      || row?.latestQuotationOwner
+      || row?.raw?.quotationOwnerName
+      || row?.raw?.quotationOwner
+      || row?.raw?.createdByName
+      || emptyValue
+    ),
   },
   {
     key: 'latestRemark',

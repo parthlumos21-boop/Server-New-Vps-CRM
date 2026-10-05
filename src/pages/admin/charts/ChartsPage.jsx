@@ -15,6 +15,7 @@ import {
 import { useData } from '../../../context/DataContext'
 import { saveUserChartToDb, mapContextToCategory, fetchAllChartsFromDb } from '../../../features/adminCharts/chartStorage'
 import { chartApi } from '../../../services/chartApi'
+import AnalyticsSection from '../../../components/dashboard/AnalyticsSection'
 import './ChartsPage.css'
 
 const STEPS = [
@@ -195,7 +196,8 @@ const createFilterRow = () => ({
 const ChartsPage = ({ basePath = '/admin/charts' }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { addNotification } = useData()
+  const { accounts = [], deals = [], customers = [], quotations = [], activities = [], users = [], addNotification } = useData()
+  const [isConfiguring, setIsConfiguring] = useState(() => Boolean(location.state?.editChartId || location.state?.configureNew))
   const editChartId = location.state?.editChartId || ''
   const [editingChart, setEditingChart] = useState(null)
   const [currentStep, setCurrentStep] = useState(1)
@@ -788,16 +790,42 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
     </div>
   )
 
+  if (!isConfiguring) {
+    return (
+      <div className="cc-page cc-page--dashboard" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="cc-topbar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '16px 24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+          <div>
+            <h1 className="cc-topbar-title" style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>
+              Sales Analytics & Performance Monitoring Dashboard
+            </h1>
+            <span style={{ fontSize: '13px', color: '#64748b' }}>
+              Interactive dynamic visualizations, owner-wise analytics, and live performance metrics.
+            </span>
+          </div>
+        </div>
+
+        <AnalyticsSection
+          accounts={accounts}
+          deals={deals}
+          customers={customers}
+          quotations={quotations}
+          activities={activities}
+          users={users}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="cc-page">
       <div className="cc-topbar">
-        <h1 className="cc-topbar-title">Configure Chart</h1>
+        <h1 className="cc-topbar-title">{editingChart ? 'Edit Chart' : 'Configure Chart'}</h1>
         <button
           type="button"
           className="cc-cancel-btn"
-          onClick={() => navigate(basePath)}
+          onClick={() => setIsConfiguring(false)}
         >
-          <FaTimes /> Cancel
+          <FaTimes /> Back to All Charts
         </button>
       </div>
 

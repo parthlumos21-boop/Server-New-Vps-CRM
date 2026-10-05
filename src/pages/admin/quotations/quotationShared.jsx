@@ -351,9 +351,28 @@ const openQuotationAttachment = async (attachment) => {
     responseType: 'blob',
   })
   const contentType = response.headers?.['content-type'] || attachment.fileType || 'application/octet-stream'
+  const fileName = attachment.fileName || attachment.originalName || attachment.name || `Quotation_Attachment_${attachment.quotationId}`
+
+  const isExcel = (
+    /\.(xlsx|xls|csv)$/i.test(fileName)
+    || contentType.includes('spreadsheet')
+    || contentType.includes('excel')
+    || contentType.includes('csv')
+  )
+
   const blob = new Blob([response.data], { type: contentType })
   const blobUrl = window.URL.createObjectURL(blob)
-  window.open(blobUrl, '_blank', 'noopener,noreferrer')
+
+  if (isExcel) {
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } else {
+    window.open(blobUrl, '_blank', 'noopener,noreferrer')
+  }
   window.setTimeout(() => window.URL.revokeObjectURL(blobUrl), 60000)
 }
 

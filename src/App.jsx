@@ -264,8 +264,8 @@ function App() {
                 <Route path="reminders/my" element={<UserRemindersPage variantKey="my" />} />
                 <Route path="reminders/active" element={<UserRemindersPage variantKey="active" />} />
                 <Route path="reminders/closed" element={<UserRemindersPage variantKey="closed" />} />
-                <Route path="charts" element={<ChartsListPage basePath="/charts" />} />
-                <Route path="charts/new" element={<ChartsPage basePath="/charts" />} />
+                <Route path="charts" element={<ChartsPage basePath="/charts" />} />
+                <Route path="charts/list" element={<ChartsListPage basePath="/charts" />} />
                 <Route path="view-settings" element={<ViewSettingsPage basePath="/view-settings" />} />
                 <Route path="view-settings/my-accounts" element={<MyAccountsViewPage basePath="/view-settings" />} />
                 <Route path="view-settings/account-source" element={<Navigate to="/view-settings" replace />} />
@@ -374,8 +374,8 @@ function App() {
                 <Route path="quotation-manager/view" element={<AdminQuotationsPage />} />
 
                 <Route path="reports/customer-map" element={<CustomerMapViewPage />} />
-                <Route path="charts" element={<ChartsListPage />} />
-                <Route path="charts/new" element={<ChartsPage />} />
+                <Route path="charts" element={<ChartsPage />} />
+                <Route path="charts/list" element={<ChartsListPage />} />
                 <Route path="view-settings" element={<ViewSettingsPage />} />
                 <Route path="view-settings/my-accounts" element={<MyAccountsViewPage />} />
                 <Route path="view-settings/account-source" element={<Navigate to="/admin/view-settings" replace />} />
