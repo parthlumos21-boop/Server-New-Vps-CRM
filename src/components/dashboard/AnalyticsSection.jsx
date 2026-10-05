@@ -87,7 +87,7 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
   const [chartDataMap, setChartDataMap] = useState({})
   const [loadingCharts, setLoadingCharts] = useState(true)
   const chartData = useMemo(() => buildMonthlyData(deals, quotations), [deals, quotations])
-  const visibleDbCharts = useMemo(() => dbCharts.slice(0, 4), [dbCharts])
+  const visibleDbCharts = useMemo(() => dbCharts.slice(0, 5), [dbCharts])
   const chartListPath = location.pathname.startsWith('/admin') ? '/admin/charts' : '/charts'
 
   const pipeline = useMemo(() => {
@@ -193,24 +193,24 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         </div>
 
         <div className="analytics-header-right">
-          {dbCharts.length > 4 ? (
-            <button
-              type="button"
-              className="analytics-view-all-charts-btn"
-              onClick={() => navigate(chartListPath)}
-            >
-              View All Charts
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="analytics-view-all-charts-btn"
+            onClick={() => navigate(chartListPath)}
+          >
+            View All Charts
+          </button>
 
-          <div className="analytics-header-pills">
-            {kpiCards.map((card) => (
-              <div key={card.key} className="analytics-header-pill">
-                <span className="analytics-pill-label">{card.label}</span>
-                <span className="analytics-pill-val">{card.value}</span>
-              </div>
-            ))}
-          </div>
+          {false && (
+            <div className="analytics-header-pills">
+              {kpiCards.map((card) => (
+                <div key={card.key} className="analytics-header-pill">
+                  <span className="analytics-pill-label">{card.label}</span>
+                  <span className="analytics-pill-val">{card.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="analytics-filter-wrap">
             <select
@@ -227,24 +227,26 @@ const AnalyticsSection = ({ accounts = [], deals = [], customers = [], quotation
         </div>
       </div>
 
-      <div className="analytics-kpi-grid">
-        {kpiCards.map((card) => {
-          const Icon = card.icon
-          return (
-            <article key={card.key} className="analytics-kpi-card">
-              <div className="analytics-kpi-icon">
-                <Icon />
-              </div>
-              <div className="analytics-kpi-body">
-                <span className="analytics-kpi-label">{card.label}</span>
-                <strong>{card.value}</strong>
-                <span className="analytics-kpi-collection">Collection: {card.collection}</span>
-                <span className="analytics-kpi-month">+{card.monthValue} this month</span>
-              </div>
-            </article>
-          )
-        })}
-      </div>
+      {false && (
+        <div className="analytics-kpi-grid">
+          {kpiCards.map((card) => {
+            const Icon = card.icon
+            return (
+              <article key={card.key} className="analytics-kpi-card">
+                <div className="analytics-kpi-icon">
+                  <Icon />
+                </div>
+                <div className="analytics-kpi-body">
+                  <span className="analytics-kpi-label">{card.label}</span>
+                  <strong>{card.value}</strong>
+                  <span className="analytics-kpi-collection">Collection: {card.collection}</span>
+                  <span className="analytics-kpi-month">+{card.monthValue} this month</span>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
 
       <div className="analytics-grid analytics-grid--charts">
         {dbCharts.length > 0 ? (

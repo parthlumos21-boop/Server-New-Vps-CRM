@@ -275,7 +275,7 @@ const Dashboard = () => {
             <span className="md-date-day">{new Intl.DateTimeFormat(undefined, { weekday: 'long' }).format(new Date())}</span>
             <strong>{new Intl.DateTimeFormat(undefined, { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date())}</strong>
             <span className="md-date-note">Make today count</span>
-            <button type="button" aria-label="Open calendar">→</button>
+            <button type="button" aria-label="Open calendar" onClick={() => navigate('/reminders/my')}>→</button>
           </div>
         </div>
       </div>

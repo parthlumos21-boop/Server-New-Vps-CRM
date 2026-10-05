@@ -629,9 +629,9 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
           </div>
         </div>
 
-        <div className="cc-classification-block">
-          <div className="cc-classification-header">
-            <label className="cc-classification-label" htmlFor="cc-classification-select">Classification Field</label>
+        {/* Classification Field Removed */}
+        {false ? <>
+            {/* Classification Field removed */}
             <select
               id="cc-classification-select"
               className="cc-select"
@@ -681,12 +681,12 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
               </div>
             </div>
           ) : null}
-        </div>
+        </> : null}
 
-        <div className="cc-chart-orderby-block">
-          <span className="cc-chart-orderby-label">Chart Order By</span>
-          <div className="cc-chart-orderby-options">
-            {CHART_ORDER_BY_OPTIONS.map((option) => (
+        {/* Chart Order By & Classification Removed */}
+          {/* Chart Order By Removed */}
+        {/* Chart Order By Block Removed */}
+            {false && CHART_ORDER_BY_OPTIONS.map((option) => (
               <label key={option} className="cc-chart-orderby-radio">
                 <input
                   type="radio"

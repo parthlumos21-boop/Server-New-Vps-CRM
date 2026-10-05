@@ -12,6 +12,7 @@ import {
   FaEnvelope,
   FaFileAlt,
   FaFilter,
+  FaCalendarAlt,
   FaHandshake,
   FaHeadset,
   FaHome,
@@ -692,6 +693,30 @@ const AdminPanel = () => {
             <span className="ap-welcome-subhead">Welcome,</span>
             <h1 className="ap-welcome-heading">{user?.name || 'Keval V Shah'}!</h1>
             <p className="ap-welcome-sub">Here&apos;s what&apos;s happening with your business today.</p>
+          </div>
+          <div
+            className="ap-welcome-date-card"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.6rem 1rem',
+              background: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              marginLeft: 'auto',
+            }}
+            onClick={() => navigate('/admin/reminders/my')}
+            title="Open Reminders Calendar"
+          >
+            <FaCalendarAlt style={{ color: '#dc2626', fontSize: '1.25rem' }} />
+            <div>
+              <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#1e293b' }}>
+                {new Intl.DateTimeFormat('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }).format(new Date())}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Click to open calendar & reminders</span>
+            </div>
           </div>
 
         </div>
@@ -1534,6 +1559,7 @@ const AdminPanel = () => {
           ) : null}
         </div>
       </div>
+      <div className="ap-tabbar-divider-line" style={{ height: '1px', background: '#cbd5e1', margin: '0 0 1rem 0' }} />
 
       {isAdmin && openMenuTab && openMenuState ? createPortal(
         (
