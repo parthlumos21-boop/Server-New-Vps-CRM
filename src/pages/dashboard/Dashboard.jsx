@@ -378,43 +378,32 @@ const Dashboard = () => {
                 </svg>
                 Integrations
               </h3>
-              <button className="md-link-btn">Manage &rarr;</button>
+              <button type="button" className="md-link-btn" onClick={() => navigate('/settings')}>Manage &rarr;</button>
             </div>
-            <div className="md-integration-cards">
-              
-          </div>
-
-          <div className="md-widget md-activity-widget">
-            <div className="md-widget-header">
-              <h3 className="md-widget-title">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{marginRight: 6}}>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Recent Activity
-              </h3>
-              <button className="md-link-btn">View All &rarr;</button>
+            <div className="md-integration-cards" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+              <button
+                type="button"
+                className="md-btn-outline-white"
+                onClick={() => navigate('/settings')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justify: 'space-between',
+                  padding: '0.625rem 0.875rem',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  background: '#f8fafc',
+                  color: '#0f172a',
+                  fontWeight: '600',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <span>Outlook Mail</span>
+                <span style={{ color: '#dc2626', fontWeight: '700' }}>Connect &rarr;</span>
+              </button>
             </div>
-            <ul className="md-activity-timeline">
-              <li className="md-activity-item">
-                <div className="md-timeline-dot active"></div>
-                <span className="md-activity-badge live">LIVE</span>
-                <div className="md-activity-details">
-                  <span className="md-activity-title">{user?.name || 'Keval V Shah'} is online</span>
-                </div>
-                <span className="md-activity-time">20/09/2026, 10:58 am</span>
-              </li>
-              {[1, 2, 3].map((item) => (
-                <li key={item} className="md-activity-item">
-                  <div className="md-timeline-dot"></div>
-                  <span className="md-activity-badge reply">REPLY</span>
-                  <div className="md-activity-details">
-                    <span className="md-activity-title">rushabh@support.com</span>
-                    <span className="md-activity-desc">hello</span>
-                  </div>
-                  <span className="md-activity-time">08 Aug, 03:11 pm</span>
-                </li>
-              ))}
-            </ul>
           </div>
 
           <div className="md-widget md-upcoming-widget">

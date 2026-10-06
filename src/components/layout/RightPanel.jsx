@@ -46,7 +46,7 @@ const buildSupportActions = (isAdmin, integrationStatus, isLoadingIntegrations) 
       label: 'Outlook Mail',
       status: isLoadingIntegrations ? 'Checking' : outlookConnected ? (outlookShared ? 'Shared' : 'Connected') : outlookActive ? 'Active' : 'Not ready',
       statusClass: outlookActive ? 'rp-integration-status--active' : 'rp-integration-status--warning',
-      route: isAdmin ? '/admin/settings' : '/integrations/outlook',
+      route: '/settings',
       icon: FaEnvelope,
       cta: outlookConnected ? (outlookShared ? 'CRM Outlook' : 'Manage') : 'Connect Outlook',
     },
@@ -235,53 +235,54 @@ const RightPanel = () => {
         </div>
       </div>
 
-      <div className="right-panel-section right-panel-section--activity">
-        <div className="right-panel-section-head">
-          <span>RECENT ACTIVITY</span>
-          <button
-            type="button"
-            className="rp-section-link"
-            onClick={() => navigate(isAdmin ? '/admin/communication-activities' : '/communication-activities')}
-          >
-            View All
-          </button>
-        </div>
+      {isAdmin && (
+        <div className="right-panel-section right-panel-section--activity">
+          <div className="right-panel-section-head">
+            <span>RECENT ACTIVITY</span>
+            <button
+              type="button"
+              className="rp-section-link"
+              onClick={() => navigate('/admin/communication-activities')}
+            >
+              View All
+            </button>
+          </div>
 
-        <div className="right-panel-activity">
-          {activityLog.length === 0 ? (
-            <div className="rp-entry rp-entry--empty">
-              <p className="rp-entry-text">No live activity available right now.</p>
-            </div>
-          ) : activityLog.map((entry) => {
-            const badge = getActivityBadge(entry.action)
-
-            return (
-              <div key={entry.id} className="rp-entry">
-                <span className={`rp-badge ${badge.cls}`}>{badge.label}</span>
-                <div className="rp-entry-main">
-                  <div className="rp-entry-topline">
-                    <div className="rp-entry-icon-wrap">
-                      <FaRegFileAlt className="rp-entry-icon" />
-                    </div>
-                    <span className="rp-entry-time">{entry.time}</span>
-                  </div>
-                  <p className="rp-entry-text">
-                    <span className="rp-entry-name">{entry.name}</span>
-                    {' '}
-                    <span className="rp-entry-action">{entry.action}</span>
-                  </p>
-                  {entry.loggedOut && (
-                    <p className="rp-entry-meta">
-                      Logged out at <span className="rp-entry-time">{entry.loggedOut}</span>
-                    </p>
-                  )}
-                </div>
+          <div className="right-panel-activity">
+            {activityLog.length === 0 ? (
+              <div className="rp-entry rp-entry--empty">
+                <p className="rp-entry-text">No live activity available right now.</p>
               </div>
-            )
-          })}
-        </div>
-      </div>
+            ) : activityLog.map((entry) => {
+              const badge = getActivityBadge(entry.action)
 
+              return (
+                <div key={entry.id} className="rp-entry">
+                  <span className={`rp-badge ${badge.cls}`}>{badge.label}</span>
+                  <div className="rp-entry-main">
+                    <div className="rp-entry-topline">
+                      <div className="rp-entry-icon-wrap">
+                        <FaRegFileAlt className="rp-entry-icon" />
+                      </div>
+                      <span className="rp-entry-time">{entry.time}</span>
+                    </div>
+                    <p className="rp-entry-text">
+                      <span className="rp-entry-name">{entry.name}</span>
+                      {' '}
+                      <span className="rp-entry-action">{entry.action}</span>
+                    </p>
+                    {entry.loggedOut && (
+                      <p className="rp-entry-meta">
+                        Logged out at <span className="rp-entry-time">{entry.loggedOut}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </aside>
   )
 }

@@ -2799,18 +2799,18 @@ html.is-user:not([data-theme="dark"]) .layout--user :where(.text-muted, .muted, 
   color: #667085 !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(.sb-link, .sb-link--team, .sb-plain-link, .sb-group-trigger, .sb-sub-link) {
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(.sb-link, .sb-link--team, .sb-plain-link, .sb-group-trigger, .sb-sub-link) {
   color: #1e293b !important;
   font-weight: 700 !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-group-chevron,
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user .sb-sub-arrow {
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) .sb-group-chevron,
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) .sb-sub-arrow {
   color: #64748b !important;
 }
 
 /* Reference-matching Red Sidebar Icon Containers */
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(.sb-link-icon, .sb-plain-icon, .sb-group-icon) {
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(.sb-link-icon, .sb-plain-icon, .sb-group-icon) {
   width: 32px !important;
   height: 32px !important;
   border-radius: 10px !important;
@@ -2824,19 +2824,19 @@ html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(.sb-li
   box-shadow: none !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(.sb-link-icon svg, .sb-plain-icon svg, .sb-group-icon svg) {
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(.sb-link-icon svg, .sb-plain-icon svg, .sb-group-icon svg) {
   color: #dc2626 !important;
   fill: currentColor !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(.sb-link:hover, .sb-link--team:hover, .sb-plain-link:hover, .sb-group-trigger:hover, .sb-sub-link:hover, .sb-group-trigger--open) {
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(.sb-link:hover, .sb-link--team:hover, .sb-plain-link:hover, .sb-group-trigger:hover, .sb-sub-link:hover, .sb-group-trigger--open) {
   border-color: rgba(229, 31, 37, 0.28) !important;
   background: #fff5f5 !important;
   color: #0f172a !important;
 }
 
 /* Active Link & Route Styling */
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(
   .sb-link--active,
   .sb-link--team.sb-link--active,
   .sb-plain-link--active,
@@ -2850,7 +2850,7 @@ html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12) !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(
   .sb-link--active,
   .sb-link--team.sb-link--active,
   .sb-plain-link--active,
@@ -2860,7 +2860,7 @@ html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(
   color: #ffffff !important;
 }
 
-html.is-user:not([data-theme="dark"]) .layout--user .sidebar--user :where(
+html:not([data-theme="dark"]) :where(.layout--user, .layout--admin) :where(.sidebar--user, .sidebar--admin) :where(
   .sb-link--active,
   .sb-link--team.sb-link--active,
   .sb-plain-link--active,

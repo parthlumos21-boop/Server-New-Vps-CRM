@@ -701,9 +701,9 @@ const AdminRemindersPage = ({ variantKey = 'active' }) => {
 
     return rows.filter((row) => {
       if (variantKey === 'closed') return row.status === 'closed'
-      if (variantKey === 'my') return row.status === 'active' && (isAdmin || normalizeCrmUserName(row.ownerName) === currentUserName)
+      if (variantKey === 'my') return ['active', 'activated'].includes(row.status) && (isAdmin || normalizeCrmUserName(row.ownerName) === currentUserName)
       if (!isAdmin && normalizeCrmUserName(row.ownerName) !== currentUserName) return false
-      return row.status === 'active'
+      return ['active', 'activated'].includes(row.status)
     })
   }, [isAdmin, mongoReminders, user?.name, user?.username, variantKey])
 

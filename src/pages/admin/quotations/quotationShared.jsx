@@ -1986,7 +1986,24 @@ export function RevisionsListModal({
           : getExplicitRevisionAmount(q, revCode)
         const rawAmt = hasExplicitRevisionValue(explicitAmt) ? Number(explicitAmt) : ''
         const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
-        const statusVal = revItem.status || q.raw?.status || q.status || 'Open'
+        const rawStatus = q.raw?.status || q.status || q.raw?.data?.status || ''
+        const isOverallApproved = String(rawStatus).toLowerCase() === 'approved' || String(q.raw?.approvalStatus || '').toLowerCase() === 'approved'
+        const targetApprovedRev = q.raw?.revisionCode || q.revisionCode || q.raw?.data?.revisionCode || 'R0'
+
+        const isRevApproved =
+          String(revItem.status || '').toLowerCase() === 'approved' ||
+          (isOverallApproved && (revCode === targetApprovedRev || revItem.status === 'Approved'))
+
+        const isRevRejected =
+          String(revItem.status || '').toLowerCase() === 'rejected' ||
+          (String(rawStatus).toLowerCase() === 'rejected' && revCode === targetApprovedRev)
+
+        const statusVal = isRevApproved
+          ? 'Approved'
+          : isRevRejected
+            ? 'Rejected'
+            : (revItem.status && revItem.status !== 'Open' ? revItem.status : (rawStatus || revItem.status || 'Open'))
+
         const dateVal = revItem.date || q.date || q.raw?.quotationDate || '-'
         const attachment = withRevisionAttachment(revCode, revItem)
 
@@ -2015,7 +2032,9 @@ export function RevisionsListModal({
       const explicitAmt = getExplicitRevisionAmount(q, revCode)
       const rawAmt = hasExplicitRevisionValue(explicitAmt) ? Number(explicitAmt) : ''
       const amtLabel = hasExplicitRevisionValue(rawAmt) ? formatCurrency(rawAmt, q.currency || 'INR') : '-'
-      const statusVal = q.raw?.status || q.status || 'Open'
+      const rawStatus = q.raw?.status || q.status || q.raw?.data?.status || 'Open'
+      const isRevApproved = String(rawStatus).toLowerCase() === 'approved' || String(q.raw?.approvalStatus || '').toLowerCase() === 'approved'
+      const statusVal = isRevApproved ? 'Approved' : rawStatus
       const dateVal = q.date || q.raw?.quotationDate || '-'
       const attachment = withRevisionAttachment(revCode)
 

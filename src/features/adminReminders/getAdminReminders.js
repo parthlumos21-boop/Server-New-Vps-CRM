@@ -14,7 +14,7 @@ const titleize = (value = '') =>
 const buildReminderRecord = (record, reminderStatesById = {}) => {
   const stateId = buildReminderStateId(record.sourceType, record.sourceId)
   const reminderState = reminderStatesById[stateId] || null
-  const status = reminderState?.status === 'closed' ? 'closed' : 'active'
+  const status = reminderState?.status === 'closed' ? 'closed' : reminderState?.status === 'activated' ? 'activated' : 'active'
 
   return {
     ...record,
@@ -133,7 +133,7 @@ export const getAdminReminders = ({
   const filteredReminders = allReminders.filter((reminder) => {
     if (variantKey === 'my') {
       return isAdmin
-        ? reminder.status === 'active'
+        ? ['active', 'activated'].includes(reminder.status)
         : normalizeReminderOwnerName(reminder.ownerName) === normalizeReminderOwnerName(user?.name || user?.username || '')
     }
 
@@ -145,7 +145,7 @@ export const getAdminReminders = ({
       return false
     }
 
-    return reminder.status === 'active'
+    return ['active', 'activated'].includes(reminder.status)
   })
 
   return filteredReminders.sort((left, right) => {

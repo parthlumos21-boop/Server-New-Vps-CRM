@@ -114,18 +114,11 @@ export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'projectName', label: 'Project Name', filterPlaceholder: 'Search Project Name', width: '210px', searchable: true, exportable: true, cellFormatter: formatProjectNameDisplay, exportFormatter: formatProjectNameDisplay },
   { key: 'consultantName', label: 'Consultant Name', filterPlaceholder: 'Search Consultant Name', width: '190px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.consultantName || row.formData?.['Consultant Name'] || row.formData?.consultantName || emptyValue },
   { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue },
-  { key: 'userGroup', label: 'User Group', filterPlaceholder: 'Search User Group', width: '160px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.userGroup || row.formData?.['User Group'] || row.formData?.userGroup || emptyValue },
   { key: 'jobNo', label: 'Job No', filterPlaceholder: 'Search Job No', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
-]
-
-export const MY_GROUP_ACCOUNTS_COLUMNS = GROUP_ACCOUNTS_COLUMNS
-
-export const MY_ACCOUNTS_LIST_COLUMNS = [
-  ...GROUP_ACCOUNTS_COLUMNS.filter((column) => column.key !== 'userGroup'),
   {
     key: 'quotationNumber',
-    label: 'Quotation Number',
-    filterPlaceholder: 'Search Quotation Number',
+    label: 'Quotations Number',
+    filterPlaceholder: 'Search Quotations Number',
     width: '165px',
     searchable: true,
     exportable: true,
@@ -143,6 +136,10 @@ export const MY_ACCOUNTS_LIST_COLUMNS = [
     exportFormatter: formatQuotationOwnerDisplay,
   },
 ]
+
+export const MY_GROUP_ACCOUNTS_COLUMNS = GROUP_ACCOUNTS_COLUMNS
+
+export const MY_ACCOUNTS_LIST_COLUMNS = GROUP_ACCOUNTS_COLUMNS
 
 export const VIEW_ALL_COLUMNS = [
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
@@ -269,14 +266,24 @@ export const ACCOUNT_LIST_BOARD_COLUMNS = [
     cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue,
   },
   {
-    key: 'userGroup',
-    hidden: true,
-    label: 'User Group',
-    filterPlaceholder: 'Search User Group',
-    width: '160px',
+    key: 'quotationNumber',
+    label: 'Quotations Number',
+    filterPlaceholder: 'Search Quotations Number',
+    width: '165px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value, row) => value || row.userGroup || row.formData?.['User Group'] || row.formData?.userGroup || emptyValue,
+    cellFormatter: formatQuotationNumberDisplay,
+    exportFormatter: formatQuotationNumberDisplay,
+  },
+  {
+    key: 'quotationOwnerName',
+    label: 'Quotation Owner Name',
+    filterPlaceholder: 'Search Quotation Owner Name',
+    width: '190px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: formatQuotationOwnerDisplay,
+    exportFormatter: formatQuotationOwnerDisplay,
   },
   {
     key: 'reasonForLost',

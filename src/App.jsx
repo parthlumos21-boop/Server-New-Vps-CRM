@@ -156,7 +156,7 @@ function App() {
                   <Login />
                 )}
               />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={<Navigate to="/login" replace />} />
               <Route
                 path="/admin/login"
                 element={(
@@ -260,6 +260,7 @@ function App() {
                 <Route path="reminders/closed" element={<UserRemindersPage variantKey="closed" />} />
                 <Route path="charts" element={<ChartsPage basePath="/charts" />} />
                 <Route path="charts/list" element={<ChartsListPage basePath="/charts" />} />
+                <Route path="view-settings" element={<Navigate to="/dashboard" replace />} />
                 <Route path="view-settings/*" element={<Navigate to="/dashboard" replace />} />
                 <Route path="data-manager" element={<UserDataManagerPage />} />
                 <Route path="data-manager/image-gallery" element={<ImageGalleryPage />} />
@@ -364,6 +365,7 @@ function App() {
                 <Route path="reports/customer-map" element={<CustomerMapViewPage />} />
                 <Route path="charts" element={<ChartsPage />} />
                 <Route path="charts/list" element={<ChartsListPage />} />
+                <Route path="view-settings" element={<Navigate to="/admin/monitoring" replace />} />
                 <Route path="view-settings/*" element={<Navigate to="/admin/monitoring" replace />} />
                 <Route path="my-work-status" element={<AdminWorkStatusPage />} />
                 <Route path="user-management" element={<AdminUserManagementPage />} />

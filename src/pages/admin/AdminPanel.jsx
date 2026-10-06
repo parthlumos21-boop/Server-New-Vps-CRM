@@ -45,7 +45,7 @@ import {
 import { getWeeklyReportsAllBoardData } from '../../features/adminAccounts/selectors/getWeeklyReportsAllBoardData'
 import { getSwBarodaMumBoardData } from '../../features/adminAccounts/selectors/getSwBarodaMumBoardData'
 import { getAdminReminders } from '../../features/adminReminders/getAdminReminders'
-import { closeAdminReminder, getAdminReminderStates, subscribeAdminReminderStates } from '../../features/adminReminders/reminderStorage'
+import { activateAdminReminder, closeAdminReminder, getAdminReminderStates, subscribeAdminReminderStates } from '../../features/adminReminders/reminderStorage'
 import { buildMonthlyWonLostData, buildPerformanceSummary } from '../../features/adminDashboardTabs/dashboardInsights'
 import { getStatusColor, formatDate } from '../../utils/helpers'
 import './AdminPanel.css'
@@ -497,14 +497,24 @@ const AdminPanel = () => {
     event?.stopPropagation()
     if (reminder?.id && !reminder?.sourceType) {
       await updateReminder(reminder.id, { status: 'activated' })
+    } else if (reminder?.sourceType && reminder?.sourceId) {
+      const activatedState = activateAdminReminder({
+        sourceType: reminder.sourceType,
+        sourceId: reminder.sourceId,
+        userName: user?.name || user?.username || '',
+      })
+      setReminderStatesById((currentStates) => ({
+        ...currentStates,
+        [activatedState.id]: activatedState,
+      }))
     }
     navigate('/admin/reminders/active', {
       state: {
-        reminderId: reminder.id,
+        reminderId: reminder.id || reminder.sourceId,
         selectedOwner: reminder.ownerName,
       },
     })
-  }, [navigate, updateReminder])
+  }, [navigate, updateReminder, user?.name, user?.username])
 
   const handleTodoReminderClose = useCallback(async (reminder, event) => {
     event?.stopPropagation()
@@ -548,11 +558,11 @@ const AdminPanel = () => {
       reminderStatesById,
       isAdmin,
     })
-      .filter((reminder) => reminder.status === 'active')
+      .filter((reminder) => ['active', 'activated'].includes(reminder.status))
       .slice(0, 8)
       .map((reminder) => ({
         id: `reminder-${reminder.id}`,
-        type: 'Reminder',
+        type: reminder.status === 'activated' ? 'Reminder (Activated)' : 'Reminder',
         title: reminder.name || 'Reminder',
         meta: `${reminder.sourceLabel || 'Reminder'} | ${reminder.reminderDateDisplay || ''}`,
         message: reminder.note || reminder.reminderMode || '-',

@@ -538,7 +538,7 @@ const TeamViewPage = ({ isAdminView = true }) => {
               ) : null}
 
               <div className="ug-action-bar">
-                <div className="ug-action-row ug-action-row--top">
+                <div className="ug-action-row">
                   <button type="button" className={`ug-btn${ugActiveView === 'login-history' ? ' ug-btn--active' : ''}`} onClick={() => setUgActiveView('login-history')}>
                     <FaHistory /> Login History
                   </button>
@@ -548,8 +548,6 @@ const TeamViewPage = ({ isAdminView = true }) => {
                   <button type="button" className={`ug-btn${ugActiveView === 'active-users' ? ' ug-btn--active' : ''}`} onClick={() => setUgActiveView('active-users')}>
                     <FaUserCheck /> Active Users
                   </button>
-                </div>
-                <div className="ug-action-row ug-action-row--bottom">
                   <button type="button" className={`ug-btn${ugActiveView === 'idle-users' ? ' ug-btn--active' : ''}`} onClick={() => setUgActiveView('idle-users')}>
                     <FaUserClock /> Idle Users
                   </button>

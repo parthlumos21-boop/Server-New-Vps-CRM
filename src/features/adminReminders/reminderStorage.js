@@ -5,7 +5,7 @@ const ADMIN_REMINDER_STATES_EVENT = 'crm-admin-reminder-states:changed'
 
 const normalizeReminderState = (reminderState = {}) => ({
   id: String(reminderState.id || ''),
-  status: reminderState.status === 'closed' ? 'closed' : 'active',
+  status: reminderState.status === 'closed' ? 'closed' : reminderState.status === 'activated' ? 'activated' : 'active',
   closedOn: reminderState.closedOn || '',
   closedByName: reminderState.closedByName || '',
   updatedAt: reminderState.updatedAt || new Date().toISOString(),
@@ -48,6 +48,15 @@ export const closeAdminReminder = ({ sourceType, sourceId, userName = '' }) =>
     id: buildReminderStateId(sourceType, sourceId),
     status: 'closed',
     closedOn: new Date().toISOString(),
+    closedByName: userName,
+    updatedAt: new Date().toISOString(),
+  })
+
+export const activateAdminReminder = ({ sourceType, sourceId, userName = '' }) =>
+  saveAdminReminderState({
+    id: buildReminderStateId(sourceType, sourceId),
+    status: 'activated',
+    closedOn: '',
     closedByName: userName,
     updatedAt: new Date().toISOString(),
   })
