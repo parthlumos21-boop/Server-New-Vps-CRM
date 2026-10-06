@@ -13,7 +13,6 @@ import {
   FaKey,
   FaList,
   FaListAlt,
-  FaTh,
   FaUserCircle,
   FaUsers,
   FaUserTie,
@@ -625,15 +624,6 @@ const Sidebar = ({ isAdmin = false }) => {
             <span>Charts</span>
           </NavLink>
 
-          <NavLink
-            to="/admin/view-settings"
-            className={({ isActive }) => `sb-link sb-workspace-tool-link ${isActive ? 'sb-link--active' : ''}`}
-            title="View Settings"
-          >
-            <span className="sb-link-icon"><FaTh /></span>
-            <span>View Settings</span>
-          </NavLink>
-
           {(user?.role === 'super_admin' || user?.actualRole === 'super_admin') ? (
             <NavLink
               to="/admin/password-reset-requests"
@@ -679,4 +669,3 @@ const Sidebar = ({ isAdmin = false }) => {
 }
 
 export default Sidebar
-

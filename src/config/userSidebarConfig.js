@@ -7,7 +7,6 @@ import {
   FaHandshake,
   FaHeadset,
   FaListAlt,
-  FaTh,
   FaUsers,
   FaUserTie,
   FaTasks,
@@ -131,11 +130,5 @@ export const USER_SIDEBAR_PLAIN_LINKS = [
     to: '/charts',
     label: 'Charts',
     icon: FaChartPie,
-  },
-  {
-    key: 'view-settings',
-    to: '/view-settings',
-    label: 'View Settings',
-    icon: FaTh,
   },
 ]

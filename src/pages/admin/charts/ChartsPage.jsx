@@ -16,6 +16,7 @@ import { useData } from '../../../context/DataContext'
 import { saveUserChartToDb, mapContextToCategory, fetchAllChartsFromDb } from '../../../features/adminCharts/chartStorage'
 import { chartApi } from '../../../services/chartApi'
 import AnalyticsSection from '../../../components/dashboard/AnalyticsSection'
+import ChartPreviewModal from './ChartPreviewModal'
 import './ChartsPage.css'
 
 const STEPS = [
@@ -225,6 +226,9 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
   const [orderByField, setOrderByField] = useState('')
   const [selectedFieldKeys, setSelectedFieldKeys] = useState([])
   const [draggedFieldKey, setDraggedFieldKey] = useState('')
+  const [chartBuckets, setChartBuckets] = useState({})
+  const [selectedPreviewChartId, setSelectedPreviewChartId] = useState('')
+  const [previewChart, setPreviewChart] = useState(null)
 
   const contextFields = CONTEXT_FIELDS[selectedContext] || []
   const classificationFieldOptions = CLASSIFICATION_FIELDS_BY_CONTEXT[selectedContext] || []
@@ -238,6 +242,26 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
     () => contextFields.filter((field) => !selectedFieldKeys.includes(field)),
     [contextFields, selectedFieldKeys]
   )
+
+  const chartOptions = useMemo(() => (
+    Object.entries(chartBuckets || {}).flatMap(([category, charts]) => (
+      (charts || []).map((chart) => ({
+        ...chart,
+        category,
+        optionLabel: `${chart.title || chart.name || 'Untitled Chart'} (${category})`,
+      }))
+    ))
+  ), [chartBuckets])
+
+  useEffect(() => {
+    let isMounted = true
+    fetchAllChartsFromDb().then((data) => {
+      if (isMounted) setChartBuckets(data || {})
+    }).catch(() => {
+      if (isMounted) setChartBuckets({})
+    })
+    return () => { isMounted = false }
+  }, [isConfiguring])
 
   useEffect(() => {
     if (!editChartId) return undefined
@@ -802,6 +826,45 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
               Interactive dynamic visualizations, owner-wise analytics, and live performance metrics.
             </span>
           </div>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <select
+              className="cc-select"
+              value={selectedPreviewChartId}
+              onChange={(event) => {
+                const nextId = event.target.value
+                setSelectedPreviewChartId(nextId)
+                const selectedChart = chartOptions.find((chart) => String(chart.id) === String(nextId))
+                setPreviewChart(selectedChart || null)
+              }}
+              aria-label="Select chart"
+              style={{ minWidth: '260px' }}
+            >
+              <option value="">Select chart name</option>
+              {chartOptions.map((chart) => (
+                <option key={`${chart.category}-${chart.id}`} value={chart.id}>
+                  {chart.optionLabel}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="cc-next-btn"
+              onClick={() => {
+                setEditingChart(null)
+                setCurrentStep(1)
+                setIsConfiguring(true)
+              }}
+            >
+              <FaPlus /> Add Chart
+            </button>
+            <button
+              type="button"
+              className="cc-cancel-btn"
+              onClick={() => navigate(`${basePath}/list`)}
+            >
+              All Charts
+            </button>
+          </div>
         </div>
 
         <AnalyticsSection
@@ -811,6 +874,12 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
           quotations={quotations}
           activities={activities}
           users={users}
+        />
+        <ChartPreviewModal
+          isOpen={Boolean(previewChart)}
+          onClose={() => setPreviewChart(null)}
+          chart={previewChart}
+          category={previewChart?.category}
         />
       </div>
     )
@@ -873,4 +942,3 @@ const ChartsPage = ({ basePath = '/admin/charts' }) => {
 }
 
 export default ChartsPage
-

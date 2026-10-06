@@ -296,7 +296,7 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
     alternateEmail: account.alternateEmail || '',
     gstin: account.gstin || '',
     stateCode: account.stateCode || '',
-    poValue: account.poValue || '',
+    poValue: poValueVal,
     statusAsPerQuotationGiven: account.statusAsPerQuotationGiven || '',
     statusAsPerOrderReceived: account.statusAsPerOrderReceived || '',
     jobNo: (typeof (account.jobNo || formData['Job No'] || formData.jobNo) === 'string' && String(account.jobNo || formData['Job No'] || formData.jobNo).trim().toLowerCase() === 'email') ? '' : (account.jobNo || formData['Job No'] || formData.jobNo || ''),

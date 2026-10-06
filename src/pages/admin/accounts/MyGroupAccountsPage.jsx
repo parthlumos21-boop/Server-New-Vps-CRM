@@ -126,6 +126,129 @@ const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
   }
 })
 
+const normalizeMatchValue = (value) =>
+  String(value || '').trim().toLowerCase()
+
+const getQuotationOwnerName = (quotation = {}, availableUsers = []) => {
+  const rawOwner = quotation.quotationOwnerName
+    || quotation.quotationOwner
+    || quotation.createdByName
+    || quotation.ownerName
+    || quotation.addedByName
+    || ''
+  if (rawOwner) return rawOwner
+
+  const userId = String(quotation.userId || quotation.createdBy || '').trim()
+  if (!userId) return ''
+
+  const matchedUser = availableUsers.find((entry) => (
+    [entry.id, entry._id, entry.legacyId].some((candidate) => String(candidate || '') === userId)
+  ))
+  return matchedUser?.name || matchedUser?.username || matchedUser?.email || ''
+}
+
+const quotationMatchesAccount = (quotation = {}, account = {}) => {
+  const raw = account.raw || {}
+  const formData = account.formData || raw.formData || {}
+  const accountIds = [
+    account.id,
+    raw.id,
+    raw._id,
+    account.dealId,
+    account.convertedDealId,
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  const accountNumbers = [
+    account.accountNumber,
+    account.accountNo,
+    raw.accountNumber,
+    raw.accountNo,
+    formData.accountNumber,
+    formData.accountNo,
+    formData['Account No.'],
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  const accountNames = [
+    account.name,
+    account.accountName,
+    account.customerName,
+    raw.name,
+    raw.accountName,
+    raw.customerName,
+    formData.name,
+    formData.accountName,
+    formData.customerName,
+    formData['Account Name'],
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  const quotationIds = [
+    quotation.customerId,
+    quotation.accountId,
+    quotation.leadId,
+    quotation.selectedAccountId,
+    quotation.dealId,
+    quotation.raw?.customerId,
+    quotation.raw?.accountId,
+    quotation.raw?.leadId,
+    quotation.raw?.selectedAccountId,
+    quotation.raw?.dealId,
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  const quotationNumbers = [
+    quotation.clientAccountNumber,
+    quotation.accountNumber,
+    quotation.customerNumber,
+    quotation.raw?.clientAccountNumber,
+    quotation.raw?.accountNumber,
+    quotation.raw?.customerNumber,
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  const quotationNames = [
+    quotation.companyName,
+    quotation.clientName,
+    quotation.customerName,
+    quotation.accountName,
+    quotation.raw?.companyName,
+    quotation.raw?.clientName,
+    quotation.raw?.customerName,
+    quotation.raw?.accountName,
+  ].map(normalizeMatchValue).filter(Boolean)
+
+  return quotationIds.some((value) => accountIds.includes(value))
+    || quotationNumbers.some((value) => accountNumbers.includes(value))
+    || quotationNames.some((value) => accountNames.includes(value))
+}
+
+const enrichBoardDataWithQuotationFields = (boardData, quotations = [], availableUsers = []) => {
+  const enrichRow = (row = {}) => {
+    if (row.quotationNumber && row.quotationOwnerName) return row
+
+    const matchedQuotations = (quotations || [])
+      .filter((quotation) => quotationMatchesAccount(quotation, row))
+      .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
+
+    const latestQuotation = matchedQuotations[0]
+    if (!latestQuotation) return row
+
+    return {
+      ...row,
+      quotationNumber: row.quotationNumber || latestQuotation.quotationNumber || latestQuotation.quotationNo || latestQuotation.quoteNumber || '',
+      quotationOwnerName: row.quotationOwnerName || getQuotationOwnerName(latestQuotation, availableUsers),
+    }
+  }
+
+  const records = (boardData.records || []).map(enrichRow)
+  const rowLookup = new Map(records.map((row) => [String(row.id), row]))
+  const rowsByStage = Object.fromEntries(
+    Object.entries(boardData.rowsByStage || {}).map(([stageKey, rows]) => [
+      stageKey,
+      (rows || []).map((row) => rowLookup.get(String(row.id)) || enrichRow(row)),
+    ])
+  )
+
+  return { ...boardData, records, rowsByStage }
+}
+
 const compareAccountRows = (left = {}, right = {}) => {
   const timeA = new Date(left.createdAt || left.raw?.createdAt || left.accountDate || left.raw?.accountDate || 0).getTime()
   const timeB = new Date(right.createdAt || right.raw?.createdAt || right.accountDate || right.raw?.accountDate || 0).getTime()
@@ -568,7 +691,7 @@ const MyGroupAccountsPage = ({ variantKey = 'myGroup' }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const addAccountPath = location.pathname.startsWith('/admin') ? '/admin/accounts/new' : '/accounts/new'
-  const { accounts, convertedDeals, loading, refreshData, addNotification, updateAccount, deleteAccount, convertAccountToDeal } = useData()
+  const { accounts, convertedDeals, quotations = [], loading, refreshData, addNotification, updateAccount, deleteAccount, convertAccountToDeal } = useData()
   const { user } = useAuth()
   const [dbMongoUsers, setDbMongoUsers] = useState([]);
   useEffect(() => {
@@ -661,8 +784,12 @@ const MyGroupAccountsPage = ({ variantKey = 'myGroup' }) => {
         : getAccountsBoardData(accounts)
     )
 
-    return filterBoardDataByHiddenStages(nextBoardData, view.hiddenStageKeys)
-  }, [accounts, user, variantKey, view.hiddenStageKeys])
+    return enrichBoardDataWithQuotationFields(
+      filterBoardDataByHiddenStages(nextBoardData, view.hiddenStageKeys),
+      quotations,
+      [...availableUsers, ...dbMongoUsers]
+    )
+  }, [accounts, availableUsers, dbMongoUsers, quotations, user, variantKey, view.hiddenStageKeys])
 
   
   const getMongoOwnerCodeOnly = (row) => {

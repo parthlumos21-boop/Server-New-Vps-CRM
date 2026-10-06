@@ -120,6 +120,30 @@ export const GROUP_ACCOUNTS_COLUMNS = [
 
 export const MY_GROUP_ACCOUNTS_COLUMNS = GROUP_ACCOUNTS_COLUMNS
 
+export const MY_ACCOUNTS_LIST_COLUMNS = [
+  ...GROUP_ACCOUNTS_COLUMNS.filter((column) => column.key !== 'userGroup'),
+  {
+    key: 'quotationNumber',
+    label: 'Quotation Number',
+    filterPlaceholder: 'Search Quotation Number',
+    width: '165px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: formatQuotationNumberDisplay,
+    exportFormatter: formatQuotationNumberDisplay,
+  },
+  {
+    key: 'quotationOwnerName',
+    label: 'Quotation Owner Name',
+    filterPlaceholder: 'Search Quotation Owner Name',
+    width: '190px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: formatQuotationOwnerDisplay,
+    exportFormatter: formatQuotationOwnerDisplay,
+  },
+]
+
 export const VIEW_ALL_COLUMNS = [
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
   { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value) => formatLegacyBoardDate(value), exportFormatter: (value) => formatLegacyBoardDate(value) },
@@ -954,7 +978,7 @@ export const CONVERTED_ACCOUNTS_COLUMNS = [
 const BOARD_COLUMNS_BY_VARIANT = {
   viewAll: VIEW_ALL_COLUMNS,
   myGroup: MY_GROUP_ACCOUNTS_COLUMNS,
-  myAccounts: GROUP_ACCOUNTS_COLUMNS,
+  myAccounts: MY_ACCOUNTS_LIST_COLUMNS,
   searchAccount: ACCOUNT_LIST_BOARD_COLUMNS,
   accountSourceView: ACCOUNT_SOURCE_VIEW_COLUMNS,
   weeklyReportsAll: WEEKLY_REPORTS_ALL_COLUMNS,

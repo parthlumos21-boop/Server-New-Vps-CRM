@@ -11,7 +11,7 @@ export default function CtaSection() {
             Join your team on SwatiCRM and streamline customer relationships, sales, and service today.
           </p>
           <div className="lp-hero-ctas">
-            <Link to="/register" className="lp-btn lp-btn-white">Create Account →</Link>
+            <Link to="/login" className="lp-btn lp-btn-white">Create Account →</Link>
             <Link to="/login" className="lp-btn lp-btn-outline-white cta-login-btn">Login →</Link>
           </div>
         </div>

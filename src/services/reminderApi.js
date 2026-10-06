@@ -2,6 +2,13 @@ import apiClient from './apiClient'
 
 const unwrapData = (response, fallback) => response?.data?.data ?? response?.data ?? fallback
 
+const normalizeReminderStatus = (status) => {
+  const normalized = String(status || '').trim().toLowerCase()
+  if (['closed', 'completed', 'done'].includes(normalized)) return 'closed'
+  if (['activated', 'activate'].includes(normalized)) return 'activated'
+  return 'active'
+}
+
 export const reminderApi = {
   normalizeReminder(reminder = {}) {
     const reminderDate = reminder.reminderDate || String(reminder.remindAt || '').slice(0, 10)
@@ -13,7 +20,7 @@ export const reminderApi = {
       title: reminder.title || 'Reminder',
       message: reminder.message || reminder.note || '',
       note: reminder.note || reminder.message || '',
-      status: ['closed', 'completed', 'done'].includes(String(reminder.status || '').toLowerCase()) ? 'closed' : 'active',
+      status: normalizeReminderStatus(reminder.status),
       reminderDate,
       reminderTime,
       reminderMode: reminder.reminderMode || reminder.recurrence || 'Follow Up',

@@ -493,15 +493,18 @@ const AdminPanel = () => {
 
   const myCrmCards = useMemo(() => ([]), [])
 
-  const handleTodoReminderActive = useCallback((reminder, event) => {
+  const handleTodoReminderActive = useCallback(async (reminder, event) => {
     event?.stopPropagation()
+    if (reminder?.id && !reminder?.sourceType) {
+      await updateReminder(reminder.id, { status: 'activated' })
+    }
     navigate('/admin/reminders/active', {
       state: {
         reminderId: reminder.id,
         selectedOwner: reminder.ownerName,
       },
     })
-  }, [navigate])
+  }, [navigate, updateReminder])
 
   const handleTodoReminderClose = useCallback(async (reminder, event) => {
     event?.stopPropagation()
@@ -568,7 +571,9 @@ const AdminPanel = () => {
       .slice(0, 8)
       .map((r) => ({
         id: `db-reminder-${r.id || r._id}`,
-        type: r.reminderMode ? `Reminder (${r.reminderMode.toUpperCase()})` : 'Reminder',
+        type: String(r.status || '').toLowerCase() === 'activated'
+          ? 'Reminder (Activated)'
+          : (r.reminderMode ? `Reminder (${r.reminderMode.toUpperCase()})` : 'Reminder'),
         title: r.title || r.note || r.message || 'Reminder',
         meta: r.reminderDate ? formatTodoDateTime(r.reminderDate) : 'Today',
         message: r.note || r.remark || r.description || '-',

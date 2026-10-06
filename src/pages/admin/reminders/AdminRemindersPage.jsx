@@ -394,7 +394,8 @@ const buildMongoReminderRecords = ({ reminders = [], users = [] }) => reminders.
   const createdByName = resolveUserNameById(users, reminder.createdBy)
   const reminderDate = reminder.reminderDate || String(reminder.remindAt || '').slice(0, 10)
   const reminderTime = reminder.reminderTime || String(reminder.remindAt || '').slice(11, 16) || '09:00'
-  const status = reminder.status === 'closed' ? 'closed' : 'active'
+  const normalizedStatus = String(reminder.status || '').toLowerCase()
+  const status = normalizedStatus === 'closed' ? 'closed' : (normalizedStatus === 'activated' ? 'activated' : 'active')
 
   return {
     id: `mongo-reminder-${reminder.id}`,
@@ -412,9 +413,9 @@ const buildMongoReminderRecords = ({ reminders = [], users = [] }) => reminders.
     reminderTime,
     reminderDateDisplay: formatShortDate(reminderDate),
     reminderMode: reminder.reminderMode || reminderTime || 'Follow Up',
-    accountStatus: status === 'closed' ? 'Closed' : 'Active',
+    accountStatus: status === 'closed' ? 'Closed' : (status === 'activated' ? 'Activated' : 'Active'),
     note: reminder.note || reminder.message || '-',
-    filterStatusLabel: status === 'closed' ? 'Closed' : 'Active',
+    filterStatusLabel: status === 'closed' ? 'Closed' : (status === 'activated' ? 'Activated' : 'Active'),
     actionable: true,
     moduleKey: 'reminder',
     status,
@@ -685,9 +686,9 @@ const AdminRemindersPage = ({ variantKey = 'active' }) => {
 
     return rows.filter((row) => {
       if (variantKey === 'closed') return row.status === 'closed'
-      if (variantKey === 'my') return row.status === 'active' && (isAdmin || normalizeCrmUserName(row.ownerName) === currentUserName)
+      if (variantKey === 'my') return ['active', 'activated'].includes(row.status) && (isAdmin || normalizeCrmUserName(row.ownerName) === currentUserName)
       if (!isAdmin && normalizeCrmUserName(row.ownerName) !== currentUserName) return false
-      return row.status === 'active'
+      return ['active', 'activated'].includes(row.status)
     })
   }, [accounts, isAdmin, remarkReminders, user?.name, user?.username, variantKey])
 

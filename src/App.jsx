@@ -58,12 +58,6 @@ import AddSupportRequestReportPage from './pages/admin/reports/AddSupportRequest
 import CustomerMapViewPage from './pages/admin/reports/CustomerMapViewPage'
 import ChartsPage from './pages/admin/charts/ChartsPage'
 import ChartsListPage from './pages/admin/charts/ChartsListPage'
-import ViewSettingsPage from './pages/admin/view-settings/ViewSettingsPage'
-import MyAccountsViewPage from './pages/admin/view-settings/MyAccountsViewPage'
-import MyCustomersViewPage from './pages/admin/view-settings/MyCustomersViewPage'
-import ViewDealsViewPage from './pages/admin/view-settings/ViewDealsViewPage'
-import SearchViewSettingsPage from './pages/admin/view-settings/SearchViewSettingsPage'
-import MyViewsPage from './pages/admin/view-settings/MyViewsPage'
 import AdminMessagesPage from './pages/admin/messages/AdminMessagesPage'
 import PasswordResetRequestsPage from './pages/admin/users/PasswordResetRequestsPage'
 import AdminAdvancedSearchPage from './pages/admin/search/AdminAdvancedSearchPage'
@@ -266,13 +260,7 @@ function App() {
                 <Route path="reminders/closed" element={<UserRemindersPage variantKey="closed" />} />
                 <Route path="charts" element={<ChartsPage basePath="/charts" />} />
                 <Route path="charts/list" element={<ChartsListPage basePath="/charts" />} />
-                <Route path="view-settings" element={<ViewSettingsPage basePath="/view-settings" />} />
-                <Route path="view-settings/my-accounts" element={<MyAccountsViewPage basePath="/view-settings" />} />
-                <Route path="view-settings/account-source" element={<Navigate to="/view-settings" replace />} />
-                <Route path="view-settings/my-customers" element={<MyCustomersViewPage basePath="/view-settings" />} />
-                <Route path="view-settings/view-deals" element={<ViewDealsViewPage basePath="/view-settings" />} />
-                <Route path="view-settings/search-view" element={<SearchViewSettingsPage basePath="/view-settings" />} />
-                <Route path="view-settings/my-views" element={<MyViewsPage basePath="/view-settings" />} />
+                <Route path="view-settings/*" element={<Navigate to="/dashboard" replace />} />
                 <Route path="data-manager" element={<UserDataManagerPage />} />
                 <Route path="data-manager/image-gallery" element={<ImageGalleryPage />} />
                 <Route path="data-manager/document-base" element={<DocumentBasePage basePath="/data-manager" />} />
@@ -376,13 +364,7 @@ function App() {
                 <Route path="reports/customer-map" element={<CustomerMapViewPage />} />
                 <Route path="charts" element={<ChartsPage />} />
                 <Route path="charts/list" element={<ChartsListPage />} />
-                <Route path="view-settings" element={<ViewSettingsPage />} />
-                <Route path="view-settings/my-accounts" element={<MyAccountsViewPage />} />
-                <Route path="view-settings/account-source" element={<Navigate to="/admin/view-settings" replace />} />
-                <Route path="view-settings/my-customers" element={<MyCustomersViewPage />} />
-                <Route path="view-settings/view-deals" element={<ViewDealsViewPage />} />
-                <Route path="view-settings/search-view" element={<SearchViewSettingsPage />} />
-                <Route path="view-settings/my-views" element={<MyViewsPage />} />
+                <Route path="view-settings/*" element={<Navigate to="/admin/monitoring" replace />} />
                 <Route path="my-work-status" element={<AdminWorkStatusPage />} />
                 <Route path="user-management" element={<AdminUserManagementPage />} />
                 <Route path="user-management/add-user" element={<AdminUserManagementPage />} />
