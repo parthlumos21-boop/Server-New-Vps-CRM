@@ -523,7 +523,20 @@ const AddAccountWizard = () => {
   }
 
   const handleChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value }
+      if (name === 'dealOwner' && value) {
+        next.accountOwner = value
+        const matchedOwner = activeOwners.find((o) => o.value === value || o.label === value || o.userObj?.name === value)
+        if (matchedOwner && matchedOwner.userObj) {
+          next.accountOwnerCode = matchedOwner.userObj.ownerCode || matchedOwner.userObj.employeeId || ''
+        }
+      }
+      if (name === 'accountOwner' && value && !prev.dealOwner) {
+        next.dealOwner = value
+      }
+      return next
+    })
     setValidationNotice([])
     setErrors((prev) => {
       if (!prev[name]) return prev
@@ -602,9 +615,10 @@ const AddAccountWizard = () => {
     setSaving(true)
     setValidationNotice([])
 
-    const selectedOwner = activeOwners.find(o => o.value === formData.accountOwner)
-    const finalOwnerName = selectedOwner ? selectedOwner.userObj.name : formData.accountOwner
-    const finalOwnerCode = selectedOwner && selectedOwner.userObj ? (selectedOwner.userObj.ownerCode || '') : ''
+    const targetOwnerName = formData.dealOwner || formData.accountOwner
+    const selectedOwner = activeOwners.find(o => o.value === targetOwnerName || o.label === targetOwnerName || o.userObj?.name === targetOwnerName)
+    const finalOwnerName = selectedOwner ? selectedOwner.userObj.name : (targetOwnerName || formData.accountOwner)
+    const finalOwnerCode = selectedOwner && selectedOwner.userObj ? (selectedOwner.userObj.ownerCode || '') : (formData.accountOwnerCode || '')
 
     if (isExistingCustomer) {
       try {
@@ -613,9 +627,11 @@ const AddAccountWizard = () => {
           sourceId: selectedSource?.sourceId,
           formData: {
             ...formData,
-            accountOwner: finalOwnerName || formData.accountOwner,
-            accountOwnerCode: finalOwnerCode || formData.accountOwnerCode,
-            dealOwner: formData.dealOwner || finalOwnerName,
+            accountOwner: finalOwnerName,
+            accountOwnerCode: finalOwnerCode,
+            dealOwner: finalOwnerName,
+            status: 'new',
+            stage: 'new',
           },
         })
 

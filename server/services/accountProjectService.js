@@ -140,14 +140,32 @@ const findSourceRecord = async (actor, sourceType, sourceId) => {
   }
 
   if (sourceType === 'lead') {
-    return normalizeSourceRecord('lead', await leadService.getLeadById(actor, sourceId))
+    let leadRecord = null
+    try {
+      leadRecord = await leadService.getLeadById(actor, sourceId)
+    } catch {
+      try {
+        leadRecord = await leadService.getLeadById(actor, sourceId, { includeGroupScope: false })
+      } catch {
+        const leadRepo = require('../repositories/leadRepository')
+        leadRecord = await leadRepo.findLeadById(Number(sourceId))
+      }
+    }
+    return normalizeSourceRecord('lead', leadRecord || {})
   }
 
   if (sourceType === 'deal') {
-    return normalizeSourceRecord('deal', await dealService.get(actor, sourceId))
+    let dealRecord = null
+    try {
+      dealRecord = await dealService.get(actor, sourceId)
+    } catch {
+      const dealRepo = require('../repositories/dealRepository')
+      dealRecord = (await dealRepo.findDealById(Number(sourceId))) || (await dealRepo.findDealById(sourceId))
+    }
+    return normalizeSourceRecord('deal', dealRecord || {})
   }
 
-  return normalizeSourceRecord('customer', await customerService.get(actor, sourceId))
+  return normalizeSourceRecord('customer', await customerService.get(actor, sourceId).catch(() => ({})))
 }
 
 const buildSharedPayload = (source, formData = {}, actor = {}) => {
@@ -168,6 +186,7 @@ const buildSharedPayload = (source, formData = {}, actor = {}) => {
     customerName: accountName,
     customerNumber: source.customerNumber,
     accountOwner: ownerName,
+    dealOwner: ownerName,
     ownerName,
     accountOwnerCode: text(formData.accountOwnerCode, source.accountOwnerCode, actor.ownerCode),
     source: text(formData.accountSource, formData.dealSource, source.sourceType),
@@ -193,7 +212,6 @@ const buildSharedPayload = (source, formData = {}, actor = {}) => {
     dealDate: text(formData.dealDate, new Date().toISOString().slice(0, 10)),
     dealType: text(formData.dealType, source.customerCategory, formData.accountCategory),
     dealSource: text(formData.dealSource, formData.accountSource, source.sourceType),
-    dealOwner: ownerName,
     dealCity: text(formData.dealCity, formData.projectLocation, source.city),
     expectedClosureDate: text(formData.expectedClosureDate),
     probability: numberValue(formData.probability, 1),
@@ -212,6 +230,8 @@ const buildSharedPayload = (source, formData = {}, actor = {}) => {
     linkedSourceId: source.sourceId,
     linkedAccountName: source.accountName || accountName,
     linkedAccountNumber: source.customerNumber || '',
+    status: 'new',
+    stage: 'new',
   }
 }
 
@@ -223,11 +243,21 @@ const createExistingSourceProject = async (actor, body = {}) => {
     throw new AppError('Project Name is required to create a new project deal.', 400)
   }
 
+  // Resolve dynamic owner record if owner is changed or present
+  const { getCrmOwnerRecord } = require('../features/crmUserDirectory')
+  const ownerRecord = await getCrmOwnerRecord(payload.ownerName || actor.ownerCode || actor.name)
+  const finalOwnerCode = ownerRecord?.ownerCode || payload.accountOwnerCode || actor.ownerCode || null
+
   const lead = await leadService.createLead(actor, {
     ...payload,
-    status: 'pending',
-    accountState: 'pending',
-    accountStatus: 'Pending',
+    accountOwner: payload.ownerName,
+    dealOwner: payload.ownerName,
+    accountOwnerCode: finalOwnerCode,
+    ownerCode: finalOwnerCode,
+    status: 'new',
+    stage: 'new',
+    accountState: 'new',
+    accountStatus: 'new',
     formType: 'account',
     creationMode: 'existing-source-project',
   })
@@ -241,8 +271,12 @@ const createExistingSourceProject = async (actor, body = {}) => {
     value: payload.dealValue,
     dealValue: payload.dealValue,
     currency: payload.valueCurrency,
+    dealOwner: payload.ownerName,
+    accountOwner: payload.ownerName,
+    accountOwnerCode: finalOwnerCode,
+    ownerCode: finalOwnerCode,
     stage: 'new',
-    status: 'pending',
+    status: 'new',
     accountId: lead.id,
     accountName: lead.accountName || payload.accountName,
     accountNumber: lead.accountNumber || lead.accountNo || payload.customerNumber,
@@ -251,6 +285,8 @@ const createExistingSourceProject = async (actor, body = {}) => {
       accountId: lead.id,
       sourceLeadId: lead.id,
       creationMode: 'existing-source-project',
+      status: 'new',
+      stage: 'new',
     },
   })
 

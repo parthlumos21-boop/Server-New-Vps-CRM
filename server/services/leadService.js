@@ -172,8 +172,9 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     || null
   const isNotQuotedPayload = sanitizedPayload.stage === 'not_quoted' || sanitizedPayload.status === 'not_quoted' || sanitizedPayload.accountStatus === 'not_quoted' || sanitizedPayload.status === 'Not Quoted' || sanitizedPayload.stage === 'Not Quoted'
   const isPoConvertedStage = sanitizedPayload.stage === 'convert_to_po' || sanitizedPayload.status === 'convert_to_po' || sanitizedPayload.accountStatus === 'PO Converted' || sanitizedPayload.accountStatus === 'convert_to_po'
+  const isExistingSourceProject = sanitizedPayload.creationMode === 'existing-source-project'
   const resolvedPoValue = String(sanitizedPayload.poValue ?? existingLead?.poValue ?? existingLead?.formData?.poValue ?? '').trim()
-  if (isPoConvertedStage && !resolvedPoValue) {
+  if (isPoConvertedStage && !resolvedPoValue && !isExistingSourceProject) {
     throw new AppError('PO Value is required to convert account to PO Converted status.', 400)
   }
 
@@ -182,9 +183,9 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     ? (sanitizedPayload.reasonForLost || sanitizedPayload.reasonForLostOrder || '')
     : (existingLead?.reasonForLost || existingLead?.reasonForLostOrder || existingLead?.formData?.reasonForLost || existingLead?.formData?.reasonForLostOrder || '')
 
-  const targetStatus = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending'))
-  const targetAccountStatus = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending'))
-  const targetAccountState = isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending'))
+  const targetStatus = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending')))
+  const targetAccountStatus = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending')))
+  const targetAccountState = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending')))
 
   const normalizedPayload = applyOwnershipMetadata(actor, {
     ...sanitizedPayload,
@@ -194,7 +195,7 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     company: sanitizedPayload.projectName || sanitizedPayload.company || existingLead?.company || '',
     projectName: sanitizedPayload.projectName || existingLead?.projectName || '',
     status: targetStatus,
-    stage: isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'),
+    stage: isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new')),
     accountStatus: targetAccountStatus,
     accountState: targetAccountState,
     reasonForLost: resolvedReasonForLost,
