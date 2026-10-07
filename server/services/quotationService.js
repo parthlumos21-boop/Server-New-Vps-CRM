@@ -5,6 +5,7 @@ const quotationRepository = require('../repositories/quotationRepository')
 const { createCrudService } = require('./crudServiceFactory')
 const { AppError } = require('../utils/appError')
 const { getNextCounterSequence } = require('../models/mongoModels')
+const quotationNumberService = require('./quotationNumberService')
 
 const DEFAULT_QUOTATION_NUMBER_START = 1001
 
@@ -271,15 +272,13 @@ const resolveQuoteNumber = async (body, existing, actor) => {
     }
   }
 
-  const counterKey = `quotations:${actor.companyId || 'default'}:${quotationSequenceMonth}`
-  const minimumSequence = getNextQuotationSequenceForMonth(existingRecords, quotationSequenceMonth) - 1
-  const quotationSequence = await getNextCounterSequence(counterKey, minimumSequence)
-  const quoteNumber = buildQuotationNumber(quotationSequence, referenceDate)
-
+  const generated = await quotationNumberService.generateQuotationNumber(actor, referenceDate)
   return {
-    quoteNumber,
-    quotationSequence,
-    quotationSequenceMonth,
+    quoteNumber: generated.quoteNumber,
+    quotationSequence: generated.sequence,
+    quotationSequenceMonth: String(generated.financialYear),
+    financialYear: generated.financialYear,
+    ownerCode: generated.ownerCode,
   }
 }
 

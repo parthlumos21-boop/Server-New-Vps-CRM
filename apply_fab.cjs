@@ -23,7 +23,7 @@ const addFabToReminders = (filePath, targetFolder) => {
           <Feather name="plus" size={24} color="#FFF" />
         </TouchableOpacity>`
       );
-      
+
       if (!content.includes('fab: {')) {
         content = content.replace(
           'const styles = StyleSheet.create({',

@@ -62,6 +62,9 @@ const COLLECTION_INDEXES = {
     { fields: { quotationNumber: 1 }, options: { sparse: true } },
     { fields: { companyId: 1, ownerUserId: 1 } },
   ],
+  quotation_number_counters: [
+    { fields: { financialYear: 1 }, options: { unique: true } },
+  ],
   tasks: [
     { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
     { fields: { companyId: 1, ownerUserId: 1 } },
