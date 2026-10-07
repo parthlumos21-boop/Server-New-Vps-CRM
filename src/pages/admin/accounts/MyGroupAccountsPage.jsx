@@ -130,15 +130,19 @@ const normalizeMatchValue = (value) =>
   String(value || '').trim().toLowerCase()
 
 const getQuotationOwnerName = (quotation = {}, availableUsers = []) => {
-  const rawOwner = quotation.quotationOwnerName
+  const rawOwner = quotation.selectedAccountOwner
+    || quotation.data?.selectedAccountOwner
+    || quotation.quotationOwnerName
     || quotation.quotationOwner
     || quotation.createdByName
     || quotation.ownerName
     || quotation.addedByName
+    || quotation.data?.quotationOwnerName
+    || quotation.data?.quotationOwner
     || ''
   if (rawOwner) return rawOwner
 
-  const userId = String(quotation.userId || quotation.createdBy || '').trim()
+  const userId = String(quotation.userId || quotation.createdBy || quotation.data?.userId || quotation.data?.createdBy || '').trim()
   if (!userId) return ''
 
   const matchedUser = availableUsers.find((entry) => (
@@ -147,93 +151,51 @@ const getQuotationOwnerName = (quotation = {}, availableUsers = []) => {
   return matchedUser?.name || matchedUser?.username || matchedUser?.email || ''
 }
 
-const quotationMatchesAccount = (quotation = {}, account = {}) => {
+const getQuotationScoreForAccount = (quotation = {}, account = {}) => {
   const raw = account.raw || {}
   const formData = account.formData || raw.formData || {}
-  const accountIds = [
-    account.id,
-    raw.id,
-    raw._id,
-    account.dealId,
-    account.convertedDealId,
-  ].map(normalizeMatchValue).filter(Boolean)
 
-  const accountNumbers = [
-    account.accountNumber,
-    account.accountNo,
-    raw.accountNumber,
-    raw.accountNo,
-    formData.accountNumber,
-    formData.accountNo,
-    formData['Account No.'],
-  ].map(normalizeMatchValue).filter(Boolean)
+  const qDealId = String(quotation.dealId || quotation.data?.dealId || quotation.selectedDealId || '').trim()
+  const aDealId = String(account.dealId || account.convertedDealId || raw.dealId || raw.convertedDealId || '').trim()
 
-  const accountNames = [
-    account.name,
-    account.accountName,
-    account.customerName,
-    raw.name,
-    raw.accountName,
-    raw.customerName,
-    formData.name,
-    formData.accountName,
-    formData.customerName,
-    formData['Account Name'],
-  ].map(normalizeMatchValue).filter(Boolean)
+  const qCustId = String(quotation.customerId || quotation.accountId || quotation.selectedAccountId || quotation.data?.selectedAccountId || '').trim()
+  const aCustId = String(account.id || raw.id || raw._id || '').trim()
 
-  const quotationIds = [
-    quotation.customerId,
-    quotation.accountId,
-    quotation.leadId,
-    quotation.selectedAccountId,
-    quotation.dealId,
-    quotation.raw?.customerId,
-    quotation.raw?.accountId,
-    quotation.raw?.leadId,
-    quotation.raw?.selectedAccountId,
-    quotation.raw?.dealId,
-  ].map(normalizeMatchValue).filter(Boolean)
+  const qProj = normalizeMatchValue(quotation.projectName || quotation.title || quotation.data?.projectName || quotation.data?.quotationSubject)
+  const aProj = normalizeMatchValue(account.projectName || account.dealName || raw.projectName || formData.projectName)
 
-  const quotationNumbers = [
-    quotation.clientAccountNumber,
-    quotation.accountNumber,
-    quotation.customerNumber,
-    quotation.raw?.clientAccountNumber,
-    quotation.raw?.accountNumber,
-    quotation.raw?.customerNumber,
-  ].map(normalizeMatchValue).filter(Boolean)
+  const qComp = normalizeMatchValue(quotation.companyName || quotation.clientName || quotation.customerName || quotation.data?.companyName || quotation.data?.clientName)
+  const aComp = normalizeMatchValue(account.name || account.accountName || account.customerName || raw.name || formData['Account Name'])
 
-  const quotationNames = [
-    quotation.companyName,
-    quotation.clientName,
-    quotation.customerName,
-    quotation.accountName,
-    quotation.raw?.companyName,
-    quotation.raw?.clientName,
-    quotation.raw?.customerName,
-    quotation.raw?.accountName,
-  ].map(normalizeMatchValue).filter(Boolean)
+  let score = 0
+  if (qDealId && aDealId && qDealId === aDealId) score += 100
+  if (qCustId && aCustId && qCustId === aCustId) score += 50
+  if (qProj && aProj && qProj === aProj) score += 30
+  if (qComp && aComp && qComp === aComp) score += 10
 
-  return quotationIds.some((value) => accountIds.includes(value))
-    || quotationNumbers.some((value) => accountNumbers.includes(value))
-    || quotationNames.some((value) => accountNames.includes(value))
+  return score
 }
 
 const enrichBoardDataWithQuotationFields = (boardData, quotations = [], availableUsers = []) => {
   const enrichRow = (row = {}) => {
-    if (row.quotationNumber && row.quotationOwnerName) return row
-
     const matchedQuotations = (quotations || [])
-      .filter((quotation) => quotationMatchesAccount(quotation, row))
-      .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
+      .map((q) => ({ q, score: getQuotationScoreForAccount(q, row) }))
+      .filter((item) => item.score > 0)
+      .sort((left, right) => {
+        if (right.score !== left.score) return right.score - left.score
+        return new Date(right.q.updatedAt || right.q.createdAt || 0).getTime() - new Date(left.q.updatedAt || left.q.createdAt || 0).getTime()
+      })
 
-    const latestQuotation = matchedQuotations[0]
+    const latestQuotation = matchedQuotations[0]?.q
     if (!latestQuotation) return row
+
+    const resolvedNumber = latestQuotation.quoteNumber || latestQuotation.quotationNumber || latestQuotation.data?.quoteNumber || latestQuotation.data?.quotationNumber || ''
+    const resolvedOwner = getQuotationOwnerName(latestQuotation, availableUsers)
 
     return {
       ...row,
-      quotationNumber: row.quotationNumber || latestQuotation.quotationNumber || latestQuotation.quotationNo || latestQuotation.quoteNumber || '',
-      quotationOwnerName: row.quotationOwnerName || getQuotationOwnerName(latestQuotation, availableUsers),
+      quotationNumber: resolvedNumber || row.quotationNumber || '',
+      quotationOwnerName: resolvedOwner || row.quotationOwnerName || '',
     }
   }
 

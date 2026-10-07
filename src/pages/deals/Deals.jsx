@@ -792,10 +792,13 @@ const getQuotationNumberFromRecord = (record = {}) => (
 
 const getQuotationOwnerFromRecord = (record = {}) => (
   String(
-    record.quotationOwnerName
+    record.selectedAccountOwner
+    || record.data?.selectedAccountOwner
+    || record.quotationOwnerName
     || record.quotationOwner
     || record.ownerName
     || record.createdByName
+    || record.addedByName
     || record.data?.quotationOwnerName
     || record.data?.quotationOwner
     || ''
@@ -808,11 +811,22 @@ const isDealNumberFallback = (value = '', deal = {}) => {
 }
 
 const getDealQuotationNumber = (deal = {}, quotationNumberByDealId = {}, quotationNumberByDealNumber = {}) => {
+  const dealIdKey = String(deal.id || deal.legacyId || '').trim()
+  const dealNumberKey = String(deal.dealNumber || '').trim()
+
+  const lookupQuotationNumber = (
+    (dealIdKey && quotationNumberByDealId[dealIdKey])
+    || (dealNumberKey && quotationNumberByDealNumber[dealNumberKey])
+    || ''
+  )
+
+  if (lookupQuotationNumber && !isDealNumberFallback(lookupQuotationNumber, deal)) {
+    return lookupQuotationNumber
+  }
+
   const directCandidates = [
-    deal.quotationNumber,
     deal.quoteNumber,
-    deal.latestQuotationNumber,
-    deal.latestQuoteNumber,
+    deal.quotationNumber,
     ...(Array.isArray(deal.quotationHistory)
       ? deal.quotationHistory.map((entry) => getQuotationNumberFromRecord(entry))
       : []),
@@ -822,17 +836,9 @@ const getDealQuotationNumber = (deal = {}, quotationNumberByDealId = {}, quotati
     .map((value) => String(value || '').trim())
     .find((value) => value && !isDealNumberFallback(value, deal))
 
-  if (directQuotationNumber) return directQuotationNumber
+  if (directQuotationNumber && directQuotationNumber !== deal.latestQuotationNumber) return directQuotationNumber
 
-  const lookupQuotationNumber = (
-    quotationNumberByDealId[String(deal.id || '')]
-    || quotationNumberByDealNumber[String(deal.dealNumber || '')]
-    || ''
-  )
-
-  return lookupQuotationNumber && !isDealNumberFallback(lookupQuotationNumber, deal)
-    ? lookupQuotationNumber
-    : '-'
+  return '-'
 }
 
 const cleanDealNameCellValue = (value = '') => (
@@ -1804,7 +1810,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         dealId: deal.id || '',
         dealNumber: formatDealSequenceNumber(deal, index),
         quotationNumber: getDealQuotationNumber(deal, quotationNumberByDealId, quotationNumberByDealNumber),
-        quotationOwnerName: deal.quotationOwnerName || deal.quotationOwner || quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || '',
+        quotationOwnerName: quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || deal.quotationOwnerName || deal.quotationOwner || '',
         location: deal.city || deal.location || linkedCustomer?.city || linkedCustomer?.location || '',
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
         accountName: deal.linkedAccountName || deal.accountName || '',
