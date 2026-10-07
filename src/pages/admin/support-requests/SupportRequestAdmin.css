@@ -2037,6 +2037,33 @@ html:not([data-theme="dark"]) .support-ticket-content--sr-list .support-request-
   height: 0.75rem !important;
 }
 
+.support-ticket-content--sr-list :is(
+  .support-request-sr-number-chip,
+  .support-request-sr-number-chip:hover,
+  .support-request-sr-number-chip:focus-visible,
+  .support-request-sr-number-chip:disabled,
+  .sr-list-sr-number,
+  .sr-list-sr-number:hover,
+  .sr-list-sr-number:focus-visible
+) {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  width: auto !important;
+  min-width: 92px !important;
+  max-width: 118px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 0.55rem !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+}
+
 /* Red border theme for the support request documents popup table. */
 .support-request-documents-table,
 .support-request-documents-table th,

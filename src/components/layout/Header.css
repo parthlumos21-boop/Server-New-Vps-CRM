@@ -5,7 +5,7 @@
   z-index: 1000;
   width: 100%;
   max-width: 100%;
-  padding-block: 6px;
+  padding-block: 4px;
   padding-inline: clamp(8px, 0.9vw, 14px);
   box-sizing: border-box;
   border-bottom: none !important;
@@ -36,6 +36,31 @@
 .header::after {
   right: 0;
   width: calc(50% - 100px);
+}
+
+.header-navbar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(8px, 1.2vw, 18px);
+  width: 100%;
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 5px 14px;
+  box-shadow:
+    0 4px 20px -2px rgba(15, 23, 42, 0.05),
+    0 2px 6px -1px rgba(15, 23, 42, 0.03);
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.header-navbar-card:hover {
+  border-color: #d7dee8;
+  box-shadow:
+    0 8px 26px -8px rgba(15, 23, 42, 0.12),
+    0 2px 8px -2px rgba(15, 23, 42, 0.04);
 }
 
 .header-panel,
@@ -90,8 +115,8 @@
 }
 
 .hdr-brand-logo {
-  width: clamp(70px, 5.1vw, 88px);
-  height: clamp(70px, 5.1vw, 88px);
+  width: clamp(46px, 3.7vw, 58px);
+  height: clamp(46px, 3.7vw, 58px);
   object-fit: contain;
   object-position: center;
   flex: 0 0 auto;
@@ -126,6 +151,14 @@
   width: fit-content;
   max-width: 100%;
   flex: 0 0 auto;
+}
+
+.header-navbar-card .header-panel--brand {
+  flex: 0 0 auto;
+}
+
+.header-navbar-card .header-panel--actions {
+  flex: 1 1 auto;
 }
 
 
@@ -1799,9 +1832,28 @@ html body #root .layout .header {
   -webkit-backdrop-filter: none !important;
 }
 
+html body #root .header .header-navbar-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: clamp(8px, 1.2vw, 18px) !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  padding: 5px 14px !important;
+  box-shadow:
+    0 4px 20px -2px rgba(15, 23, 42, 0.05),
+    0 2px 6px -1px rgba(15, 23, 42, 0.03) !important;
+  box-sizing: border-box !important;
+}
+
 @media (min-width: 981px) {
   .header {
-    padding-left: calc(var(--sidebar-width, 260px) + clamp(8px, 0.9vw, 14px)) !important;
+    padding-left: calc(var(--sidebar-width, 260px) + var(--app-gutter, 8px)) !important;
+    padding-right: var(--app-gutter, 8px) !important;
   }
 }
 

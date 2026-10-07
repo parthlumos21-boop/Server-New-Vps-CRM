@@ -491,9 +491,26 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
   const { accounts = [], deals = [], convertedDeals = [], quotations = [] } = useData()
   const customers = useMemo(() => customerService.getCustomers() || [], [])
   const isAdmin = user?.role === 'admin'
-  const isKeval = (user?.name && user.name.toLowerCase().includes('keval')) || 
-    (user?.username && user.username.toLowerCase().includes('keval')) || 
-    (user?.email && user.email.toLowerCase().includes('keval'))
+  const normalizedIdentity = [
+    user?.name,
+    user?.username,
+    user?.email,
+  ].map((value) => String(value || '').trim().toLowerCase())
+  const isKeval = normalizedIdentity.some((value) => (
+    value === 'keval v shah'
+    || value === 'keval v. shah'
+    || value.startsWith('keval.v.shah@')
+    || value.startsWith('kevalvshah@')
+  ))
+  const isSamirSheth = normalizedIdentity.some((value) => (
+    value === 'samir sheth'
+    || value === 'samir seth'
+    || value.startsWith('samir.sheth@')
+    || value.startsWith('samirsheth@')
+    || value.startsWith('samir.seth@')
+    || value.startsWith('samirseth@')
+  ))
+  const canCreateReportTemplate = isAdmin && (isKeval || isSamirSheth)
   const isKevalOrAdmin = isAdmin || isKeval
   const addRef = useRef(null)
   const [activeFilter, setActiveFilter] = useState('all')
@@ -1558,7 +1575,7 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
         <h1>Custom Reports</h1>
         <div className="cr-list-topbar-actions">
           <button type="button" className="cr-list-help">Need Help?</button>
-          {isKeval && (
+          {canCreateReportTemplate && (
             <SplitDropdown
               label="Add Report Template"
               options={addTemplateOptions}

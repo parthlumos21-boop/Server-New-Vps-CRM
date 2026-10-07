@@ -48,7 +48,7 @@
   grid-template-columns:
     minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
     minmax(760px, 1fr)
-    minmax(300px, 320px);
+    minmax(260px, 288px);
 }
 
 .layout--admin.layout--admin-no-right-panel .layout-body {
@@ -67,7 +67,7 @@
   grid-template-columns:
     minmax(var(--sidebar-collapsed-width), var(--sidebar-width))
     minmax(0, 1fr)
-    minmax(300px, 320px);
+    minmax(260px, 288px);
 }
 
 .layout-column,
@@ -177,6 +177,7 @@
 
 .layout--user .layout-body {
   gap: clamp(12px, 1.4vw, 24px);
+  padding-top: calc(var(--header-height) + 20px);
 }
 
 .layout--user .layout-stage {
@@ -230,6 +231,14 @@
 }
 
 @media (min-width: 981px) {
+  .layout--admin .layout-body {
+    padding-top: calc(var(--header-height) + 14px);
+  }
+
+  .layout--user .layout-body {
+    padding-top: calc(var(--header-height) + 20px);
+  }
+
   .layout-body {
     min-height: calc(100vh - var(--header-height) - 8px);
   }

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  FaArrowLeft,
   FaBell,
   FaBriefcase,
   FaCalendarAlt,
@@ -398,18 +397,6 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
     navigate(getDashboardRoute(isAdmin ? 'admin' : 'user'))
   }
 
-  const handleBackNavigation = () => {
-    closeHeaderPanels()
-    setMenuOpen(false)
-
-    if (window.history.length > 1) {
-      navigate(-1)
-      return
-    }
-
-    navigate(getDashboardRoute(isAdmin ? 'admin' : 'user'))
-  }
-
   const handleViewPastMessages = () => {
     setMessagePanelOpen(false)
     navigate(isAdmin ? '/admin/messages' : '/messages')
@@ -443,33 +430,34 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
   return (
     <>
       <header className={`header ${isAdmin ? 'header--admin' : 'header--user header--admin'}`}>
-        <div className="header-panel header-panel--brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src={swatiLogo} alt="Swati Logo" className="hdr-brand-logo" />
-          <div className="hdr-brand-text" style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="hdr-brand-title" style={{ fontWeight: '800', fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: '1.2' }}>SWATI CRM</span>
-            <span className="hdr-brand-subtitle" style={{ fontSize: '0.6rem', color: '#c60016', letterSpacing: '0.1em', fontWeight: '700' }}>POWERING A BRIGHTER TOMORROW</span>
+        <div className="header-navbar-card">
+          <div className="header-panel header-panel--brand" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <img src={swatiLogo} alt="Swati Logo" className="hdr-brand-logo" />
+            <div className="hdr-brand-text" style={{ display: 'flex', flexDirection: 'column' }}>
+              <span className="hdr-brand-title" style={{ fontWeight: '800', fontSize: '1.1rem', color: 'var(--text-primary)', lineHeight: '1.2' }}>SWATI CRM</span>
+              <span className="hdr-brand-subtitle" style={{ fontSize: '0.6rem', color: '#c60016', letterSpacing: '0.1em', fontWeight: '700' }}>POWERING A BRIGHTER TOMORROW</span>
+            </div>
           </div>
-        </div>
-        <div className="header-panel header-panel--actions">
-          <div className="header-action-cluster">
-            <div className="header-panel header-panel--center" ref={searchWrapRef}>
-              <div className="hdr-search-pill-bar">
-                <FaSearch className="hdr-search-pill-icon" />
-                <input
-                  type="text"
-                  className="hdr-search-pill-input"
-                  value={searchTerm}
-                  onChange={(event) => {
-                    setSearchTerm(event.target.value)
-                    if (!searchPanelOpen) setSearchPanelOpen(true)
-                  }}
-                  onFocus={() => setSearchPanelOpen(true)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') handleQuickSearch()
-                  }}
-                  placeholder="Search accounts, deals, customers..."
-                />
-              </div>
+          <div className="header-panel header-panel--actions">
+            <div className="header-action-cluster">
+              <div className="header-panel header-panel--center" ref={searchWrapRef}>
+                <div className="hdr-search-pill-bar">
+                  <FaSearch className="hdr-search-pill-icon" />
+                  <input
+                    type="text"
+                    className="hdr-search-pill-input"
+                    value={searchTerm}
+                    onChange={(event) => {
+                      setSearchTerm(event.target.value)
+                      if (!searchPanelOpen) setSearchPanelOpen(true)
+                    }}
+                    onFocus={() => setSearchPanelOpen(true)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') handleQuickSearch()
+                    }}
+                    placeholder="Search accounts, deals, customers..."
+                  />
+                </div>
 
               {searchPanelOpen && searchTerm.trim() ? (
                 <div className="hdr-popover-panel hdr-search-panel">
@@ -652,14 +640,7 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
               )}
             </div>
 
-            <button
-              type="button"
-              className="hdr-icon-btn hdr-icon-btn--green-solid hdr-back-btn"
-              title="Back"
-              onClick={handleBackNavigation}
-            >
-              <FaArrowLeft />
-            </button>
+            </div>
           </div>
         </div>
       </header>
