@@ -19,6 +19,7 @@ import lumosLogo from '../../assets/lumos-logo.svg'
 import { useData } from '../../context/DataContext'
 import { useAuth } from '../../context/AuthContext'
 import { quotationApi } from '../../services/quotationApi'
+import apiClient from '../../services/apiClient'
 import { useModal } from '../../hooks'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
@@ -44,6 +45,7 @@ import {
   formatStatusLabel,
   getActionBadgeClassName,
   resolveLinkedAccount,
+  resolveQuotationOwner,
   safeLower,
   triggerBrowserPdfSave,
 } from '../admin/quotations/quotationShared'
@@ -760,7 +762,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     return {
       id: quotation.id || `quotation-${index}`,
       num: quotation.quotationNumber || `Quotation ${index + 1}`,
-      owner: linkedAccount?.accountOwnerDisplay || quotation.selectedAccountOwner || linkedAccount?.accountOwner || '-',
+      owner: resolveQuotationOwner(quotation, linkedAccount),
       date: formatListDate(quotation.quotationDate || quotation.createdAt),
       dateSort: quotation.quotationDate || quotation.createdAt || '',
       company: quotation.companyName || linkedAccount?.name || quotation.clientName || '-',
@@ -832,6 +834,19 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       }
     }
   }, [searchParams, quotationRows, viewQuotationId])
+
+  useEffect(() => {
+    if (!user?.email) return
+    const userEmail = String(user.email).trim().toLowerCase()
+    apiClient.get('/users/me/quotation-mobile')
+      .then((res) => {
+        const remotePhone = res.data?.quotationOwnerMobileNumber
+        if (remotePhone !== undefined && remotePhone !== null && remotePhone !== '') {
+          localStorage.setItem(`orgPhone_${userEmail}`, remotePhone)
+        }
+      })
+      .catch(() => {})
+  }, [user?.email])
 
   const filteredQuotationRows = useMemo(() => (
     quotationRows
@@ -1304,7 +1319,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       organizationName: profile?.organizationName || '',
       organizationAddress: profile?.organizationAddress || '',
       organizationEmail: user?.email || profile?.organizationEmail || '',
-      organizationPhone: '',
+      organizationPhone: user?.quotationOwnerMobileNumber || (user?.email ? localStorage.getItem(`orgPhone_${String(user.email).trim().toLowerCase()}`) : '') || user?.mobile || user?.phone || '',
       organizationGstin: profile?.organizationGstin || '',
       organizationStateCode: profile?.organizationStateCode || '',
       website: profile?.website || '',
@@ -1527,6 +1542,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       ...currentForm,
       [field]: value,
     }))
+
+    if (field === 'organizationPhone' && user?.email) {
+      const userEmail = String(user.email).trim().toLowerCase()
+      const phoneVal = String(value || '').trim()
+      localStorage.setItem(`orgPhone_${userEmail}`, phoneVal)
+      apiClient.patch('/users/me/quotation-mobile', { quotationOwnerMobileNumber: phoneVal })
+        .catch((err) => console.warn('Failed saving quotationOwnerMobileNumber to users collection:', err.message))
+    }
   }
 
   const handleLineItemChange = (lineItemId, field, value) => {

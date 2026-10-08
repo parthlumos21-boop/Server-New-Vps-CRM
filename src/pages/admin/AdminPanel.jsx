@@ -727,7 +727,7 @@ const AdminPanel = () => {
                 <span className="ap-kpi-value">{customers?.length || 0}</span>
                 <span className="ap-kpi-trend ap-kpi-trend--neutral">0%</span>
               </div>
-              <div className="ap-kpi-title">Customer</div>
+              <div className="ap-kpi-title">Customers</div>
             </div>
             <svg className="ap-kpi-wave" viewBox="0 0 100 30" preserveAspectRatio="none">
               <path d="M0,22 Q30,28 60,15 T100,10 L100,30 L0,30 Z" fill="rgba(2, 132, 199, 0.08)" />
@@ -748,7 +748,7 @@ const AdminPanel = () => {
                 <span className="ap-kpi-value">{deals?.length || 18}</span>
                 <span className="ap-kpi-trend ap-kpi-trend--up">↗ +8%</span>
               </div>
-              <div className="ap-kpi-title">Deal</div>
+              <div className="ap-kpi-title">Deals</div>
             </div>
             <svg className="ap-kpi-wave" viewBox="0 0 100 30" preserveAspectRatio="none">
               <path d="M0,28 Q30,15 60,22 T100,8 L100,30 L0,30 Z" fill="rgba(22, 163, 74, 0.08)" />

@@ -32,7 +32,7 @@ const normalizeLeadRecord = (lead = {}) => {
     accountState: lead.accountState || lead.status || 'pending',
     alternateEmail: lead.alternateEmail || email || '',
     alternatePhone: lead.alternatePhone || lead.mobile || phone || '',
-    projectName: lead.projectName || lead.company || '',
+    projectName: lead.projectName || lead.project_name || null,
     isConverted: Boolean(lead.isConverted || lead.convertedFromAccount || lead.dealId),
     convertedAt: lead.convertedAt || '',
     convertedBy: lead.convertedBy || '',

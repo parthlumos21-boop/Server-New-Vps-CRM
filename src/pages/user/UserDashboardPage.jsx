@@ -245,12 +245,12 @@ const UserDashboardPage = () => {
               <span className="ud-stat-number">0</span>
               <span className="ud-stat-badge ud-stat-badge--gray">0%</span>
             </div>
-            <span className="ud-stat-title">Customer</span>
+            <span className="ud-stat-title">Customers</span>
           </div>
           <div className="ud-stat-curve ud-stat-curve--blue" />
         </div>
 
-        {/* Card 3: Deal */}
+        {/* Card 3: Deals */}
         <div className="ud-stat-card ud-stat-card--deal" onClick={() => navigate('/deals/view')}>
           <div className="ud-stat-icon-wrapper ud-stat-icon-wrapper--green">
             <FaHandshake />
@@ -260,7 +260,7 @@ const UserDashboardPage = () => {
               <span className="ud-stat-number">{stats.openDeals || 18}</span>
               <span className="ud-stat-badge ud-stat-badge--green">↗ +8%</span>
             </div>
-            <span className="ud-stat-title">Deal</span>
+            <span className="ud-stat-title">Deals</span>
           </div>
           <div className="ud-stat-curve ud-stat-curve--green" />
         </div>

@@ -215,7 +215,8 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
     return null
   }
   const dealNameVal = account.dealName || account.data?.dealName || account.raw?.data?.dealName || account.raw?.dealName || formData['Deal Name'] || formData.dealName || account.raw?.formData?.dealName || ''
-  const projectNameVal = dealNameVal || account.projectName || account.company || formData['Project Name'] || formData.projectName || formData.company || account.raw?.projectName || account.raw?.company || account.raw?.formData?.['Project Name'] || account.raw?.formData?.projectName || titleize(account.productCategory || formData['Product Category']) || 'General Enquiry'
+  const rawProjectName = account.projectName || account.data?.projectName || formData['Project Name'] || formData.projectName || account.raw?.projectName || account.raw?.formData?.['Project Name'] || account.raw?.formData?.projectName || ''
+  const projectNameVal = rawProjectName || dealNameVal || ''
   const primaryEmailVal = primaryEmail || formData['Email'] || formData.email || formData['Alternate Email'] || account.raw?.email || account.raw?.contactEmail || ''
   const primaryPhoneVal = primaryPhone || formData['Phone'] || formData.phone || formData['Alternate Phone'] || account.raw?.phone || account.raw?.contactPhone || ''
   const contactPersonVal = account.contactPerson || formData['Contact Person'] || formData.contactPerson || primaryContact.name || account.raw?.contactPerson || account.raw?.formData?.['Contact Person'] || ''
@@ -341,7 +342,6 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
         toDrawerField('Account Source', normalized.accountSource),
         toDrawerField('Account Subsource', normalized.accountSubsource),
         toDrawerField('GSTIN', normalized.gstin),
-        toDrawerField('State Code', normalized.stateCode),
       ],
     },
     {
@@ -356,8 +356,6 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
     {
       title: 'Other Details',
       fields: [
-        toDrawerField('Alternate Phone', normalized.alternatePhone),
-        toDrawerField('Alternate Email', normalized.alternateEmail),
         toDrawerField('Customer Type', normalized.customerType),
         toDrawerField('Project Name', normalized.projectName),
         toDrawerField('Project Code', normalized.projectCode),

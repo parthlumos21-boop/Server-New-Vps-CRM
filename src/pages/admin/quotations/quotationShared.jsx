@@ -660,6 +660,45 @@ export const resolveLinkedAccount = (quotation, accounts) => {
   return null
 }
 
+export const resolveQuotationOwner = (quotation = {}, linkedAccount = null, linkedDeal = null) => {
+  if (!quotation && !linkedAccount && !linkedDeal) return '-'
+
+  const rawData = quotation.data || quotation.raw?.data || {}
+  const rawQuotation = quotation.raw || quotation
+
+  const candidateOwners = [
+    quotation.quotationOwner,
+    quotation.quotationOwnerName,
+    quotation.ownerName,
+    quotation.owner,
+    rawQuotation.quotationOwner,
+    rawQuotation.quotationOwnerName,
+    rawQuotation.ownerName,
+    rawQuotation.owner,
+    rawData.quotationOwner,
+    rawData.quotationOwnerName,
+    rawData.ownerName,
+    rawData.owner,
+    quotation.selectedAccountOwner,
+    quotation.createdByName,
+    quotation.createdBy,
+    quotation.user?.ownerDisplayName,
+    quotation.user?.name,
+    linkedDeal?.quotationOwner,
+    linkedDeal?.quotationOwnerName,
+    linkedDeal?.dealOwner,
+    linkedDeal?.ownerName,
+    linkedAccount?.accountOwnerDisplay,
+    linkedAccount?.accountOwner,
+  ]
+
+  const validOwner = candidateOwners.find(
+    (name) => typeof name === 'string' && name.trim() && name.trim() !== '-' && name.trim().toLowerCase() !== 'null' && name.trim().toLowerCase() !== 'undefined'
+  )
+
+  return validOwner ? validOwner.trim() : '-'
+}
+
 export const buildQuotationDocumentData = (quotation, linkedAccount) => {
   const profileFallback = getProfileFallback(quotation)
   const resolvedProfileFallback = profileFallback.brandKey ? profileFallback : SWATI_PROFILE_FALLBACK
@@ -1960,7 +1999,7 @@ export function RevisionsListModal({
       ? q.raw.revisions
       : (Array.isArray(q.revisions) && q.revisions.length > 0 ? q.revisions : null)
 
-    const ownerName = q.owner || q.raw?.selectedAccountOwner || q.raw?.accountOwner || row.owner || '-'
+    const ownerName = resolveQuotationOwner(q, q.linkedAccount || row?.linkedAccount, q.linkedDeal || row?.linkedDeal)
     const projName = q.project || q.raw?.projectName || row.project || '-'
     const compName = q.company || q.raw?.companyName || q.raw?.customerName || row.company || '-'
     const qRaw = q.raw || q

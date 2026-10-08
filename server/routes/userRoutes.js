@@ -11,6 +11,8 @@ router.use(requireAuth)
 
 router.get('/me/legal-acceptance', userController.getLegalAcceptance)
 router.post('/me/legal-acceptance', userController.acceptLegal)
+router.get('/me/quotation-mobile', userController.getQuotationOwnerMobile)
+router.patch('/me/quotation-mobile', userController.updateQuotationOwnerMobile)
 
 router.get('/designations', userController.getDistinctDesignations)
 router.get('/directory', userController.listUserDirectory)

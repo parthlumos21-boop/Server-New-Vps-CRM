@@ -178,7 +178,7 @@ const fieldGroups = {
     { name: 'dealCity', label: 'City', icon: <FaMapMarkerAlt /> },
     { name: 'expectedClosureDate', label: 'Expected Closure Date', type: 'date', icon: <FaCalendarDay /> },
     { name: 'probability', label: 'Probability (%)', type: 'range', icon: <FaHashtag /> },
-    { name: 'productCategory', label: 'Product Category', type: 'select', options: [{ value: 'TTA', label: 'TTA' }, { value: 'Non TTA', label: 'Non TTA' }, { value: 'LT', label: 'LT' }, { value: 'HT', label: 'HT' }, { value: 'BUSDUC', label: 'BUSDUC' }, { value: 'AUTOMATION', label: 'AUTOMATION' }], icon: <FaLayerGroup /> },
+    { name: 'productCategory', label: 'Product Category', type: 'select', options: [{ value: 'LT/TTA', label: 'LT/TTA' }, { value: 'LT/Non TTA', label: 'LT/Non TTA' }, { value: 'HT', label: 'HT' }, { value: 'BUSDUCT', label: 'BUSDUCT' }, { value: 'AUTOMATION', label: 'AUTOMATION' }], icon: <FaLayerGroup /> },
     { name: 'customerRefDate', label: 'Customer Ref. Date', type: 'date', icon: <FaCalendarAlt /> },
     { name: 'gstin', label: 'GSTIN', icon: <FaHashtag /> },
     { name: 'jobNo', label: 'Job No', icon: <FaBriefcase /> },
@@ -190,8 +190,7 @@ const fieldGroups = {
   ],
   contactsRight: [
     { name: 'contactEmail', label: 'Contact Email', type: 'email', icon: <FaRegFileAlt /> },
-    { name: 'contactPhone', label: 'Contact Phone', type: 'tel', icon: <FaHashtag /> },
-    { name: 'contactMobile', label: 'Contact Mobile', type: 'tel', icon: <FaHashtag /> },
+    { name: 'contactMobile', label: 'Contact Mobile', type: 'tel', required: true, icon: <FaHashtag /> },
   ],
   reminderLeft: [
     { name: 'reminderDate', label: 'Reminder Date', type: 'date', icon: <FaCalendarAlt /> },
@@ -484,12 +483,17 @@ const AddAccountWizard = () => {
         if (!String(formData.accountSource || '').trim()) nextErrors.accountSource = 'Account Source is required.'
         if (!String(formData.state || formData.accountState || '').trim()) nextErrors.state = 'State is required.'
         if (!String(formData.industryType || '').trim()) nextErrors.industryType = 'Industry Type is required.'
-        if (!String(formData.customerType || formData.customerCategory || '').trim()) nextErrors.customerType = 'Customer Type is required.'
       }
     }
 
-    if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
-      nextErrors.contactEmail = 'Enter a valid contact email.'
+    if (stepIndex === 1) {
+      if (!String(formData.contactMobile || '').trim()) {
+        nextErrors.contactMobile = 'Contact Mobile is required.'
+      }
+
+      if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
+        nextErrors.contactEmail = 'Enter a valid contact email.'
+      }
     }
 
     setErrors((prev) => ({ ...prev, ...nextErrors }))
@@ -514,6 +518,10 @@ const AddAccountWizard = () => {
       if (!String(formData.customerType || formData.customerCategory || '').trim()) collectedErrors.customerType = 'Customer Type is required.'
     }
 
+    if (!String(formData.contactMobile || '').trim()) {
+      collectedErrors.contactMobile = 'Contact Mobile is required.'
+    }
+
     if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
       collectedErrors.contactEmail = 'Enter a valid contact email.'
     }
@@ -525,6 +533,9 @@ const AddAccountWizard = () => {
   const handleChange = (name, value) => {
     setFormData((prev) => {
       const next = { ...prev, [name]: value }
+      if (name === 'projectName') {
+        next.dealName = value
+      }
       if (name === 'dealOwner' && value) {
         next.accountOwner = value
         const matchedOwner = activeOwners.find((o) => o.value === value || o.label === value || o.userObj?.name === value)
@@ -699,6 +710,7 @@ const AddAccountWizard = () => {
       userEmail: user?.email || '',
       ...formData,
       projectName: formData.projectName ? String(formData.projectName).trim() : '',
+      dealName: formData.projectName ? String(formData.projectName).trim() : (formData.dealName ? String(formData.dealName).trim() : ''),
       company: formData.projectName ? String(formData.projectName).trim() : '',
       accountOwner: finalOwnerName,
       accountOwnerCode: finalOwnerCode,
@@ -707,7 +719,7 @@ const AddAccountWizard = () => {
           name: formData.contactPerson,
           designation: formData.contactDesignation,
           email: formData.contactEmail,
-          phone: formData.contactPhone,
+          phone: formData.contactMobile || formData.contactPhone,
           mobile: formData.contactMobile,
         },
       ],
@@ -735,10 +747,11 @@ const AddAccountWizard = () => {
       const createdAccountName = accountResult.data?.name || formData.accountName || ''
 
       // If Deal Name is provided OR isExistingCustomer is checked, create a Deal in MongoDB deals collection
-      const targetDealName = formData.dealName.trim() || (isExistingCustomer ? `${formData.customerName || createdAccountName || 'Account'} Deal` : '')
+      const targetDealName = formData.projectName ? String(formData.projectName).trim() : (formData.dealName.trim() || (isExistingCustomer ? `${formData.customerName || createdAccountName || 'Account'} Deal` : ''))
       if (targetDealName) {
         const dealPayload = {
           name: targetDealName,
+          dealName: targetDealName,
           dealDate: formData.dealDate || new Date().toISOString().slice(0, 10),
           description: formData.dealDescription || '',
           poValue: parseFloat(formData.poValue) || 0,
@@ -748,7 +761,7 @@ const AddAccountWizard = () => {
           dealScore: parseFloat(formData.dealScore) || 0,
           consultantName: formData.consultantName || '',
           customerRefNo: formData.customerRefNo || '',
-          projectName: formData.projectName || '',
+          projectName: formData.projectName ? String(formData.projectName).trim() : targetDealName,
           quotationCustomerStatus: formData.customerQuotationStatus || '',
           dealType: formData.dealType || formData.accountCategory,
           dealSource: formData.dealSource || formData.accountSource,

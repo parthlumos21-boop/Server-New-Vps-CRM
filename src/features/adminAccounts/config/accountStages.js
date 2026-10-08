@@ -38,9 +38,9 @@ export const ACCOUNT_CHANGE_STATUS_OPTIONS = [
 
 export const ACCOUNT_PO_STAGE_KEY = 'convert_to_po'
 
-export const ACCOUNT_ORDER_STATUS_OPTIONS = ['Order Received', 'Convert To PO', 'Order Lost', 'Rejected', 'Contracted']
+export const ACCOUNT_ORDER_STATUS_OPTIONS = ['OLD', 'NEW']
 
-export const ACCOUNT_QUOTATION_STATUS_OPTIONS = ['Pending', 'Sent', 'Revised', 'Won', 'Lost']
+export const ACCOUNT_QUOTATION_STATUS_OPTIONS = ['OLD', 'NEW']
 
 export const ACCOUNT_STATE_OPTIONS = ['Hot', 'Warm', 'Cold', 'Active', 'Inactive', 'Hold', 'Pending']
 

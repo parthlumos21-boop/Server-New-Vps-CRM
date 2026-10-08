@@ -112,7 +112,7 @@ const getAccountColumnKeysWithRequiredFields = (columnKeys = [], columns = []) =
 const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
   const raw = row.raw || {}
   const dealName = row.dealName || raw.dealName || raw.formData?.dealName || row.name || raw.accountName || ''
-  const projectName = row.dealName || raw.dealName || raw.formData?.dealName || row.projectName || raw.projectName || raw.formData?.projectName || row.productCategory || raw.productCategory || 'General Enquiry'
+  const projectName = row.projectName || raw.projectName || raw.formData?.projectName || row.dealName || raw.dealName || raw.formData?.dealName || ''
   const accountOwner = row.accountOwnerDisplay || row.accountOwnerName || row.accountOwner || raw.accountOwner || raw.ownerName || raw.assignedToName || 'Unassigned'
   const cleanAccountOwner = String(accountOwner || '').trim().toLowerCase() === 'no' ? '-' : accountOwner
 

@@ -38,6 +38,7 @@ const toLegacyUser = (record) => {
     password_hash: record.passwordHash ?? record.password_hash,
     passwordHash: record.passwordHash ?? record.password_hash,
     assignedPassword: record.assignedPassword ?? record.assigned_password ?? '',
+    quotationOwnerMobileNumber: record.quotationOwnerMobileNumber ?? record.quotation_owner_mobile_number ?? '',
     created_at: record.createdAt,
     createdAt: record.createdAt,
   }
@@ -68,6 +69,7 @@ const sanitizeUserRow = (row) => {
     isApproved: user.isApproved,
     isOnline: user.isOnline,
     assignedPassword: user.assignedPassword,
+    quotationOwnerMobileNumber: user.quotationOwnerMobileNumber,
     createdAt: user.createdAt,
   }
 }

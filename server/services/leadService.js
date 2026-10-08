@@ -201,6 +201,7 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     email: sanitizedPayload.alternateEmail || sanitizedPayload.email || existingLead?.email || '',
     company: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (sanitizedPayload.company || existingLead?.company || ''),
     projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
+    dealName: sanitizedPayload.dealName !== undefined ? sanitizedPayload.dealName : (sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.dealName || existingLead?.projectName || '')),
     status: targetStatus,
     stage: shouldPreserveStatus ? (existingLead?.stage || 'new') : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'))),
     accountStatus: targetAccountStatus,
@@ -244,6 +245,8 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
       stage: isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'),
       accountStatus: targetAccountStatus,
       accountState: targetAccountState,
+      projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
+      dealName: sanitizedPayload.dealName !== undefined ? sanitizedPayload.dealName : (sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.dealName || existingLead?.projectName || '')),
       reasonForLost: resolvedReasonForLost,
       reasonForLostOrder: resolvedReasonForLost,
     },
@@ -543,6 +546,24 @@ const updateLead = async (actor, leadId, payload) => {
     throw new AppError('Lead not found.', 404)
   }
 
+  if (payload.projectName !== undefined || payload.dealName !== undefined) {
+    const nextProjectName = payload.projectName !== undefined ? payload.projectName : payload.dealName
+    const { getMongoModel } = require('../models/mongoModels')
+    const Deal = getMongoModel('deals')
+    if (Deal) {
+      await Deal.updateMany(
+        { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
+        {
+          $set: {
+            projectName: nextProjectName,
+            dealName: nextProjectName,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
+  }
+
   if (isPoConversionTarget) {
     const { getMongoModel } = require('../models/mongoModels')
     const Deal = getMongoModel('deals')
@@ -666,11 +687,12 @@ const updateLead = async (actor, leadId, payload) => {
     }
   }
 
+  const skipAutoConvert = Boolean(payload.skipAutoConvert || payload.isSaveSettings || payload.preserveStatus)
   const hasDealDetails = Boolean(payload.dealName || payload.dealValue || payload.dealDescription || payload.expectedClosureDate || payload.dealOwner)
   const isStatusConverted = payload.status === 'converted' || payload.stage === 'converted' || payload.accountState === 'converted' || payload.status === 'staged' || payload.stage === 'staged' || payload.accountState === 'staged' || payload.status === 'convert_to_po' || payload.stage === 'convert_to_po' || payload.accountState === 'convert_to_po' || Boolean(payload.poValue)
   
-  if (hasDealDetails || isStatusConverted || updatedLead.isConverted) {
-    const { getMongoModel, getNextLegacyId } = require('../models/mongoModels')
+  if ((!skipAutoConvert && (hasDealDetails || isStatusConverted)) || updatedLead.isConverted) {
+    const { getMongoModel } = require('../models/mongoModels')
     const Deal = getMongoModel('deals')
     const Customer = getMongoModel('customers')
     const existingDeal = await Deal.findOne({ accountId: normalizeLeadId(leadId), frontendDeleted: { $ne: true } }).lean()
@@ -681,7 +703,9 @@ const updateLead = async (actor, leadId, payload) => {
       await dealService.update(actor, targetDealId, dealPayload).catch((err) => console.warn('Deal update sync warning:', err.message))
       
       const convertedAt = new Date().toISOString()
-      const targetState = (updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : (updatedLead.status === 'staged' || updatedLead.stage === 'staged' ? 'staged' : (updatedLead.status || 'staged'))
+      const targetState = skipAutoConvert
+        ? (updatedLead.status || updatedLead.stage || updatedLead.accountState || existingDeal.status || existingDeal.stage || 'new')
+        : ((updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : (updatedLead.status === 'staged' || updatedLead.stage === 'staged' ? 'staged' : (updatedLead.status || 'staged')))
       await leadRepository.updateLead(normalizeLeadId(leadId), {
         isConverted: true,
         convertedAt,
@@ -701,7 +725,7 @@ const updateLead = async (actor, leadId, payload) => {
         }
       })
       updatedLead = await getLeadById(actor, leadId, { includeGroupScope: false })
-    } else if (!updatedLead.isConverted) {
+    } else if (!updatedLead.isConverted && !skipAutoConvert) {
       await convertLeadToDeal(actor, leadId).catch((err) => console.warn('Convert lead to deal warning:', err.message))
       updatedLead = await getLeadById(actor, leadId, { includeGroupScope: false })
     }

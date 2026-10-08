@@ -87,6 +87,7 @@ import {
   numberToWordsBelowThousand,
   numberToWords,
   resolveLinkedAccount,
+  resolveQuotationOwner,
   buildQuotationDocumentData,
   VIEW_QUOTATION_LINE_ITEM_COLUMNS,
   buildQuotationViewExportOptions,
@@ -218,7 +219,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
         return {
           id: quotation.id || `quotation-${index}`,
           num: quotation.quotationNumber || `Quotation ${index + 1}`,
-          owner: linkedAccount?.accountOwnerDisplay || quotation.selectedAccountOwner || linkedAccount?.accountOwner || '-',
+          owner: resolveQuotationOwner(quotation, linkedAccount),
           date: formatListDate(quotation.quotationDate || quotation.createdAt),
           dateSort: quotation.quotationDate || quotation.createdAt || '',
           company: quotation.companyName || linkedAccount?.name || quotation.clientName || '-',

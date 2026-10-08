@@ -233,10 +233,54 @@ const acceptLegal = async (req, res, next) => {
   }
 }
 
+const getQuotationOwnerMobile = async (req, res, next) => {
+  try {
+    const { getMongoModel } = require('../models/mongoModels')
+    const User = getMongoModel('users')
+    const email = String(req.user?.email || '').trim().toLowerCase()
+    if (!email) {
+      return res.json({ success: true, quotationOwnerMobileNumber: '' })
+    }
+    const userDoc = await User.findOne({ email }).lean()
+    res.json({
+      success: true,
+      quotationOwnerMobileNumber: userDoc?.quotationOwnerMobileNumber || userDoc?.mobile || userDoc?.phone || '',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updateQuotationOwnerMobile = async (req, res, next) => {
+  try {
+    const { getMongoModel } = require('../models/mongoModels')
+    const User = getMongoModel('users')
+    const email = String(req.user?.email || '').trim().toLowerCase()
+    const mobile = String(req.body?.quotationOwnerMobileNumber || req.body?.mobile || '').trim()
+    if (!email) {
+      throw new AppError('Authenticated user email missing', 400)
+    }
+    await User.findOneAndUpdate(
+      { email },
+      { $set: { quotationOwnerMobileNumber: mobile } },
+      { new: true }
+    )
+    res.json({
+      success: true,
+      message: 'Quotation owner mobile saved successfully.',
+      quotationOwnerMobileNumber: mobile,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   getDistinctDesignations,
   getLegalAcceptance,
   acceptLegal,
+  getQuotationOwnerMobile,
+  updateQuotationOwnerMobile,
   createUser,
   updateUser,
   deleteUser,

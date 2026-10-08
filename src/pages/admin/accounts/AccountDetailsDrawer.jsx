@@ -12,6 +12,8 @@ import {
   FaTrash,
   FaComments,
   FaHistory,
+  FaSave,
+  FaTimes,
 } from 'react-icons/fa'
 import {
   FiChevronDown,
@@ -96,10 +98,8 @@ const sectionConfig = [
       { key: 'accountCategory', label: 'Account Category', options: ACCOUNT_CATEGORY_OPTIONS },
       { key: 'accountOwner', label: 'Account Owner' },
       { key: 'status', label: 'Account Status', options: ACCOUNT_STATUS_OPTIONS },
-      { key: 'accountState', label: 'Account State' },
       { key: 'accountSource', label: 'Account Source', options: ACCOUNT_SOURCE_OPTIONS },
       { key: 'gstin', label: 'GSTIN' },
-      { key: 'stateCode', label: 'State Code' },
     ],
   },
   {
@@ -114,8 +114,6 @@ const sectionConfig = [
   {
     key: 'other',
     fields: [
-      { key: 'alternatePhone', label: 'Alternate Phone' },
-      { key: 'alternateEmail', label: 'Alternate Email', type: 'email' },
       { key: 'customerType', label: 'Customer Type', options: CUSTOMER_TYPE_OPTIONS },
       { key: 'projectName', label: 'Project Name' },
       { key: 'projectType', label: 'Product Category' },
@@ -124,7 +122,6 @@ const sectionConfig = [
       { key: 'customerRefNo', label: 'Customer Ref. No.' },
       { key: 'customerRefDate', label: 'Customer Ref. Date', type: 'date' },
       { key: 'consultantName', label: 'Consultant Name' },
-      { key: 'poValue', label: 'PO Value' },
       { key: 'statusAsPerOrderReceived', label: 'Status of Customer as per Order Received', options: toSelectOptions(ACCOUNT_ORDER_STATUS_OPTIONS) },
       { key: 'statusAsPerQuotationGiven', label: 'Status Of Customer as per quotation Given', options: toSelectOptions(ACCOUNT_QUOTATION_STATUS_OPTIONS) },
       { key: 'jobNo', label: 'Job No' },
@@ -136,20 +133,14 @@ const sectionConfig = [
     key: 'dealDetails',
     fields: [
       { key: 'dealDate', label: 'Deal Date', type: 'date' },
-      { key: 'dealName', label: 'Deal Name' },
       { key: 'dealDescription', label: 'Description', multiline: true },
       { key: 'dealValue', label: 'Deal Value', type: 'number' },
-      { key: 'poValue', label: 'PO Value', type: 'number' },
-      { key: 'dealCoOwners', label: 'Deal Co-Owners' },
       { key: 'expectedClosureDate', label: 'Expected Closure Date', type: 'date' },
       { key: 'dealSource', label: 'Deal Source', options: DEAL_SOURCE_OPTIONS },
-      { key: 'dealType', label: 'Deal Type', options: DEAL_TYPE_OPTIONS },
       { key: 'probability', label: 'Probability (%)', type: 'number' },
-      { key: 'dealScore', label: 'Deal Score', type: 'number' },
       { key: 'dealOwner', label: 'Deal Owner' },
       { key: 'dealCity', label: 'City' },
       { key: 'gstin', label: 'GSTIN' },
-      { key: 'jobNo', label: 'Job No' },
       { key: 'customerQuotationStatus', label: 'Status Of Customer as per quotation Given', options: toSelectOptions(ACCOUNT_QUOTATION_STATUS_OPTIONS) },
       { key: 'customerOrderStatus', label: 'Status of Customer as per Order Received', options: toSelectOptions(ACCOUNT_ORDER_STATUS_OPTIONS) },
     ],
@@ -241,28 +232,28 @@ const buildInitialForm = (account, deal = {}) => ({
   address: account.address || '',
   city: account.location || account.raw?.city || '',
   state: account.state || '',
-  gstin: account.gstin || account.raw?.gstin || deal.gstin || '',
-  stateCode: account.stateCode || account.raw?.stateCode || '',
-  country: account.raw?.country || '',
-  pincode: account.raw?.pincode || account.raw?.pinCode || '',
-  projectName: account.projectName || deal.projectName || '',
-  projectType: account.productCategory || account.raw?.projectType || deal.productCategory || '',
-  projectLocation: account.projectLocation || account.raw?.projectLocation || '',
-  consultantName: account.consultantName || deal.consultantName || '',
-  architectName: account.architectName || account.raw?.architectName || '',
-  pmcName: account.pmcName || account.raw?.pmcName || '',
-  poValue: account.poValue || account.raw?.poValue || deal.poValue || '',
-  statusAsPerOrderReceived: account.statusAsPerOrderReceived || account.raw?.statusAsPerOrderReceived || '',
-  statusAsPerQuotationGiven: account.statusAsPerQuotationGiven || account.raw?.statusAsPerQuotationGiven || '',
-  reasonForLost: account.reasonForLost || account.raw?.reasonForLost || '',
-  customerName: account.customerName || account.raw?.customerName || deal.customerName || '',
-  reminderDate: normalizeDateInput(account.reminderDate) || getTodayInputValue(),
-  reminderMode: account.reminderMode || '',
-  latestRemark: account.latestRemark || '',
-  remark: account.remark || '',
-  description: account.description || account.raw?.description || '',
-  jobNo: account.jobNo || deal.jobNo || '',
-  customerRefNo: account.customerRefNo || deal.customerRefNo || '',
+  gstin: account.gstin || account.data?.gstin || account.raw?.gstin || account.raw?.data?.gstin || account.formData?.gstin || account.formData?.GSTIN || deal.gstin || '',
+  stateCode: account.stateCode || account.data?.stateCode || account.raw?.stateCode || account.raw?.data?.stateCode || '',
+  country: account.raw?.country || account.data?.country || '',
+  pincode: account.raw?.pincode || account.raw?.pinCode || account.data?.pincode || '',
+  projectName: account.projectName || account.data?.projectName || account.dealName || account.data?.dealName || deal.projectName || deal.dealName || '',
+  projectType: account.productCategory || account.data?.productCategory || account.raw?.projectType || deal.productCategory || '',
+  projectLocation: account.projectLocation || account.data?.projectLocation || account.raw?.projectLocation || '',
+  consultantName: account.consultantName || account.data?.consultantName || deal.consultantName || '',
+  architectName: account.architectName || account.data?.architectName || account.raw?.architectName || '',
+  pmcName: account.pmcName || account.data?.pmcName || account.raw?.pmcName || '',
+  poValue: account.poValue || account.data?.poValue || account.raw?.poValue || account.raw?.data?.poValue || deal.poValue || '',
+  statusAsPerOrderReceived: account.statusAsPerOrderReceived || account.data?.statusAsPerOrderReceived || account.raw?.statusAsPerOrderReceived || '',
+  statusAsPerQuotationGiven: account.statusAsPerQuotationGiven || account.data?.statusAsPerQuotationGiven || account.raw?.statusAsPerQuotationGiven || '',
+  reasonForLost: account.reasonForLost || account.data?.reasonForLost || account.raw?.reasonForLost || '',
+  customerName: account.customerName || account.data?.customerName || account.raw?.customerName || deal.customerName || '',
+  reminderDate: normalizeDateInput(account.reminderDate || account.data?.reminderDate) || getTodayInputValue(),
+  reminderMode: account.reminderMode || account.data?.reminderMode || '',
+  latestRemark: account.latestRemark || account.data?.latestRemark || account.remark || account.data?.remark || '',
+  remark: account.remark || account.data?.remark || '',
+  description: account.description || account.data?.description || account.raw?.description || '',
+  jobNo: account.jobNo || account.data?.jobNo || account.raw?.jobNo || account.raw?.data?.jobNo || account.formData?.jobNo || account.formData?.['Job No'] || deal.jobNo || '',
+  customerRefNo: account.customerRefNo || account.data?.customerRefNo || account.raw?.customerRefNo || account.raw?.data?.customerRefNo || deal.customerRefNo || '',
   customerRefDate: normalizeDateInput(account.customerRefDate || deal.customerRefDate) || '',
   dealName: account.dealName || deal.name || deal.dealName || '',
   dealDate: normalizeDateInput(account.dealDate || deal.dealDate) || '',
@@ -340,7 +331,7 @@ const buildUpdatePayload = (form) => ({
   customerRefDate: form.customerRefDate,
   customerName: form.customerName,
   dealDate: form.dealDate,
-  dealName: form.dealName,
+  dealName: form.projectName !== undefined && form.projectName !== null && String(form.projectName).trim() !== '' ? form.projectName : (form.dealName || ''),
   dealDescription: form.dealDescription,
   dealValue: form.dealValue,
   dealCoOwners: form.dealCoOwners,
@@ -528,6 +519,15 @@ const AccountDetailsDrawer = ({
       return
     }
 
+    if (key === 'projectName') {
+      setForm((currentForm) => ({
+        ...currentForm,
+        projectName: value,
+        dealName: value,
+      }))
+      return
+    }
+
     setForm((currentForm) => ({
       ...currentForm,
       [key]: value,
@@ -554,6 +554,8 @@ const AccountDetailsDrawer = ({
     const updatePayload = {
       ...buildUpdatePayload(form),
       preserveStatus: true,
+      skipAutoConvert: true,
+      isSaveSettings: true,
       ...(selectedOwner ? {
         ownerId: selectedOwner.id,
         assignedUserId: selectedOwner.id,
@@ -643,6 +645,55 @@ const AccountDetailsDrawer = ({
             >
               <FaHistory />
             </button>
+            {Boolean(editingFieldKey || editingSection) ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  title="Cancel"
+                  aria-label="Cancel"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justify: 'center',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#ef4444',
+                    cursor: 'pointer',
+                    marginRight: '8px',
+                    fontSize: '16px',
+                  }}
+                >
+                  <FaTimes />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  title="Save"
+                  aria-label="Save"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justify: 'center',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid #2563eb',
+                    background: '#2563eb',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    marginRight: '8px',
+                    fontSize: '16px',
+                    opacity: isSaving ? 0.7 : 1,
+                  }}
+                >
+                  <FaSave />
+                </button>
+              </>
+            ) : null}
             <div className="admin-accounts-actions-dropdown" ref={actionsRef}>
               <button
                 type="button"

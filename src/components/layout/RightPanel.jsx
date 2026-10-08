@@ -46,7 +46,7 @@ const buildSupportActions = (isAdmin, integrationStatus, isLoadingIntegrations) 
       label: 'Outlook Mail',
       status: isLoadingIntegrations ? 'Checking' : outlookConnected ? (outlookShared ? 'Shared' : 'Connected') : outlookActive ? 'Active' : 'Not ready',
       statusClass: outlookActive ? 'rp-integration-status--active' : 'rp-integration-status--warning',
-      route: '/settings',
+      route: isAdmin ? '/admin/settings' : '/settings',
       icon: FaEnvelope,
       cta: outlookConnected ? (outlookShared ? 'CRM Outlook' : 'Manage') : 'Connect Outlook',
     },
@@ -185,13 +185,6 @@ const RightPanel = () => {
       <div className="right-panel-section right-panel-section--actions">
         <div className="right-panel-section-head right-panel-section-head--integrations">
           <span>INTEGRATIONS</span>
-          <button
-            type="button"
-            className="rp-section-link"
-            onClick={() => navigate(isAdmin ? '/admin/settings' : '/dashboard')}
-          >
-            View All
-          </button>
         </div>
         <div className="right-panel-actions">
           {supportActions.map((action) => {
@@ -239,13 +232,6 @@ const RightPanel = () => {
         <div className="right-panel-section right-panel-section--activity">
           <div className="right-panel-section-head">
             <span>RECENT ACTIVITY</span>
-            <button
-              type="button"
-              className="rp-section-link"
-              onClick={() => navigate('/admin/communication-activities')}
-            >
-              View All
-            </button>
           </div>
 
           <div className="right-panel-activity">

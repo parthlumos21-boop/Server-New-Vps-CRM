@@ -46,14 +46,21 @@ const formatAccountNameDisplay = (value, row = {}) => {
   const validName = candidates.find((candidate) => typeof candidate === 'string' && candidate.trim() && !isAccountNoCodeString(candidate, row))
   return validName ? validName.trim() : emptyValue
 }
-const formatProjectNameDisplay = (value, row = {}) => (
-  value
-  || row.raw?.projectName
-  || row.raw?.formData?.projectName
-  || row.productCategory
-  || row.raw?.productCategory
-  || emptyValue
-)
+const formatProjectNameDisplay = (value, row = {}) => {
+  const name = value
+    || row.projectName
+    || row.dealName
+    || row.raw?.projectName
+    || row.raw?.dealName
+    || row.raw?.formData?.projectName
+    || row.raw?.formData?.dealName
+    || ''
+
+  if (name && typeof name === 'string' && name.trim() && name.trim().toLowerCase() !== 'null' && name.trim().toLowerCase() !== 'undefined') {
+    return name.trim()
+  }
+  return emptyValue
+}
 const formatAccountOwnerDisplay = (value, row = {}) => {
   const name = row.accountOwnerDisplay
     || row.accountOwnerName
@@ -100,6 +107,14 @@ const formatLegacyBoardDate = (value, row = {}) => {
   return format(date, 'dd-MM-yyyy')
 }
 
+const formatDealTypeDisplay = (value, row = {}) => {
+  const rawVal = String(value || row.dealType || row.raw?.dealType || row.raw?.formData?.dealType || row.formData?.dealType || '').trim().toUpperCase()
+  if (rawVal === 'PURCHASE ENQUIRY' || rawVal === 'TENDER ENQUIRY') {
+    return rawVal
+  }
+  return '-'
+}
+
 export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
   { key: 'name', label: 'Account Name', filterPlaceholder: 'Search Account Name', width: '220px', searchable: true, exportable: true, cellFormatter: formatAccountNameDisplay, exportFormatter: formatAccountNameDisplay },
@@ -107,6 +122,7 @@ export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'accountOwner', label: 'Account Owner', filterPlaceholder: 'Search Account Owner', width: '180px', searchable: true, exportable: true, cellFormatter: formatAccountOwnerDisplay, exportFormatter: formatAccountOwnerDisplay },
   { key: 'accountCategory', label: 'Account Category', filterPlaceholder: 'Search Account Category', width: '180px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'status', label: 'Account Status', filterPlaceholder: 'Search Account Status', width: '150px', searchable: true, exportable: true },
+  { key: 'dealType', label: 'Deal Type', filterPlaceholder: 'Search Deal Type', width: '180px', searchable: true, exportable: true, cellFormatter: formatDealTypeDisplay, exportFormatter: formatDealTypeDisplay },
   { key: 'phone', label: 'Phone', filterPlaceholder: 'Search Phone', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'email', label: 'Email', filterPlaceholder: 'Search Email', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'customerType', label: 'Customer Type', filterPlaceholder: 'Search Customer Type', width: '160px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || emptyValue },
@@ -146,11 +162,13 @@ export const VIEW_ALL_COLUMNS = [
   { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value) => formatLegacyBoardDate(value), exportFormatter: (value) => formatLegacyBoardDate(value) },
   { key: 'name', label: 'Account Name', filterPlaceholder: 'Search Account Name', width: '220px', searchable: true, exportable: true, cellFormatter: formatAccountNameDisplay, exportFormatter: formatAccountNameDisplay },
   { key: 'accountOwner', label: 'Account Owner', filterPlaceholder: 'Search Account Owner', width: '180px', searchable: true, exportable: true, cellFormatter: formatAccountOwnerDisplay, exportFormatter: formatAccountOwnerDisplay },
+  { key: 'accountCategory', label: 'Account Category', filterPlaceholder: 'Search Account Category', width: '180px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
+  { key: 'dealType', label: 'Deal Type', filterPlaceholder: 'Search Deal Type', width: '180px', searchable: true, exportable: true, cellFormatter: formatDealTypeDisplay, exportFormatter: formatDealTypeDisplay },
+  { key: 'email', label: 'Email', filterPlaceholder: 'Search Email', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'status', label: 'Account Status', filterPlaceholder: 'Search Account Status', width: '150px', searchable: true, exportable: true },
   { key: 'accountSource', label: 'Account Source', filterPlaceholder: 'Search Account Source', width: '150px', searchable: true, exportable: true },
   { key: 'contactPerson', label: 'Contact Person', filterPlaceholder: 'Search Contact Person', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'phone', label: 'Phone', filterPlaceholder: 'Search Phone', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
-  { key: 'email', label: 'Email', filterPlaceholder: 'Search Email', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'addedBy', label: 'Added By', filterPlaceholder: 'Search Added By', width: '150px', searchable: true, exportable: true, cellFormatter: formatAddedByDisplay, exportFormatter: formatAddedByDisplay },
   { key: 'latestRemark', label: 'Latest Remark', filterPlaceholder: 'Search Latest Remark', width: '210px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
 ]
@@ -208,6 +226,16 @@ export const ACCOUNT_LIST_BOARD_COLUMNS = [
     searchable: true,
     exportable: true,
     cellFormatter: (value) => value || emptyValue,
+  },
+  {
+    key: 'dealType',
+    label: 'Deal Type',
+    filterPlaceholder: 'Search Deal Type',
+    width: '180px',
+    searchable: true,
+    exportable: true,
+    cellFormatter: formatDealTypeDisplay,
+    exportFormatter: formatDealTypeDisplay,
   },
   {
     key: 'accountOwner',

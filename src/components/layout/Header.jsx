@@ -73,8 +73,6 @@ const ADD_TASK_ACTION = '__add_task__'
 
 const ADMIN_QUICK_ADD_ITEMS = [
   { label: 'Add Account', icon: FaBriefcase, route: '/admin/accounts/new' },
-
-  { label: 'Add Deal', icon: FaThumbsUp, route: '/admin/deals/add' },
   { label: 'Add Support Request', icon: FaHandsHelping, route: '/admin/support-requests/add' },
   { label: 'Add Reminder', icon: FiBell, action: ADD_REMINDER_ACTION },
   { label: 'Add Task', icon: FaTasks, action: ADD_TASK_ACTION },
@@ -324,18 +322,7 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
     setSearchPanelOpen((previous) => !previous)
   }
 
-  const getSectionSearchRoute = () => {
-    const path = location.pathname
-    const prefix = isAdmin ? '/admin' : ''
-
-    if (path.includes('/accounts')) return path
-    if (path.includes('/customers')) return path.includes('/search') ? path : `${prefix}/customers/search`
-    if (path.includes('/deals')) return path.includes('/view') || path.includes('/search') ? path : `${prefix}/deals/view`
-    if (path.includes('/quotations')) return `${prefix}/quotations`
-    if (path.includes('/support-requests')) return path.includes('/list') ? path : `${prefix}/support-requests/list`
-
-    return isAdmin ? '/admin/search' : '/search'
-  }
+  const getSectionSearchRoute = () => (isAdmin ? '/admin/search' : '/search')
 
   const handleOpenMessagePanel = () => {
     setMenuOpen(false)
@@ -364,12 +351,13 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
     navigate(item.route)
   }
 
-  const handleOpenAdvancedSearch = () => {
-    const trimmedSearchTerm = searchTerm.trim()
+  const handleOpenAdvancedSearch = (queryOverride) => {
+    const rawQuery = typeof queryOverride === 'string' ? queryOverride : searchTerm
+    const trimmedSearchTerm = String(rawQuery || '').trim()
     closeHeaderPanels()
-    const route = getSectionSearchRoute()
-    const separator = route.includes('?') ? '&' : '?'
-    navigate(trimmedSearchTerm ? `${route}${separator}query=${encodeURIComponent(trimmedSearchTerm)}` : route)
+    const targetRoute = isAdmin ? '/admin/search' : '/search'
+    const queryParam = trimmedSearchTerm ? `?query=${encodeURIComponent(trimmedSearchTerm)}` : ''
+    navigate(`${targetRoute}${queryParam}`)
   }
 
   const handleQuickSearch = () => {
@@ -378,12 +366,8 @@ const Header = ({ isAdmin = false, isSidebarOpen = false, onToggleSidebar }) => 
 
   const handleOpenSearchResult = (result) => {
     closeHeaderPanels()
-    navigate(result.route, {
-      state: {
-        fromSearch: true,
-        searchQuery: searchTerm,
-      },
-    })
+    const targetQuery = result?.title || searchTerm
+    handleOpenAdvancedSearch(targetQuery)
   }
 
   const handleOpenSendMessage = () => {

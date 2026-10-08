@@ -763,6 +763,7 @@ const AdminCustomersPage = ({
     
   const customerId = variantKey === 'view' && urlCustomerId ? urlCustomerId : routeCustomerId
   const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
   const highlightedRowRef = useRef(null)
   const actionMenuTriggerRef = useRef(null)
   const {
@@ -1427,6 +1428,27 @@ const AdminCustomersPage = ({
       : currentGridUrl
 
     if (action.behavior === 'deleteCustomer' || action.key === 'delete-customer' || action.behavior === 'delete') {
+      const usersList = authService.getAvailableUsers()
+      const targetKeywords = ['keval', 'parth', 'rushabh', 'samir']
+      const authorizedUsers = (Array.isArray(usersList) ? usersList : []).filter((u) => {
+        const uName = String(u?.name || u?.username || '').trim().toLowerCase()
+        const uEmail = String(u?.email || '').trim().toLowerCase()
+        return targetKeywords.some((k) => uName.includes(k) || uEmail.includes(k))
+      })
+
+      const authorizedEmails = new Set(
+        authorizedUsers.map((u) => String(u?.email || '').trim().toLowerCase()).filter(Boolean)
+      )
+
+      const currentUserEmail = String(user?.email || '').trim().toLowerCase()
+      const currentUserName = String(user?.name || user?.username || '').trim().toLowerCase()
+      const isAuthorized = (currentUserEmail && authorizedEmails.has(currentUserEmail)) || targetKeywords.some((k) => currentUserName.includes(k) || currentUserEmail.includes(k))
+
+      if (!isAuthorized) {
+        addNotification?.('warning', 'Permission Denied', 'Only authorized users can allow to delete customers.')
+        return
+      }
+
       const targetCustomer = customers.find((c) => String(c.id) === String(customerId))
       const displayName = targetCustomer?.customerName || targetCustomer?.name || targetCustomer?.customerNumber || 'customer'
       const confirmed = window.confirm(`Delete Customer\n\nAre you sure you want to delete customer "${displayName}"?`)
@@ -1783,15 +1805,17 @@ const AdminCustomersPage = ({
                 />
               </div>
 
-              <button
-                type="button"
-                className="admin-customers-toolbar-icon admin-customers-toolbar-icon-export"
-                onClick={handleExportCustomers}
-                title="Export customers"
-                aria-label="Export customers"
-              >
-                <FaFileExport />
-              </button>
+              {isAdmin ? (
+                <button
+                  type="button"
+                  className="admin-customers-toolbar-icon admin-customers-toolbar-icon-export"
+                  onClick={handleExportCustomers}
+                  title="Export customers"
+                  aria-label="Export customers"
+                >
+                  <FaFileExport />
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="admin-customers-toolbar-icon admin-customers-toolbar-icon-import"

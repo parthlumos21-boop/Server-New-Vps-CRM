@@ -1,19 +1,13 @@
 export const normalizeTextInput = (value) => String(value || '').trim()
 
 export const DEAL_LIFECYCLE_STATUS_OPTIONS = [
-  { value: 'Order Received', label: 'Order Received' },
-  { value: 'Convert To PO', label: 'Convert To PO' },
-  { value: 'Order Lost', label: 'Order Lost' },
-  { value: 'Rejected', label: 'Rejected' },
-  { value: 'Contracted', label: 'Contracted' },
+  { value: 'OLD', label: 'OLD' },
+  { value: 'NEW', label: 'NEW' },
 ]
 
 export const CUSTOMER_QUOTATION_STATUS_OPTIONS = [
-  { value: 'Pending', label: 'Pending' },
-  { value: 'Sent', label: 'Sent' },
-  { value: 'Revised', label: 'Revised' },
-  { value: 'Won', label: 'Won' },
-  { value: 'Lost', label: 'Lost' },
+  { value: 'OLD', label: 'OLD' },
+  { value: 'NEW', label: 'NEW' },
 ]
 
 export const normalizeDealCity = (value) => {
