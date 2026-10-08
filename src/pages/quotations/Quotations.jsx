@@ -222,12 +222,15 @@ const buildClientAddressDetails = (account = {}) => (
 
 const buildQuotationCustomerAccount = (customer = {}) => {
   const primaryContact = customer.contacts?.[0] || {}
+  const resolvedAccountName = customer.accountName || customer.data?.accountName || customer.raw?.data?.accountName || customer.name || customer.title || customer.customerName || ''
+  const resolvedDealName = customer.dealName || customer.data?.dealName || customer.raw?.data?.dealName || customer.projectName || customer.title || ''
 
   return {
     id: customer.id || customer._id || customer.legacyId || customer.customerNumber || customer.accountNumber || `customer-${Date.now()}`,
     quotationContext: 'account',
     accountNumber: customer.accountNumber || customer.accountNo || customer.formData?.accountNumber || customer.customerNumber || '',
-    name: customer.name || customer.customerName || '',
+    name: resolvedAccountName,
+    accountName: resolvedAccountName,
     contactPerson: primaryContact.contactPerson || customer.contactPerson || '',
     contactDesignation: primaryContact.designation || customer.contactDesignation || customer.designation || '',
     contactMobile: primaryContact.mobile || customer.contactMobile || customer.mobile || customer.contactPhone || customer.phone || '',
@@ -242,7 +245,8 @@ const buildQuotationCustomerAccount = (customer = {}) => {
     state: customer.state || '',
     accountCategory: customer.accountCategory || customer.customerCategory || '',
     customerCategory: customer.customerCategory || customer.accountCategory || '',
-    projectName: customer.projectName || customer.customerName || customer.name || '',
+    projectName: resolvedDealName,
+    dealName: resolvedDealName,
     latestRemark: customer.latestRemark || customer.remark || '',
     remark: customer.remark || '',
     productCategory: customer.productCategory || customer.customerCategory || '',
@@ -259,36 +263,43 @@ const hasPersistedAccountIdentity = (account = {}) => {
   })
 }
 
-const buildQuotationDealAccount = (deal = {}) => ({
-  id: deal.id || deal.dealNumber || `deal-${Date.now()}`,
-  dealId: deal.id || deal.dealId || deal._id || deal.legacyId || deal.dealNumber || '',
-  sourceDealId: deal.sourceDealId || deal.source_deal_id || deal.dealId || deal.id || deal._id || deal.legacyId || deal.dealNumber || '',
-  quotationContext: 'deal',
-  accountNumber: deal.dealNumber || '',
-  name: deal.companyName || deal.customerName || deal.accountName || deal.dealName || deal.name || '',
-  contactPerson: deal.contactPerson || deal.contactName || '',
-  contactDesignation: deal.contactDesignation || '',
-  contactMobile: deal.contactMobile || '',
-  contactPhone: deal.contactPhone || deal.phone || '',
-  phone: deal.contactMobile || deal.contactPhone || deal.phone || '',
-  contactEmail: deal.contactEmail || deal.email || '',
-  email: deal.contactEmail || deal.email || '',
-  gstin: deal.gstin || '',
-  stateCode: deal.stateCode || '',
-  address: deal.address || '',
-  location: deal.location || deal.city || '',
-  state: deal.state || '',
-  accountCategory: deal.accountCategory || deal.customerCategory || '',
-  customerCategory: deal.customerCategory || deal.accountCategory || '',
-  projectName: deal.projectName || deal.dealName || deal.name || '',
-  latestRemark: deal.latestRemark || deal.remark || deal.description || '',
-  remark: deal.remark || deal.description || '',
-  productCategory: deal.productCategory || deal.customerCategory || '',
-  architectName: deal.architectName || '',
-  pmcName: deal.pmcName || '',
-  accountOwnerName: deal.dealOwnerName || deal.dealOwnerDisplay || deal.dealOwner || deal.ownerName || '',
-  accountOwner: deal.dealOwner || deal.ownerName || '',
-})
+const buildQuotationDealAccount = (deal = {}) => {
+  const resolvedAccountName = deal.accountName || deal.data?.accountName || deal.raw?.data?.accountName || deal.title || deal.companyName || deal.customerName || deal.name || ''
+  const resolvedDealName = deal.dealName || deal.data?.dealName || deal.raw?.data?.dealName || deal.projectName || deal.title || ''
+
+  return {
+    id: deal.id || deal.dealNumber || `deal-${Date.now()}`,
+    dealId: deal.id || deal.dealId || deal._id || deal.legacyId || deal.dealNumber || '',
+    sourceDealId: deal.sourceDealId || deal.source_deal_id || deal.dealId || deal.id || deal._id || deal.legacyId || deal.dealNumber || '',
+    quotationContext: 'deal',
+    accountNumber: deal.dealNumber || '',
+    name: resolvedAccountName,
+    accountName: resolvedAccountName,
+    contactPerson: deal.contactPerson || deal.contactName || '',
+    contactDesignation: deal.contactDesignation || '',
+    contactMobile: deal.contactMobile || '',
+    contactPhone: deal.contactPhone || deal.phone || '',
+    phone: deal.contactMobile || deal.contactPhone || deal.phone || '',
+    contactEmail: deal.contactEmail || deal.email || '',
+    email: deal.contactEmail || deal.email || '',
+    gstin: deal.gstin || '',
+    stateCode: deal.stateCode || '',
+    address: deal.address || '',
+    location: deal.location || deal.city || '',
+    state: deal.state || '',
+    accountCategory: deal.accountCategory || deal.customerCategory || '',
+    customerCategory: deal.customerCategory || deal.accountCategory || '',
+    projectName: resolvedDealName,
+    dealName: resolvedDealName,
+    latestRemark: deal.latestRemark || deal.remark || deal.description || '',
+    remark: deal.remark || deal.description || '',
+    productCategory: deal.productCategory || deal.customerCategory || '',
+    architectName: deal.architectName || '',
+    pmcName: deal.pmcName || '',
+    accountOwnerName: deal.dealOwnerName || deal.dealOwnerDisplay || deal.dealOwner || deal.ownerName || '',
+    accountOwner: deal.dealOwner || deal.ownerName || '',
+  }
+}
 
 const splitAddressLines = (value = '') => {
   const segments = String(value || '')
@@ -1259,7 +1270,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const savedRevisionSet = new Set(savedRevisionNumbers)
     while (savedRevisionSet.has(nextRevisionNumber)) nextRevisionNumber += 1
 
-    const autofillProjectName = latestQuote?.projectName || latestQuote?.data?.projectName || account?.projectName || account?.name || ''
+    const autofillProjectName = account?.dealName || account?.data?.dealName || account?.raw?.data?.dealName || account?.raw?.dealName || latestQuote?.dealName || latestQuote?.data?.dealName || latestQuote?.projectName || latestQuote?.data?.projectName || account?.projectName || account?.name || ''
     const autofillArchitectName = latestQuote?.architectName || latestQuote?.data?.architectName || account?.architectName || ''
     const autofillPmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || account?.pmcName || ''
     const autofillProductName = latestQuote?.productName || latestQuote?.product || account?.productName || account?.productCategory || account?.product || ''
@@ -1271,6 +1282,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       ? latestQuote.lineItems.map((item) => ({ ...item, id: generateId('QLI') }))
       : [createEmptyLineItem()]
 
+    const resolvedAccountName = account?.accountName || account?.data?.accountName || account?.raw?.data?.accountName || account?.name || account?.title || account?.customerName || account?.companyName || ''
+
     return {
       ...createInitialQuotationForm(),
       quotationNumber: computedQuoteNumber,
@@ -1280,7 +1293,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       validUntil: addDaysToInputValue(quotationDate, 7),
       currency: profile?.currency || 'INR',
       clientAccountNumber: account?.accountNumber || '',
-      companyName: account?.name || '',
+      accountName: resolvedAccountName,
+      companyName: resolvedAccountName,
       contactPerson: account?.contactPerson || '',
       telephone: account?.contactMobile || account?.contactPhone || account?.phone || '',
       email: account?.contactEmail || account?.email || '',
@@ -1290,12 +1304,13 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       organizationName: profile?.organizationName || '',
       organizationAddress: profile?.organizationAddress || '',
       organizationEmail: user?.email || profile?.organizationEmail || '',
-      organizationPhone: profile?.organizationPhone || '',
+      organizationPhone: '',
       organizationGstin: profile?.organizationGstin || '',
       organizationStateCode: profile?.organizationStateCode || '',
       website: profile?.website || '',
       organizationTagline: profile?.organizationTagline || '',
       projectName: autofillProjectName,
+      dealName: autofillProjectName,
       architectName: autofillArchitectName,
       pmcName: autofillPmcName,
       quotationSubject: autofillProjectName || account?.projectName || account?.name || '',
@@ -2689,7 +2704,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                   <span className="quotation-selected-account-item-value">{selectedAccount.accountNumber || '-'}</span>
                 </div>
                 <div className="quotation-selected-account-item">
-                  <span className="quotation-selected-account-item-label">Company Name</span>
+                  <span className="quotation-selected-account-item-label">Account Name</span>
                   <span className="quotation-selected-account-item-value">{selectedAccount.name || '-'}</span>
                 </div>
                 <div className="quotation-selected-account-item">
@@ -2851,13 +2866,13 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       <Modal
         isOpen={isOpen}
         onClose={handleCloseQuotationBuilder}
-        title={`Generate Quotation${quotationForm.companyName ? ` [${quotationForm.companyName}]` : ''}`}
+        title={`Generate Quotation${(quotationForm.accountName || quotationForm.companyName) ? ` [${quotationForm.accountName || quotationForm.companyName}]` : ''}`}
         size="xlarge"
       >
         <form onSubmit={handleGenerateQuotation} className="quotation-builder">
           <div className="quotation-builder-page-header">
             <div className="quotation-builder-page-copy">
-              <h2>{`Generate Quotation${quotationForm.companyName ? ` [${quotationForm.companyName}]` : ''}`}</h2>
+              <h2>{`Generate Quotation${(quotationForm.accountName || quotationForm.companyName) ? ` [${quotationForm.accountName || quotationForm.companyName}]` : ''}`}</h2>
               <p>Profile Name: <strong>{quotationForm.profileName || activeProfile?.label || '-'}</strong></p>
             </div>
             <div className="quotation-builder-page-actions">
@@ -2932,10 +2947,24 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                     />
                   </label>
                   <label className="quotation-builder-field">
-                    <span>Company Name</span>
+                    <span>Account Name</span>
                     <input
-                      value={quotationForm.companyName || ''}
-                      onChange={(event) => handleBuilderFieldChange('companyName', event.target.value)}
+                      value={quotationForm.accountName || quotationForm.companyName || ''}
+                      onChange={(event) => {
+                        handleBuilderFieldChange('accountName', event.target.value)
+                        handleBuilderFieldChange('companyName', event.target.value)
+                      }}
+                    />
+                  </label>
+                  <label className="quotation-builder-field">
+                    <span>Project Name</span>
+                    <input
+                      value={quotationForm.dealName || quotationForm.projectName || ''}
+                      onChange={(event) => {
+                        handleBuilderFieldChange('dealName', event.target.value)
+                        handleBuilderFieldChange('projectName', event.target.value)
+                      }}
+                      placeholder="Project Name"
                     />
                   </label>
                   <label className="quotation-builder-field">
@@ -3084,7 +3113,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <span>Quotation No.</span>
                       <input
                         value={quotationForm.quotationNumber || ''}
-                        onChange={(event) => handleBuilderFieldChange('quotationNumber', event.target.value)}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field">
@@ -3092,15 +3121,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <input
                         type="date"
                         value={quotationForm.validUntil || ''}
-                        onChange={(event) => handleBuilderFieldChange('validUntil', event.target.value)}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field quotation-builder-field-wide">
                       <span>Organization Name</span>
                       <input
                         value={quotationForm.organizationName || ''}
-                        onChange={(event) => handleBuilderFieldChange('organizationName', event.target.value)}
-                        placeholder={activeProfile?.organizationName || ''}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field quotation-builder-field-wide">
@@ -3108,16 +3136,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <textarea
                         rows="2"
                         value={quotationForm.organizationAddress || ''}
-                        onChange={(event) => handleBuilderFieldChange('organizationAddress', event.target.value)}
-                        placeholder={activeProfile?.organizationAddress || ''}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field">
                       <span>Organization Email</span>
                       <input
                         value={quotationForm.organizationEmail || ''}
-                        onChange={(event) => handleBuilderFieldChange('organizationEmail', event.target.value)}
-                        placeholder={activeProfile?.organizationEmail || ''}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field">
@@ -3125,30 +3151,27 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <input
                         value={quotationForm.organizationPhone || ''}
                         onChange={(event) => handleBuilderFieldChange('organizationPhone', event.target.value.replace(/\D/g, ''))}
-                        placeholder={activeProfile?.organizationPhone || ''}
                       />
                     </label>
                     <label className="quotation-builder-field">
                       <span>GSTIN</span>
                       <input
                         value={quotationForm.organizationGstin || ''}
-                        onChange={(event) => handleBuilderFieldChange('organizationGstin', event.target.value)}
-                        placeholder={activeProfile?.organizationGstin || ''}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field">
                       <span>State Code</span>
                       <input
                         value={quotationForm.organizationStateCode || ''}
-                        onChange={(event) => handleBuilderFieldChange('organizationStateCode', event.target.value)}
-                        placeholder={activeProfile?.organizationStateCode || ''}
+                        readOnly
                       />
                     </label>
                     <label className="quotation-builder-field">
                       <span>Currency</span>
                       <select
                         value={quotationForm.currency || 'INR'}
-                        onChange={(event) => handleBuilderFieldChange('currency', event.target.value)}
+                        disabled
                       >
                         {QUOTATION_CURRENCY_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>{option.label}</option>

@@ -1214,6 +1214,28 @@ const activeStageParam = searchParams.get('stage')
 
   const handleDeleteAccount = async (row) => {
     if (!row?.id) return
+
+    const usersList = dbMongoUsers.length > 0 ? dbMongoUsers : availableUsers
+    const targetKeywords = ['keval', 'parth', 'rushabh', 'samir']
+    const authorizedUsers = (Array.isArray(usersList) ? usersList : []).filter((u) => {
+      const uName = String(u?.name || u?.username || '').trim().toLowerCase()
+      const uEmail = String(u?.email || '').trim().toLowerCase()
+      return targetKeywords.some((k) => uName.includes(k) || uEmail.includes(k))
+    })
+
+    const authorizedEmails = new Set(
+      authorizedUsers.map((u) => String(u?.email || '').trim().toLowerCase()).filter(Boolean)
+    )
+
+    const currentUserEmail = String(user?.email || '').trim().toLowerCase()
+    const currentUserName = String(user?.name || user?.username || '').trim().toLowerCase()
+    const isAuthorized = (currentUserEmail && authorizedEmails.has(currentUserEmail)) || targetKeywords.some((k) => currentUserName.includes(k) || currentUserEmail.includes(k))
+
+    if (!isAuthorized) {
+      addNotification('warning', 'Permission Denied', 'Only authorized users can allow to delete accounts.')
+      return
+    }
+
     const confirmed = window.confirm('Are you sure you want to delete this Account?')
     if (!confirmed) return
 

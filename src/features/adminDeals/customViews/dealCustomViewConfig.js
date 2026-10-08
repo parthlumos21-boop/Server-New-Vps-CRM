@@ -14,6 +14,7 @@ export const DEAL_CUSTOM_VIEW_CLASSIFICATIONS = ADMIN_DEAL_BASE_VIEW_OPTIONS.map
 
 export const DEAL_CUSTOM_VIEW_FIELD_DEFINITIONS = {
   dealNumber: { key: 'dealNumber', label: 'Deal No.', filterPlaceholder: 'Search Deal No.' },
+  companyCustomerName: { key: 'companyCustomerName', label: 'Account Name', filterPlaceholder: 'Search Account Name' },
   customerName: { key: 'customerName', label: 'Customer Name', filterPlaceholder: 'Search Customer Name' },
   customerNumber: { key: 'customerNumber', label: 'Customer No.', filterPlaceholder: 'Search Customer No.' },
   dealDate: { key: 'dealDate', label: 'Deal Date', filterPlaceholder: 'Search Deal Date' },

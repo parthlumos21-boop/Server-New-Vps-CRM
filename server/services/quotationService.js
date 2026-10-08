@@ -241,17 +241,69 @@ const getNextQuotationSequence = (records = [], referenceDate) => {
   return maxSequence + 1
 }
 
+const resolveActiveRevisionCode = (body = {}, existing = null) => {
+  if (body?.revisionCode && body.revisionCode !== 'Normal') {
+    return body.revisionCode
+  }
+
+  if (typeof body?.revisionNo === 'number' && body.revisionNo >= 0) {
+    return body.revisionNo === 0 ? 'R0' : `R${body.revisionNo}`
+  }
+
+  if (Array.isArray(body?.revisions) && body.revisions.length > 0) {
+    const lastRev = body.revisions[body.revisions.length - 1]
+    if (lastRev?.revisionCode) return lastRev.revisionCode
+  }
+
+  if (body?.quotationRevisionAmounts && typeof body.quotationRevisionAmounts === 'object') {
+    const revKeys = Object.keys(body.quotationRevisionAmounts).filter((k) => /^R\d+$/i.test(k))
+    if (revKeys.length > 0) {
+      revKeys.sort((a, b) => parseInt(a.slice(1), 10) - parseInt(b.slice(1), 10))
+      return revKeys[revKeys.length - 1]
+    }
+  }
+
+  if (existing?.revisionCode && existing.revisionCode !== 'Normal') {
+    return existing.revisionCode
+  }
+
+  if (typeof existing?.revisionNo === 'number' && existing.revisionNo >= 0) {
+    return existing.revisionNo === 0 ? 'R0' : `R${existing.revisionNo}`
+  }
+
+  if (Array.isArray(existing?.revisions) && existing.revisions.length > 0) {
+    const lastRev = existing.revisions[existing.revisions.length - 1]
+    if (lastRev?.revisionCode) return lastRev.revisionCode
+  }
+
+  if (Array.isArray(existing?.data?.revisions) && existing.data.revisions.length > 0) {
+    const lastRev = existing.data.revisions[existing.data.revisions.length - 1]
+    if (lastRev?.revisionCode) return lastRev.revisionCode
+  }
+
+  return 'R1'
+}
+
+const formatQuotationNumberWithRevision = (baseNumber, revisionCode) => {
+  if (!baseNumber) return ''
+  const cleanBase = String(baseNumber).replace(/-R\d+$/i, '').trim()
+  if (!revisionCode || revisionCode === 'Normal') return cleanBase
+  return `${cleanBase}-${revisionCode}`
+}
+
 const resolveQuoteNumber = async (body, existing, actor) => {
   const requestedQuoteNumber = String(body.quoteNumber || body.quotationNumber || '').trim()
   const referenceDate = body.quotationDate || body.createdAt || existing?.quotationDate || existing?.createdAt
   const quotationSequenceMonth = getQuotationSequenceMonth(referenceDate)
+  const activeRevCode = resolveActiveRevisionCode(body, existing)
 
   if (existing) {
-    const retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || buildQuotationNumber(DEFAULT_QUOTATION_NUMBER_START, referenceDate)
+    const retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || existing.data?.quoteNumber || buildQuotationNumber(DEFAULT_QUOTATION_NUMBER_START, referenceDate)
+    const formattedNumber = formatQuotationNumberWithRevision(retainedQuoteNumber, activeRevCode)
     return {
-      quoteNumber: retainedQuoteNumber,
+      quoteNumber: formattedNumber,
       quotationSequenceMonth: existing.quotationSequenceMonth || existing.data?.quotationSequenceMonth || quotationSequenceMonth,
-      quotationSequence: existing.quotationSequence || existing.data?.quotationSequence || parseQuotationNumber(retainedQuoteNumber),
+      quotationSequence: existing.quotationSequence || existing.data?.quotationSequence || parseQuotationNumber(formattedNumber),
     }
   }
 
@@ -265,16 +317,18 @@ const resolveQuoteNumber = async (body, existing, actor) => {
   )
 
   if (requestedQuoteNumber && isUploadQuotationPayload(body) && !existingNumbers.has(requestedQuoteNumber)) {
+    const formattedNumber = formatQuotationNumberWithRevision(requestedQuoteNumber, activeRevCode)
     return {
-      quoteNumber: requestedQuoteNumber,
+      quoteNumber: formattedNumber,
       quotationSequenceMonth,
-      quotationSequence: parseQuotationNumber(requestedQuoteNumber),
+      quotationSequence: parseQuotationNumber(formattedNumber),
     }
   }
 
   const generated = await quotationNumberService.generateQuotationNumber(actor, referenceDate)
+  const formattedNumber = formatQuotationNumberWithRevision(generated.quoteNumber, activeRevCode)
   return {
-    quoteNumber: generated.quoteNumber,
+    quoteNumber: formattedNumber,
     quotationSequence: generated.sequence,
     quotationSequenceMonth: String(generated.financialYear),
     financialYear: generated.financialYear,
@@ -387,8 +441,8 @@ const buildPayload = async (body, actor, existing) => {
   )
   const isRevision = isExplicitRevision || hasRevisionAmountChange || (matchingQuotations.length > 0 && !existing)
 
-  let revisionNo = existing?.revisionNo || (matchingQuotations.length > 0 ? matchingQuotations.length + 1 : 1)
-  let revisionCode = existing?.revisionCode || (matchingQuotations.length > 0 ? `R${matchingQuotations.length + 1}` : 'R1')
+  let revisionCode = resolveActiveRevisionCode(body, existing)
+  let revisionNo = body.revisionNo ?? (existing?.revisionNo ?? (parseInt(revisionCode.replace(/\D/g, ''), 10) || 0))
   if (revisionCode === 'Normal') revisionCode = 'R1'
   let parentQuotationId = body.parentQuotationId || existing?.parentQuotationId || null
 
@@ -595,6 +649,8 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
         {
           $set: {
             'formData.latestQuotationNumber': syncPayload.latestQuotationNumber,
+            'formData.quotationNumber': syncPayload.latestQuotationNumber,
+            'formData.quoteNumber': syncPayload.latestQuotationNumber,
             'formData.latestQuotationAmount': syncPayload.latestQuotationAmount,
             'formData.quotationRevisionCode': syncPayload.quotationRevisionCode,
             'formData.quotationRevisionNo': syncPayload.quotationRevisionNo,
@@ -608,6 +664,8 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
             ...(architectName ? { 'formData.architectName': architectName, architectName } : {}),
             ...(pmcName ? { 'formData.pmcName': pmcName, pmcName } : {}),
             latestQuotationNumber: syncPayload.latestQuotationNumber,
+            quotationNumber: syncPayload.latestQuotationNumber,
+            quoteNumber: syncPayload.latestQuotationNumber,
             latestQuotationAmount: syncPayload.latestQuotationAmount,
             quotationRevisionCode: syncPayload.quotationRevisionCode,
             quotationRevisionAmounts: syncPayload.quotationRevisionAmounts,
@@ -627,6 +685,8 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
         {
           $set: {
             'data.latestQuotationNumber': syncPayload.latestQuotationNumber,
+            'data.quotationNumber': syncPayload.latestQuotationNumber,
+            'data.quoteNumber': syncPayload.latestQuotationNumber,
             'data.latestQuotationAmount': syncPayload.latestQuotationAmount,
             'data.quotationRevisionCode': syncPayload.quotationRevisionCode,
             'data.quotationRevisionNo': syncPayload.quotationRevisionNo,
@@ -640,6 +700,8 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
             ...(architectName ? { 'data.architectName': architectName, architectName } : {}),
             ...(pmcName ? { 'data.pmcName': pmcName, pmcName } : {}),
             latestQuotationNumber: syncPayload.latestQuotationNumber,
+            quotationNumber: syncPayload.latestQuotationNumber,
+            quoteNumber: syncPayload.latestQuotationNumber,
             latestQuotationAmount: syncPayload.latestQuotationAmount,
             quotationRevisionCode: syncPayload.quotationRevisionCode,
             quotationRevisionAmounts: syncPayload.quotationRevisionAmounts,
@@ -906,8 +968,13 @@ module.exports = {
         updatedRevisionsList.push(nextRevisionEntry)
       }
 
+      const baseQuoteNo = existingMatch.quoteNumber || existingMatch.quotationNumber || existingMatch.data?.quotationNumber || existingMatch.data?.quoteNumber || ''
+      const updatedQuoteNumber = formatQuotationNumberWithRevision(baseQuoteNo, nextRevCode)
+
       const updatePayload = {
         ...payload,
+        quoteNumber: updatedQuoteNumber,
+        quotationNumber: updatedQuoteNumber,
         revisionCode: nextRevCode,
         revisionNo: nextRevNo,
         r0Amount: r0Amt !== undefined ? String(r0Amt) : existingMatch.data?.r0Amount,

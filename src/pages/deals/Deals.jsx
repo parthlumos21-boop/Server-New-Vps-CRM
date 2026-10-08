@@ -128,6 +128,7 @@ const parseAndDeduplicateMessages = (message, fallback = 'An error occurred') =>
 
 const DEAL_TABLE_COLUMNS = [
   { key: 'dealNumber', label: 'Deal No.', placeholder: 'Search Deal No.', sourceField: 'deal_number' },
+  { key: 'companyCustomerName', label: 'Account Name', placeholder: 'Search Account Name', sourceField: 'account_name' },
   { key: 'projectName', label: 'Project Name', placeholder: 'Search Project Name', sourceField: 'project_name' },
   { key: 'dealDate', label: 'Deal Date', placeholder: 'Search Deal Date', sourceField: 'deal_date' },
   { key: 'dealOwner', label: 'Deal Owner', placeholder: 'Search Deal Owner', sourceField: 'owner' },
@@ -162,6 +163,7 @@ const CUSTOM_LOCATION_SELECT_OPTIONS = [
 
 const SEARCH_DEAL_REQUIRED_GRID_KEYS = [
   'dealNumber',
+  'companyCustomerName',
   'dealName',
   'dealDate',
   'dealOwner',

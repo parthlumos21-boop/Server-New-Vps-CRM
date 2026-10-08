@@ -183,19 +183,26 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     ? (sanitizedPayload.reasonForLost || sanitizedPayload.reasonForLostOrder || '')
     : (existingLead?.reasonForLost || existingLead?.reasonForLostOrder || existingLead?.formData?.reasonForLost || existingLead?.formData?.reasonForLostOrder || '')
 
-  const targetStatus = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending')))
-  const targetAccountStatus = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending')))
-  const targetAccountState = isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending')))
+  const shouldPreserveStatus = Boolean(sanitizedPayload.preserveStatus)
+  const targetStatus = shouldPreserveStatus
+    ? (existingLead?.status || sanitizedPayload.accountState || sanitizedPayload.status || 'pending')
+    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending'))))
+  const targetAccountStatus = shouldPreserveStatus
+    ? (existingLead?.accountStatus || sanitizedPayload.accountStatus || existingLead?.formData?.accountStatus || 'Pending')
+    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending'))))
+  const targetAccountState = shouldPreserveStatus
+    ? (existingLead?.accountState || sanitizedPayload.accountState || existingLead?.formData?.accountState || 'Pending')
+    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending'))))
 
   const normalizedPayload = applyOwnershipMetadata(actor, {
     ...sanitizedPayload,
     customerName: sanitizedPayload.accountName || sanitizedPayload.customerName || existingLead?.customerName || '',
     mobile: sanitizedPayload.alternatePhone || sanitizedPayload.mobile || existingLead?.mobile || '',
     email: sanitizedPayload.alternateEmail || sanitizedPayload.email || existingLead?.email || '',
-    company: sanitizedPayload.projectName || sanitizedPayload.company || existingLead?.company || '',
-    projectName: sanitizedPayload.projectName || existingLead?.projectName || '',
+    company: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (sanitizedPayload.company || existingLead?.company || ''),
+    projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
     status: targetStatus,
-    stage: isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new')),
+    stage: shouldPreserveStatus ? (existingLead?.stage || 'new') : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'))),
     accountStatus: targetAccountStatus,
     accountState: targetAccountState,
     reasonForLost: resolvedReasonForLost,
@@ -420,6 +427,28 @@ const createLead = async (actor, payload) => {
 }
 
 const deleteLead = async (actor, leadId) => {
+  const userRepository = require('../repositories/userRepository')
+  const allUsers = userRepository.listAllUsers ? await userRepository.listAllUsers() : []
+  const targetKeywords = ['keval', 'parth', 'rushabh', 'samir']
+  const authorizedEmails = new Set(
+    (Array.isArray(allUsers) ? allUsers : [])
+      .filter((u) => {
+        const uName = String(u?.name || u?.username || '').trim().toLowerCase()
+        const uEmail = String(u?.email || '').trim().toLowerCase()
+        return targetKeywords.some((k) => uName.includes(k) || uEmail.includes(k))
+      })
+      .map((u) => String(u?.email || '').trim().toLowerCase())
+      .filter(Boolean)
+  )
+
+  const actorEmail = String(actor?.email || '').trim().toLowerCase()
+  const actorName = String(actor?.name || actor?.username || '').trim().toLowerCase()
+  const isAuthorized = (actorEmail && authorizedEmails.has(actorEmail)) || targetKeywords.some((k) => actorName.includes(k) || actorEmail.includes(k))
+
+  if (!isAuthorized) {
+    throw new AppError('Only authorized users can allow to delete accounts.', 403)
+  }
+
   const existingLead = await getLeadById(actor, leadId, { includeGroupScope: false })
   const removed = await leadRepository.deleteLead(normalizeLeadId(leadId))
 

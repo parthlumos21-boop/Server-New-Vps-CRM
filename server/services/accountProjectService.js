@@ -177,7 +177,7 @@ const buildSharedPayload = (source, formData = {}, actor = {}) => {
     mobile: text(formData.contactMobile, source.contacts?.[0]?.mobile),
   }
   const accountName = text(source.customerName, formData.accountName, formData.customerName)
-  const projectName = text(formData.projectName, formData.dealName, source.projectName, accountName)
+  const projectName = formData.projectName !== undefined ? String(formData.projectName || '').trim() : text(source.projectName, accountName)
   const dealName = text(formData.dealName, projectName, `${accountName} Deal`)
   const ownerName = text(formData.dealOwner, formData.accountOwner, source.customerOwner, actor.name, actor.username)
 

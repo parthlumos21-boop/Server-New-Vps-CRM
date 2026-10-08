@@ -698,9 +698,10 @@ const AddAccountWizard = () => {
       department: user?.department || '',
       userEmail: user?.email || '',
       ...formData,
+      projectName: formData.projectName ? String(formData.projectName).trim() : '',
+      company: formData.projectName ? String(formData.projectName).trim() : '',
       accountOwner: finalOwnerName,
       accountOwnerCode: finalOwnerCode,
-      company: selectedOwner?.userObj?.company || selectedOwner?.userObj?.companyName || formData.accountCategory || '',
       contacts: [
         {
           name: formData.contactPerson,

@@ -1948,7 +1948,10 @@ export function RevisionsListModal({
   // Extract base quotation number e.g. "SSIPL/2026/1013" from "SSIPL/2026/1013-R1" or "SSIPL/2026/1013"
   const rawBaseQuoteNo = (targetQuoteNo || row.num || row.quotationNumber || 'SSIPL/2026/1013').replace(/-R\d+$/i, '')
   const companyName = row.company || row.raw?.companyName || row.raw?.customerName || row.raw?.clientName || 'Account'
-  const displayTitleQuoteNo = `${rawBaseQuoteNo}-R1`
+  const activeRevCode = row.raw?.revisionCode || row.revisionCode || row.raw?.data?.revisionCode || 'R1'
+  const displayTitleQuoteNo = (targetQuoteNo && targetQuoteNo.includes('-R'))
+    ? targetQuoteNo
+    : `${rawBaseQuoteNo}-${activeRevCode !== 'Normal' ? activeRevCode : 'R1'}`
 
   const revisionRowsMap = new Map()
 
@@ -2076,6 +2079,8 @@ export function RevisionsListModal({
     allRevisionCodes.unshift('R0')
   }
 
+  const activeDisplayQuoteNo = currentRevision?.quotationNumber || (currentRevision?.revisionCode ? `${rawBaseQuoteNo}-${currentRevision.revisionCode}` : displayTitleQuoteNo)
+
   return (
     <div className="aqp-page" style={{ padding: '24px', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e2e8f0' }}>
@@ -2089,7 +2094,7 @@ export function RevisionsListModal({
             &larr; Back To Quotations List
           </button>
           <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#0f172a', fontWeight: 700 }}>
-            Revision History — {companyName} ({displayTitleQuoteNo})
+            Revision History — {companyName} ({activeDisplayQuoteNo})
           </h1>
           <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#64748b' }}>
             Viewing all revision versions for <strong>{companyName}</strong>. Click any revision to view details or click Approve to approve.

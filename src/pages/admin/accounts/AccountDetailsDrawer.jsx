@@ -553,6 +553,7 @@ const AccountDetailsDrawer = ({
     const selectedOwner = ownerOptions.find((owner) => owner.name === form.accountOwner)
     const updatePayload = {
       ...buildUpdatePayload(form),
+      preserveStatus: true,
       ...(selectedOwner ? {
         ownerId: selectedOwner.id,
         assignedUserId: selectedOwner.id,
@@ -561,17 +562,6 @@ const AccountDetailsDrawer = ({
     const result = await onSaveAccount(account.id, updatePayload)
     
     if (result?.success) {
-      try {
-        const isUnconverted = !account.isConverted && account.stage !== 'converted' && account.stage !== 'converted_to_po'
-        const filledDealTriggerFields = Boolean(form.dealName || form.dealOwner || form.dealValue || form.poValue)
-        
-        if (isUnconverted && filledDealTriggerFields && typeof convertAccountToDeal === 'function') {
-          await convertAccountToDeal(account.id)
-        }
-      } catch (err) {
-        console.error("Failed to process auto-convert", err)
-      }
-      
       if (typeof onRefresh === 'function') {
         onRefresh()
       }
