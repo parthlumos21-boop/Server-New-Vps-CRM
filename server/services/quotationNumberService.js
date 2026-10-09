@@ -77,8 +77,71 @@ const generateQuotationNumber = async (actor, referenceDate) => {
   }
 }
 
+/**
+ * Formats a base quotation number with an active revision code suffix (e.g. -R1, -R2).
+ */
+const formatQuotationNumberWithRevision = (baseNumber, revisionCode = 'R0') => {
+  if (!baseNumber) return ''
+  const cleanBase = String(baseNumber).replace(/-R\d+$/i, '').trim()
+  const cleanRev = String(revisionCode || '').trim()
+  if (!cleanRev || cleanRev === 'R0' || cleanRev.toLowerCase() === 'normal') {
+    return cleanBase
+  }
+  return `${cleanBase}-${cleanRev.toUpperCase()}`
+}
+
+/**
+ * Resolves or allocates a standardized SSIPL series quotation number for legacy/old records.
+ * Maintains atomic counter uniqueness using 'quotation_number_counters'.
+ */
+const resolveOrAllocateQuotationNumber = async (record, actor) => {
+  if (!record) return ''
+
+  const existingNum = String(
+    record.quoteNumber || record.quotationNumber || record.data?.quotationNumber || record.data?.quoteNumber || ''
+  ).trim()
+
+  // If already in new series format (starts with SSIPL/), retain it to prevent re-numbering
+  if (existingNum && /^SSIPL\//i.test(existingNum)) {
+    return existingNum
+  }
+
+  // Atomically allocate next sequence number from counter
+  const referenceDate = record.quotationDate || record.createdAt || Date.now()
+  const generated = await generateQuotationNumber(actor || { id: record.createdBy }, referenceDate)
+
+  const revCode = record.revisionCode || (record.revisionNo ? `R${record.revisionNo}` : 'R0')
+  const newFormattedNumber = formatQuotationNumberWithRevision(generated.quoteNumber, revCode)
+
+  // Persist updated number back to MongoDB quotation record if ID exists
+  if (record.id || record._id) {
+    try {
+      const QuotationModel = getMongoModel('quotations')
+      const targetId = record.id || record._id
+      await QuotationModel.updateOne(
+        { $or: [{ id: targetId }, { _id: targetId }] },
+        {
+          $set: {
+            quoteNumber: newFormattedNumber,
+            quotationNumber: newFormattedNumber,
+            'data.quoteNumber': newFormattedNumber,
+            'data.quotationNumber': newFormattedNumber,
+            updatedAt: new Date(),
+          },
+        }
+      )
+    } catch (_updateErr) {
+      // Ignored non-blocking update
+    }
+  }
+
+  return newFormattedNumber
+}
+
 module.exports = {
   getFinancialYear,
   resolveOwnerCode,
   generateQuotationNumber,
+  formatQuotationNumberWithRevision,
+  resolveOrAllocateQuotationNumber,
 }

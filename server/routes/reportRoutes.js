@@ -2,14 +2,81 @@ const express = require('express');
 const router = express.Router();
 const ReportTemplate = require('../models/ReportTemplate');
 const Report = require('../models/Report');
-const { executeReport } = require('../services/reportEngine');
+const { executeReportPayload, sendOwnerWiseReportEmails } = require('../services/reportEngine');
 const { requireAuth } = require('../middleware/authMiddleware');
 const reportFieldDefinitions = require('../config/reportFieldDefinitions');
 
+// Get centralized field definitions dictionary for all 4 entities
 router.get('/fields', requireAuth, (req, res) => {
   res.json(reportFieldDefinitions);
 });
 
+// Live Preview Endpoint for Report Builder
+router.post('/preview', requireAuth, async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const result = await executeReportPayload({
+      dataSource: payload.dataSource || payload.reportContext || 'account',
+      selectedFields: payload.selectedFields || [],
+      reportType: payload.reportType || 'detail',
+      period: payload.period || 'monthly',
+      dateRange: payload.dateRange || {},
+      ownerFilter: payload.ownerFilter || 'all',
+      companyId: req.user?.companyId,
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Excel Export Endpoint
+router.post('/export-excel', requireAuth, async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const result = await executeReportPayload({
+      dataSource: payload.dataSource || payload.reportContext || 'account',
+      selectedFields: payload.selectedFields || [],
+      reportType: payload.reportType || 'detail',
+      period: payload.period || 'monthly',
+      dateRange: payload.dateRange || {},
+      ownerFilter: payload.ownerFilter || 'all',
+      companyId: req.user?.companyId,
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Owner-Wise Email Dispatch Endpoint
+router.post('/send-owner-emails', requireAuth, async (req, res) => {
+  try {
+    const payload = req.body || {};
+    const result = await sendOwnerWiseReportEmails({
+      dataSource: payload.dataSource || payload.reportContext || 'account',
+      selectedFields: payload.selectedFields || [],
+      reportType: payload.reportType || 'detail',
+      period: payload.period || 'monthly',
+      dateRange: payload.dateRange || {},
+      ownerFilter: payload.ownerFilter || 'all',
+      sendCopyToAdmin: payload.sendCopyToAdmin !== false,
+      customSubject: payload.customSubject || '',
+      customMessage: payload.customMessage || '',
+      companyId: req.user?.companyId,
+      actor: {
+        id: req.user?.id,
+        name: req.user?.name || req.user?.username || 'Admin',
+        email: req.user?.email || '',
+      },
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Save Report Instance
 router.post('/', requireAuth, async (req, res) => {
   try {
     const report = new Report({
@@ -23,6 +90,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
+// Get Saved Reports
 router.get('/', requireAuth, async (req, res) => {
   try {
     const filter = {};
@@ -36,6 +104,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// Manage Report Templates
 router.post('/templates', requireAuth, async (req, res) => {
   try {
     const template = new ReportTemplate({
@@ -44,7 +113,7 @@ router.post('/templates', requireAuth, async (req, res) => {
       reportName: req.body.reportName || req.body.name || 'Untitled Custom Report',
       createdBy: req.user?.id || req.body.createdBy,
       creatorName: req.user?.name || req.body.creatorName || 'Admin',
-      creatorEmail: req.user?.email || req.body.creatorEmail
+      creatorEmail: req.user?.email || req.body.creatorEmail,
     });
     await template.save();
     res.status(201).json(template);
@@ -76,14 +145,4 @@ router.delete('/templates/:id', requireAuth, async (req, res) => {
   }
 });
 
-router.get('/execute/:templateId', requireAuth, async (req, res) => {
-  try {
-    const data = await executeReport(req.params.templateId);
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 module.exports = router;
-

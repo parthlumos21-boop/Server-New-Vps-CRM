@@ -298,7 +298,10 @@ const resolveQuoteNumber = async (body, existing, actor) => {
   const activeRevCode = resolveActiveRevisionCode(body, existing)
 
   if (existing) {
-    const retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || existing.data?.quoteNumber || buildQuotationNumber(DEFAULT_QUOTATION_NUMBER_START, referenceDate)
+    let retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || existing.data?.quoteNumber
+    if (!retainedQuoteNumber || !/^SSIPL\//i.test(retainedQuoteNumber)) {
+      retainedQuoteNumber = await quotationNumberService.resolveOrAllocateQuotationNumber(existing, actor)
+    }
     const formattedNumber = formatQuotationNumberWithRevision(retainedQuoteNumber, activeRevCode)
     return {
       quoteNumber: formattedNumber,
