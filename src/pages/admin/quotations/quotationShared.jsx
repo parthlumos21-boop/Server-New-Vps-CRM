@@ -33,6 +33,7 @@ import { formatCurrency } from '../../../utils/helpers'
 import { customViewApi } from '../../../services/customViewApi'
 import { quotationApi } from '../../../services/quotationApi'
 import apiClient from '../../../services/apiClient'
+import { authService } from '../../../services/authService'
 import { ExcelExportActionButton, ExcelExportMenuButton } from '../../../components/common/ExcelExportButton'
 import './AdminQuotationsPage.css'
 
@@ -774,12 +775,57 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
     ? resolvedProfileFallback.organizationAddress || ''
     : quotation.organizationAddress || resolvedProfileFallback.organizationAddress || SWATI_PROFILE_FALLBACK.organizationAddress
   const organizationAddressLines = resolvedProfileFallback.organizationAddressLines || splitDisplayLines(organizationAddress)
-  const organizationEmail = isKnownProfileDocument
-    ? resolvedProfileFallback.organizationEmail || ''
-    : quotation.organizationEmail || resolvedProfileFallback.organizationEmail || SWATI_PROFILE_FALLBACK.organizationEmail
-  const organizationPhone = isKnownProfileDocument
-    ? resolvedProfileFallback.organizationPhone || ''
-    : quotation.organizationPhone || resolvedProfileFallback.organizationPhone || SWATI_PROFILE_FALLBACK.organizationPhone
+  const rawData = quotation.data && typeof quotation.data === 'object' ? quotation.data : {}
+  const availableUsers = typeof authService?.getAvailableUsers === 'function' ? authService.getAvailableUsers() : []
+  const currentUser = typeof authService?.getCurrentUser === 'function' ? authService.getCurrentUser() : null
+
+  const quotationOwnerOrCreator = (
+    quotation.quotationOwner
+    || quotation.quotationOwnerName
+    || quotation.ownerName
+    || quotation.owner
+    || quotation.selectedAccountOwner
+    || quotation.createdBy
+    || quotation.createdByName
+    || ''
+  )
+
+  const matchingUser = availableUsers.find((u) => (
+    (quotationOwnerOrCreator && (
+      u.name === quotationOwnerOrCreator
+      || u.ownerDisplayName === quotationOwnerOrCreator
+      || u.email === quotationOwnerOrCreator
+      || u.username === quotationOwnerOrCreator
+    )) || (quotation.userId && String(u.id) === String(quotation.userId))
+  )) || currentUser
+
+  const userPhone = matchingUser?.quotationOwnerMobileNumber
+    || (matchingUser?.email ? localStorage.getItem(`orgPhone_${String(matchingUser.email).trim().toLowerCase()}`) : '')
+    || matchingUser?.mobile
+    || matchingUser?.phone
+    || currentUser?.quotationOwnerMobileNumber
+    || (currentUser?.email ? localStorage.getItem(`orgPhone_${String(currentUser.email).trim().toLowerCase()}`) : '')
+    || currentUser?.mobile
+    || currentUser?.phone
+    || ''
+
+  const userEmail = matchingUser?.email || currentUser?.email || ''
+
+  const rawOrgEmail = (quotation.organizationEmail !== undefined && quotation.organizationEmail !== null)
+    ? quotation.organizationEmail
+    : rawData.organizationEmail
+
+  const organizationEmail = (rawOrgEmail !== undefined && rawOrgEmail !== null && String(rawOrgEmail).trim() !== '')
+    ? String(rawOrgEmail).trim()
+    : (userEmail || (isKnownProfileDocument ? (resolvedProfileFallback.organizationEmail || '') : SWATI_PROFILE_FALLBACK.organizationEmail))
+
+  const rawOrgPhone = (quotation.organizationPhone !== undefined && quotation.organizationPhone !== null)
+    ? quotation.organizationPhone
+    : rawData.organizationPhone
+
+  const organizationPhone = (rawOrgPhone !== undefined && rawOrgPhone !== null)
+    ? String(rawOrgPhone).trim()
+    : userPhone
   const organizationGstin = isKnownProfileDocument
     ? resolvedProfileFallback.organizationGstin || ''
     : quotation.organizationGstin || resolvedProfileFallback.organizationGstin || SWATI_PROFILE_FALLBACK.organizationGstin
