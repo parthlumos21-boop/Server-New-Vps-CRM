@@ -91,6 +91,15 @@ const formatQuotationNumberWithRevision = (baseNumber, revisionCode = 'R0') => {
 }
 
 /**
+ * Strictly checks if a quotation number matches the new dynamic format:
+ * Format: SSIPL/{FinancialYear}/{5-DigitSequence}-{OwnerCode}[-Rx]
+ * Example: SSIPL/2026/00001-1016 or SSIPL/2026/00001-1016-R1
+ */
+const isNewQuotationNumberFormat = (quotationNumber = '') => {
+  return /^SSIPL\/\d{4}\/\d{5}-\d+/i.test(String(quotationNumber || '').trim())
+}
+
+/**
  * Resolves or allocates a standardized SSIPL series quotation number for legacy/old records.
  * Maintains atomic counter uniqueness using 'quotation_number_counters'.
  */
@@ -101,8 +110,8 @@ const resolveOrAllocateQuotationNumber = async (record, actor) => {
     record.quoteNumber || record.quotationNumber || record.data?.quotationNumber || record.data?.quoteNumber || ''
   ).trim()
 
-  // If already in new series format (starts with SSIPL/), retain it to prevent re-numbering
-  if (existingNum && /^SSIPL\//i.test(existingNum)) {
+  // If already in new series format (SSIPL/YYYY/XXXXX-ownerCode[-Rx]), retain it to prevent re-numbering
+  if (existingNum && isNewQuotationNumberFormat(existingNum)) {
     return existingNum
   }
 
@@ -143,5 +152,7 @@ module.exports = {
   resolveOwnerCode,
   generateQuotationNumber,
   formatQuotationNumberWithRevision,
+  isNewQuotationNumberFormat,
   resolveOrAllocateQuotationNumber,
 }
+

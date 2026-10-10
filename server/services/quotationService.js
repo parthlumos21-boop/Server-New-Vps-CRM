@@ -299,7 +299,7 @@ const resolveQuoteNumber = async (body, existing, actor) => {
 
   if (existing) {
     let retainedQuoteNumber = requestedQuoteNumber || existing.quoteNumber || existing.data?.quotationNumber || existing.data?.quoteNumber
-    if (!retainedQuoteNumber || !/^SSIPL\//i.test(retainedQuoteNumber)) {
+    if (!retainedQuoteNumber || !quotationNumberService.isNewQuotationNumberFormat(retainedQuoteNumber)) {
       retainedQuoteNumber = await quotationNumberService.resolveOrAllocateQuotationNumber(existing, actor)
     }
     const formattedNumber = formatQuotationNumberWithRevision(retainedQuoteNumber, activeRevCode)
@@ -972,7 +972,11 @@ module.exports = {
       }
 
       const baseQuoteNo = existingMatch.quoteNumber || existingMatch.quotationNumber || existingMatch.data?.quotationNumber || existingMatch.data?.quoteNumber || ''
-      const updatedQuoteNumber = formatQuotationNumberWithRevision(baseQuoteNo, nextRevCode)
+      let retainedQuoteNo = baseQuoteNo
+      if (!retainedQuoteNo || !quotationNumberService.isNewQuotationNumberFormat(retainedQuoteNo)) {
+        retainedQuoteNo = await quotationNumberService.resolveOrAllocateQuotationNumber(existingMatch, actor)
+      }
+      const updatedQuoteNumber = formatQuotationNumberWithRevision(retainedQuoteNo, nextRevCode)
 
       const updatePayload = {
         ...payload,
