@@ -1692,6 +1692,23 @@ export const renderEditableQuotationValue = (documentData, editable, onEditField
   />
 )
 
+export const QUOTATION_EDIT_ALLOWED_EMAILS = new Set([
+  'keval@swatiswithgears.com',
+  'keval@swatisswitchgears.com',
+  'parth@support.com',
+  'rushabh@support.com',
+])
+
+export const canUserEditQuotation = (user) => {
+  if (!user) return false
+  const email = String(user.email || '').trim().toLowerCase()
+  const name = String(user.name || user.username || '').trim().toLowerCase()
+  if (QUOTATION_EDIT_ALLOWED_EMAILS.has(email)) return true
+  return ['keval v shah', 'keval', 'parth', 'rushabh'].some((authorizedName) => (
+    email.includes(authorizedName) || name.includes(authorizedName)
+  ))
+}
+
 export function QuotationDocument({ documentData, editable = false, onEditField }) {
   const logoSource = documentData.logoSource || getBrandLogoSource(documentData.brandKey)
   const brandModifier = documentData.isLumosDocument ? 'lumos' : documentData.isSwatiDocument ? 'swati' : 'default'

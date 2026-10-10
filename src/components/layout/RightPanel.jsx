@@ -215,7 +215,7 @@ const RightPanel = () => {
           <button
             type="button"
             className="rp-ticket-add-btn"
-            onClick={() => navigate(isAdmin ? '/admin/tickets' : '/support-requests/add')}
+            onClick={() => navigate(isAdmin ? '/admin/tickets' : '/tickets')}
           >
             <span className="rp-ticket-add-btn__icon">
               <FaTicketAlt />

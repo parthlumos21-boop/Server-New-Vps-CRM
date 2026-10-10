@@ -236,7 +236,13 @@ const buildInitialForm = (account, deal = {}) => ({
   stateCode: account.stateCode || account.data?.stateCode || account.raw?.stateCode || account.raw?.data?.stateCode || '',
   country: account.raw?.country || account.data?.country || '',
   pincode: account.raw?.pincode || account.raw?.pinCode || account.data?.pincode || '',
-  projectName: account.projectName || account.data?.projectName || account.dealName || account.data?.dealName || deal.projectName || deal.dealName || '',
+  projectName: [account.projectName, account.data?.projectName, account.dealName, account.data?.dealName, deal.projectName, deal.dealName]
+    .map((value) => {
+      if (value === null || value === undefined) return ''
+      const text = String(value).trim()
+      return text && text.toLowerCase() !== 'null' && text.toLowerCase() !== 'undefined' ? text : ''
+    })
+    .find(Boolean) || '',
   projectType: account.productCategory || account.data?.productCategory || account.raw?.projectType || deal.productCategory || '',
   projectLocation: account.projectLocation || account.data?.projectLocation || account.raw?.projectLocation || '',
   consultantName: account.consultantName || account.data?.consultantName || deal.consultantName || '',

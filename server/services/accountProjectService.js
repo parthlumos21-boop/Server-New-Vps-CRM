@@ -44,7 +44,7 @@ const normalizeSourceRecord = (sourceType, record = {}) => {
     formData.accountName,
     formData.name
   )
-  const projectName = text(record.projectName, record.dealName, record.title, record.name, data.projectName, data.dealName, formData.projectName)
+  const projectName = text(record.projectName, record.dealName, data.projectName, data.dealName, formData.projectName, formData.dealName)
   const ownerName = text(record.accountOwner, record.accountOwnerName, record.customerOwner, record.dealOwner, record.ownerName, data.accountOwner, data.dealOwner, formData.accountOwner)
 
   return {
@@ -177,8 +177,8 @@ const buildSharedPayload = (source, formData = {}, actor = {}) => {
     mobile: text(formData.contactMobile, source.contacts?.[0]?.mobile),
   }
   const accountName = text(source.customerName, formData.accountName, formData.customerName)
-  const projectName = formData.projectName !== undefined ? String(formData.projectName || '').trim() : text(source.projectName, accountName)
-  const dealName = text(formData.dealName, projectName, `${accountName} Deal`)
+  const projectName = text(formData.projectName, formData.dealName, source.projectName)
+  const dealName = text(formData.dealName, projectName)
   const ownerName = text(formData.dealOwner, formData.accountOwner, source.customerOwner, actor.name, actor.username)
 
   return {

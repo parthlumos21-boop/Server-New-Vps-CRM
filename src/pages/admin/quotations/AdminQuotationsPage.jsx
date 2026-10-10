@@ -101,6 +101,7 @@ import {
   QuotationPdfViewer,
   RevisionsListModal,
   SequentialRevisionSummaryCard,
+  canUserEditQuotation,
 } from './quotationShared';
 
 const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quotations' }) => {
@@ -1752,7 +1753,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
           <div className="aqp-view-quotation-document">
             <QuotationDocument
               documentData={viewDocument}
-              editable
+              editable={canUserEditQuotation(user)}
               onEditField={handleInlineQuotationEdit}
             />
           </div>

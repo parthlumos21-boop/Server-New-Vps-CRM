@@ -501,11 +501,24 @@ const buildPayload = async (body, actor, existing) => {
     ?? existing?.customerName
     ?? existing?.data?.companyName
     ?? null
-  const customerId = body.customerId
+  let customerId = body.customerId
     ?? body.selectedAccountId
     ?? existing?.customerId
     ?? existing?.data?.selectedAccountId
     ?? null
+
+  if (!customerId && (body.dealId || existing?.dealId)) {
+    const { getMongoModel } = require('../models/mongoModels')
+    const DealModel = getMongoModel('deals')
+    const targetDealId = body.dealId || existing?.dealId
+    const dealQuery = buildSafeMongoIdQuery(targetDealId, ['dealNumber'])
+    if (dealQuery) {
+      const dealDoc = await DealModel.findOne(dealQuery).lean()
+      if (dealDoc) {
+        customerId = dealDoc.accountId || dealDoc.customerId || dealDoc.data?.accountId || dealDoc.data?.customerId || null
+      }
+    }
+  }
   const totalAmount = body.totalAmount ?? body.amount ?? existing?.totalAmount ?? computed.total
   const taxAmount = body.taxAmount ?? body.gstAmount ?? existing?.taxAmount ?? computed.tax
   const discountAmount = body.discountAmount ?? body.discount ?? existing?.discountAmount ?? computed.discount
@@ -571,8 +584,18 @@ const syncQuotationToLeadsAndDeals = async (quotationRecord) => {
     const Deal = getMongoModel('deals')
     const quotationRepo = require('../repositories/quotationRepository')
 
-    const customerId = quotationRecord.customerId || quotationRecord.data?.selectedAccountId
+    let customerId = quotationRecord.customerId || quotationRecord.data?.selectedAccountId || quotationRecord.data?.customerId
     const dealId = quotationRecord.dealId || quotationRecord.data?.dealId
+
+    if (!customerId && dealId) {
+      const dealQuery = buildSafeMongoIdQuery(dealId, ['dealNumber'])
+      if (dealQuery) {
+        const dealDoc = await Deal.findOne(dealQuery).lean()
+        if (dealDoc) {
+          customerId = dealDoc.accountId || dealDoc.customerId || dealDoc.data?.accountId || dealDoc.data?.customerId || null
+        }
+      }
+    }
 
     const allQuotes = await quotationRepo.listAll()
     const siblingQuotes = allQuotes.filter((q) => {
@@ -1232,7 +1255,29 @@ module.exports = {
         architectName,
         pmcName,
         clientAccountNumber: accountDoc?.accountNumber || accountDoc?.formData?.accountNumber || '',
-        companyName: accountDoc?.name || accountDoc?.company || accountDoc?.formData?.name || '',
+        companyName: context === 'deal'
+          ? (
+              accountDoc?.name ||
+              accountDoc?.company ||
+              accountDoc?.customerName ||
+              accountDoc?.formData?.name ||
+              accountDoc?.formData?.companyName ||
+              dealDoc?.customerName ||
+              dealDoc?.accountName ||
+              dealDoc?.companyName ||
+              dealDoc?.linkedAccountName ||
+              dealDoc?.data?.customerName ||
+              dealDoc?.data?.accountName ||
+              dealDoc?.data?.companyName ||
+              dealDoc?.data?.linkedAccountName ||
+              ''
+            ).trim()
+          : (
+              accountDoc?.name ||
+              accountDoc?.company ||
+              accountDoc?.formData?.name ||
+              ''
+            ).trim(),
         contactPerson: accountDoc?.contactPerson || accountDoc?.formData?.contactPerson || '',
         telephone: accountDoc?.contactMobile || accountDoc?.contactPhone || accountDoc?.phone || accountDoc?.formData?.phone || '',
         email: accountDoc?.contactEmail || accountDoc?.email || accountDoc?.formData?.email || '',

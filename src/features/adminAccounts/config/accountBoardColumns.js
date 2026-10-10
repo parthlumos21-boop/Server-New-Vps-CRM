@@ -47,19 +47,23 @@ const formatAccountNameDisplay = (value, row = {}) => {
   return validName ? validName.trim() : emptyValue
 }
 const formatProjectNameDisplay = (value, row = {}) => {
-  const name = value
-    || row.projectName
-    || row.dealName
-    || row.raw?.projectName
-    || row.raw?.dealName
-    || row.raw?.formData?.projectName
-    || row.raw?.formData?.dealName
-    || ''
-
-  if (name && typeof name === 'string' && name.trim() && name.trim().toLowerCase() !== 'null' && name.trim().toLowerCase() !== 'undefined') {
-    return name.trim()
+  const cleanName = (candidate) => {
+    if (candidate === null || candidate === undefined) return ''
+    const text = String(candidate).trim()
+    if (!text || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
+    return text
   }
-  return emptyValue
+  const name = [
+    value,
+    row.projectName,
+    row.dealName,
+    row.raw?.projectName,
+    row.raw?.dealName,
+    row.raw?.formData?.projectName,
+    row.raw?.formData?.dealName,
+  ].map(cleanName).find(Boolean) || ''
+
+  return name || emptyValue
 }
 const formatAccountOwnerDisplay = (value, row = {}) => {
   const name = row.accountOwnerDisplay

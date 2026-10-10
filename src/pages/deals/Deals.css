@@ -2420,31 +2420,16 @@
 }
 
 .deals-crm-sort-button-no-indicator .deals-crm-sort-indicator {
-  display: none;
+  display: none !important;
 }
 
-.deals-crm-sort-indicator {
-  font-size: 0.62rem;
-  line-height: 1;
-  opacity: 0.9;
-  flex: 0 0 auto;
-}
-
+.deals-crm-sort-indicator,
 .deals-crm-head-row th::after {
-  content: '';
-  position: absolute;
-  right: 0.28rem;
-  top: 50%;
-  width: 0;
-  height: 0;
-  border-left: 3px solid transparent;
-  border-right: 3px solid transparent;
-  border-top: 4px solid rgba(255, 255, 255, 0.82);
-  transform: translateY(-35%);
+  display: none !important;
 }
 
 .deals-crm-head-row th:has(.deals-crm-sort-button-no-indicator)::after {
-  display: none;
+  display: none !important;
 }
 
 .deals-crm-filter-row th {

@@ -39,6 +39,8 @@ import {
   RevisionsListModal,
   SequentialRevisionSummaryCard,
   StatusBadge,
+  canUserEditQuotation,
+  buildLineItems,
   buildQuotationDocumentData,
   buildVisiblePages,
   formatListDate,
@@ -265,41 +267,100 @@ const hasPersistedAccountIdentity = (account = {}) => {
   })
 }
 
-const buildQuotationDealAccount = (deal = {}) => {
-  const resolvedAccountName = deal.accountName || deal.data?.accountName || deal.raw?.data?.accountName || deal.title || deal.companyName || deal.customerName || deal.name || ''
-  const resolvedDealName = deal.dealName || deal.data?.dealName || deal.raw?.data?.dealName || deal.projectName || deal.title || ''
+const buildQuotationDealAccount = (deal = {}, normalizedAccounts = []) => {
+  const rawData = deal.data || deal.raw?.data || {}
+
+  const targetAccountId = String(
+    deal.accountId || deal.customerId || rawData.accountId || rawData.customerId || ''
+  ).trim()
+
+  const linkedAcc = targetAccountId
+    ? (normalizedAccounts || []).find((a) => (
+        String(a.id) === targetAccountId ||
+        String(a.legacyId) === targetAccountId ||
+        String(a.accountNumber) === targetAccountId
+      ))
+    : null
+
+  const resolvedAccountName = (
+    linkedAcc?.name ||
+    deal.accountName ||
+    deal.linkedAccountName ||
+    rawData.accountName ||
+    rawData.linkedAccountName ||
+    deal.raw?.accountName ||
+    deal.raw?.linkedAccountName ||
+    linkedAcc?.companyName ||
+    linkedAcc?.customerName ||
+    deal.companyName ||
+    deal.customerName ||
+    deal.companyCustomerName ||
+    rawData.companyName ||
+    rawData.customerName ||
+    rawData.companyCustomerName ||
+    deal.raw?.companyName ||
+    deal.raw?.customerName ||
+    ''
+  ).trim()
+
+  const resolvedDealName = (
+    deal.projectName ||
+    deal.dealName ||
+    rawData.projectName ||
+    rawData.dealName ||
+    deal.raw?.projectName ||
+    deal.raw?.dealName ||
+    deal.title ||
+    deal.name ||
+    ''
+  ).trim()
+
+  const resolvedAccNo = (
+    deal.accountNumber ||
+    deal.clientAccountNumber ||
+    deal.accountNo ||
+    rawData.accountNumber ||
+    rawData.clientAccountNumber ||
+    deal.dealNumber ||
+    ''
+  ).trim()
 
   return {
     id: deal.id || deal.dealNumber || `deal-${Date.now()}`,
     dealId: deal.id || deal.dealId || deal._id || deal.legacyId || deal.dealNumber || '',
     sourceDealId: deal.sourceDealId || deal.source_deal_id || deal.dealId || deal.id || deal._id || deal.legacyId || deal.dealNumber || '',
     quotationContext: 'deal',
-    accountNumber: deal.dealNumber || '',
+    selectedAccountId: linkedAcc?.id || targetAccountId || '',
+    customerId: linkedAcc?.id || targetAccountId || null,
+    accountNumber: linkedAcc?.accountNumber || resolvedAccNo,
     name: resolvedAccountName,
     accountName: resolvedAccountName,
-    contactPerson: deal.contactPerson || deal.contactName || '',
-    contactDesignation: deal.contactDesignation || '',
-    contactMobile: deal.contactMobile || '',
-    contactPhone: deal.contactPhone || deal.phone || '',
-    phone: deal.contactMobile || deal.contactPhone || deal.phone || '',
-    contactEmail: deal.contactEmail || deal.email || '',
-    email: deal.contactEmail || deal.email || '',
-    gstin: deal.gstin || '',
-    stateCode: deal.stateCode || '',
-    address: deal.address || '',
-    location: deal.location || deal.city || '',
-    state: deal.state || '',
-    accountCategory: deal.accountCategory || deal.customerCategory || '',
-    customerCategory: deal.customerCategory || deal.accountCategory || '',
+    companyName: resolvedAccountName,
+    customerName: resolvedAccountName,
+    contactPerson: linkedAcc?.contactPerson || deal.contactPerson || deal.contactName || deal.personName || rawData.contactPerson || '',
+    contactDesignation: deal.contactDesignation || rawData.contactDesignation || '',
+    contactMobile: deal.contactMobile || rawData.contactMobile || '',
+    contactPhone: deal.contactPhone || deal.phone || rawData.contactPhone || rawData.phone || '',
+    phone: deal.contactMobile || deal.contactPhone || deal.phone || rawData.phone || '',
+    contactEmail: deal.contactEmail || deal.email || rawData.contactEmail || rawData.email || '',
+    email: deal.contactEmail || deal.email || rawData.email || '',
+    gstin: deal.gstin || rawData.gstin || '',
+    stateCode: deal.stateCode || rawData.stateCode || '',
+    address: deal.address || deal.location || deal.state || deal.clientAddressDetails || rawData.address || '',
+    location: deal.location || deal.city || rawData.location || rawData.city || '',
+    state: deal.state || rawData.state || '',
+    accountCategory: deal.accountCategory || deal.customerCategory || rawData.accountCategory || '',
+    customerCategory: deal.customerCategory || deal.accountCategory || rawData.customerCategory || '',
     projectName: resolvedDealName,
     dealName: resolvedDealName,
-    latestRemark: deal.latestRemark || deal.remark || deal.description || '',
-    remark: deal.remark || deal.description || '',
-    productCategory: deal.productCategory || deal.customerCategory || '',
-    architectName: deal.architectName || '',
-    pmcName: deal.pmcName || '',
-    accountOwnerName: deal.dealOwnerName || deal.dealOwnerDisplay || deal.dealOwner || deal.ownerName || '',
-    accountOwner: deal.dealOwner || deal.ownerName || '',
+    title: resolvedDealName,
+    latestRemark: deal.latestRemark || deal.remark || deal.description || rawData.remark || '',
+    remark: deal.remark || deal.description || rawData.remark || '',
+    productCategory: deal.productCategory || deal.customerCategory || rawData.productCategory || '',
+    architectName: deal.architectName || rawData.architectName || '',
+    pmcName: deal.pmcName || rawData.pmcName || '',
+    accountOwnerName: deal.dealOwnerName || deal.dealOwnerDisplay || deal.dealOwner || deal.ownerName || rawData.ownerName || '',
+    accountOwner: deal.dealOwner || deal.ownerName || rawData.ownerName || '',
   }
 }
 
@@ -1023,6 +1084,86 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     }
   }
 
+  const normalizeInlineCurrencyValue = (value) => {
+    const numericValue = Number.parseFloat(String(value || '').replace(/[^\d.-]/g, ''))
+    return Number.isFinite(numericValue) ? numericValue : 0
+  }
+
+  const buildInlineQuotationPatch = (rawQuotation = {}, fieldKey = '', value = '') => {
+    if (fieldKey.startsWith('customerReference.')) {
+      const [, nestedKey] = fieldKey.split('.')
+      return {
+        customerReference: {
+          ...(rawQuotation.customerReference || {}),
+          [nestedKey]: value,
+        },
+      }
+    }
+
+    if (fieldKey.startsWith('lineItems.')) {
+      const [, indexValue, lineItemKey] = fieldKey.split('.')
+      const itemIndex = Number.parseInt(indexValue, 10)
+      const sourceItems = Array.isArray(rawQuotation.lineItems) && rawQuotation.lineItems.length > 0
+        ? rawQuotation.lineItems
+        : buildLineItems(rawQuotation)
+      const nextLineItems = sourceItems.map((lineItem, index) => {
+        if (index !== itemIndex) return lineItem
+
+        const nextItem = { ...lineItem }
+        if (lineItemKey === 'quantity') {
+          nextItem.quantity = normalizeInlineCurrencyValue(value)
+        } else if (lineItemKey === 'rate') {
+          nextItem.rate = normalizeInlineCurrencyValue(value)
+        } else {
+          nextItem[lineItemKey] = value
+        }
+        nextItem.amount = toNumber(nextItem.quantity) * toNumber(nextItem.rate)
+        return nextItem
+      })
+
+      return {
+        lineItems: nextLineItems,
+        amount: nextLineItems.reduce((sum, lineItem) => sum + toNumber(lineItem.amount), 0),
+        totalAmount: nextLineItems.reduce((sum, lineItem) => sum + toNumber(lineItem.amount), 0),
+      }
+    }
+
+    return { [fieldKey]: value }
+  }
+
+  const handleInlineQuotationEdit = async (fieldKey, value) => {
+    if (!viewRow?.id || !fieldKey) return
+
+    const targetId = viewRow.raw?.id || viewRow.id
+    const rawQuotation = viewRow.raw || {}
+    const patch = buildInlineQuotationPatch(rawQuotation, fieldKey, value)
+    const optimisticRaw = {
+      ...rawQuotation,
+      ...patch,
+    }
+
+    setViewRow((currentRow) => (
+      currentRow?.id === viewRow.id
+        ? { ...currentRow, raw: optimisticRaw }
+        : currentRow
+    ))
+
+    try {
+      const updatedRecord = await quotationApi.updateQuotation(targetId, patch)
+      if (updatedRecord) {
+        addNotification?.('success', 'Quotation updated', 'Quotation field saved.')
+        await refreshQuotations?.()
+      }
+    } catch (err) {
+      addNotification?.('error', 'Quotation update failed', err?.response?.data?.message || err?.message || 'Unable to save quotation field.')
+      setViewRow((currentRow) => (
+        currentRow?.id === viewRow.id
+          ? { ...currentRow, raw: rawQuotation }
+          : currentRow
+      ))
+    }
+  }
+
   useEffect(() => {
     if (!viewQuotationId) {
       if (viewRowFromUrl) {
@@ -1094,7 +1235,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
 
     const activePreselectedDeal = preselectedDeal || preselectedDealFromRoute
     if (activePreselectedDeal) {
-      const dealAccount = buildQuotationDealAccount(activePreselectedDeal)
+      const dealAccount = buildQuotationDealAccount(activePreselectedDeal, normalizedAccounts)
       const profileValue = getQuotationProfileForAccount(dealAccount)
 
       close()
@@ -1285,7 +1426,20 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const savedRevisionSet = new Set(savedRevisionNumbers)
     while (savedRevisionSet.has(nextRevisionNumber)) nextRevisionNumber += 1
 
-    const autofillProjectName = account?.dealName || account?.data?.dealName || account?.raw?.data?.dealName || account?.raw?.dealName || latestQuote?.dealName || latestQuote?.data?.dealName || latestQuote?.projectName || latestQuote?.data?.projectName || account?.projectName || account?.name || ''
+    const autofillProjectName = (
+      account?.dealName ||
+      account?.projectName ||
+      account?.data?.dealName ||
+      account?.data?.projectName ||
+      account?.raw?.data?.dealName ||
+      account?.raw?.data?.projectName ||
+      account?.title ||
+      latestQuote?.dealName ||
+      latestQuote?.projectName ||
+      latestQuote?.data?.dealName ||
+      latestQuote?.data?.projectName ||
+      ''
+    ).trim()
     const autofillArchitectName = latestQuote?.architectName || latestQuote?.data?.architectName || account?.architectName || ''
     const autofillPmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || account?.pmcName || ''
     const autofillProductName = latestQuote?.productName || latestQuote?.product || account?.productName || account?.productCategory || account?.product || ''
@@ -1297,7 +1451,19 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       ? latestQuote.lineItems.map((item) => ({ ...item, id: generateId('QLI') }))
       : [createEmptyLineItem()]
 
-    const resolvedAccountName = account?.accountName || account?.data?.accountName || account?.raw?.data?.accountName || account?.name || account?.title || account?.customerName || account?.companyName || ''
+    const resolvedAccountName = (
+      account?.accountName ||
+      account?.companyName ||
+      account?.customerName ||
+      account?.data?.accountName ||
+      account?.data?.companyName ||
+      account?.data?.customerName ||
+      account?.raw?.data?.accountName ||
+      account?.raw?.data?.companyName ||
+      account?.raw?.data?.customerName ||
+      account?.linkedAccountName ||
+      ''
+    ).trim()
 
     return {
       ...createInitialQuotationForm(),
@@ -1328,7 +1494,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       dealName: autofillProjectName,
       architectName: autofillArchitectName,
       pmcName: autofillPmcName,
-      quotationSubject: autofillProjectName || account?.projectName || account?.name || '',
+      quotationSubject: autofillProjectName || account?.projectName || account?.dealName || account?.title || '',
       quotationNotes: account?.latestRemark || account?.remark || '',
       customerReferenceDate: quotationDate,
       productGroup: autofillProductGroup,
@@ -1419,7 +1585,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
             productGroup: autofill.productGroup || current.productGroup,
             ttaOrg: autofill.ttaOrg || current.ttaOrg,
             hsn: autofill.hsn || current.hsn,
-            companyName: autofill.companyName || current.companyName,
+            companyName: isAccountQuotation ? (autofill.companyName || current.companyName || current.accountName) : (current.accountName || current.companyName || autofill.companyName),
+            accountName: isAccountQuotation ? (autofill.companyName || current.accountName || current.companyName) : (current.accountName || current.companyName || autofill.companyName),
             contactPerson: autofill.contactPerson || current.contactPerson,
             telephone: autofill.telephone || current.telephone,
             email: autofill.email || current.email,
@@ -1718,11 +1885,19 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
 
     const grandTotal = latestRevNum
 
+    const targetAccountName = (quotationForm.accountName || quotationForm.companyName || '').trim()
+    const targetDealName = (quotationForm.dealName || quotationForm.projectName || quotationForm.quotationSubject || '').trim()
+
     const payload = {
       quotationNumber: quotationForm.quotationNumber.trim() || nextQuotationNumber,
-      clientName: quotationForm.contactPerson || quotationForm.companyName || quotationForm.clientAccountNumber,
-      companyName: quotationForm.companyName.trim(),
-      projectName: quotationForm.projectName.trim() || quotationForm.companyName.trim(),
+      clientName: quotationForm.contactPerson || targetAccountName || quotationForm.clientAccountNumber,
+      companyName: targetAccountName,
+      customerName: targetAccountName,
+      accountName: targetAccountName,
+      title: targetDealName || targetAccountName,
+      projectName: targetDealName,
+      dealName: targetDealName,
+      quotationSubject: targetDealName || quotationForm.quotationSubject,
       amount: grandTotal,
       validUntil: quotationForm.validUntil,
       status: quotationForm.status,
@@ -1751,7 +1926,6 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       quotationContext: isAccountQuotation ? 'account' : (quotationForm.quotationContext || (quotationForm.selectedAccountId ? 'account' : 'deal')),
       architectName: quotationForm.architectName,
       pmcName: quotationForm.pmcName,
-      quotationSubject: quotationForm.quotationSubject,
       quotationNotes: quotationForm.quotationNotes,
       totalAmount: grandTotal,
       taxAmount: 0,
@@ -2440,7 +2614,11 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
               </div>
             ) : null}
           </div>
-          <QuotationDocument documentData={viewDocument} />
+          <QuotationDocument
+            documentData={viewDocument}
+            editable={canUserEditQuotation(user)}
+            onEditField={handleInlineQuotationEdit}
+          />
         </ModalShell>
       ) : null}
 

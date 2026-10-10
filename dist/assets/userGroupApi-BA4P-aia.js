@@ -1,0 +1,1 @@
+import{a1 as s}from"./index-tegjEg3o.js";const t={createGroup:async e=>(await s.post("/user-groups",e)).data,listGroups:async()=>(await s.get("/user-groups")).data,listGroupMembers:async e=>(await s.get(`/user-groups/${encodeURIComponent(e)}/members`)).data,deleteGroup:async e=>(await s.delete(`/user-groups/${e}`)).data};export{t as u};

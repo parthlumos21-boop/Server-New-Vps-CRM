@@ -4,12 +4,22 @@ import { FiChevronDown } from 'react-icons/fi'
 import {
   FaCalendarAlt,
   FaCog,
+  FaEnvelope,
   FaFileAlt,
+  FaFileInvoiceDollar,
+  FaFolder,
+  FaHandshake,
   FaHashtag,
+  FaInfoCircle,
   FaLayerGroup,
+  FaPhoneAlt,
   FaRegBuilding,
   FaRegUser,
+  FaUser,
   FaUserAlt,
+  FaUserCheck,
+  FaUserTag,
+  FaUserTie,
 } from 'react-icons/fa'
 import { useClickOutside } from '../../../hooks'
 import { useData } from '../../../context/DataContext'
@@ -52,6 +62,33 @@ const getColumnIcon = (key = '') => {
     case 'accountCategory':
     case 'productCategory':
       return <FaLayerGroup />
+    case 'status':
+    case 'accountStatus':
+      return <FaInfoCircle />
+    case 'dealType':
+      return <FaHandshake />
+    case 'phone':
+    case 'telephone':
+    case 'mobile':
+      return <FaPhoneAlt />
+    case 'email':
+      return <FaEnvelope />
+    case 'customerType':
+      return <FaUserTag />
+    case 'contactPerson':
+      return <FaUser />
+    case 'consultantName':
+      return <FaUserTie />
+    case 'poValue':
+      return <FaFileInvoiceDollar />
+    case 'jobNo':
+      return <FaFolder />
+    case 'quotationNumber':
+    case 'quoteNumber':
+      return <FaFileAlt />
+    case 'quotationOwnerName':
+    case 'quotationOwner':
+      return <FaUserCheck />
     case 'actions':
       return <FaCog />
     default:

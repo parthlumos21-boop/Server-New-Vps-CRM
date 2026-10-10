@@ -633,11 +633,14 @@ const AddAccountWizard = () => {
 
     if (isExistingCustomer) {
       try {
+        const typedProjectName = String(formData.dealName || '').trim()
         const result = await accountProjectApi.createExistingSourceProject({
           sourceType: selectedSource?.sourceType,
           sourceId: selectedSource?.sourceId,
           formData: {
             ...formData,
+            projectName: typedProjectName,
+            dealName: typedProjectName,
             accountOwner: finalOwnerName,
             accountOwnerCode: finalOwnerCode,
             dealOwner: finalOwnerName,
@@ -692,6 +695,7 @@ const AddAccountWizard = () => {
       return
     }
 
+    const projectLabel = String(formData.projectName || formData.dealName || '').trim()
     const accountPayload = {
       name: formData.accountName,
       email: formData.contactEmail,
@@ -709,9 +713,9 @@ const AddAccountWizard = () => {
       department: user?.department || '',
       userEmail: user?.email || '',
       ...formData,
-      projectName: formData.projectName ? String(formData.projectName).trim() : '',
-      dealName: formData.projectName ? String(formData.projectName).trim() : (formData.dealName ? String(formData.dealName).trim() : ''),
-      company: formData.projectName ? String(formData.projectName).trim() : '',
+      projectName: projectLabel,
+      dealName: projectLabel,
+      company: projectLabel,
       accountOwner: finalOwnerName,
       accountOwnerCode: finalOwnerCode,
       contacts: [

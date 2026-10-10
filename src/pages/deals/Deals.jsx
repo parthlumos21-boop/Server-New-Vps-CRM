@@ -5101,11 +5101,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                   onClick={() => handleGridSort(column.key)}
                                 >
                                   <span>{column.label}</span>
-                                  <span className="deals-crm-sort-indicator">
-                                    {gridSortConfig.key === column.key
-                                      ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                      : '↕'}
-                                  </span>
                                 </button>
                               </th>
                             );
@@ -5122,11 +5117,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                     onClick={() => handleGridSort(column.key)}
                                   >
                                     <span>{column.label}</span>
-                                    <span className="deals-crm-sort-indicator">
-                                      {gridSortConfig.key === column.key
-                                        ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                        : '↕'}
-                                    </span>
                                   </button>
                                 </th>
                               );
@@ -5145,11 +5135,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                               onClick={() => handleGridSort(column.key)}
                             >
                               <span>{column.label}</span>
-                              <span className="deals-crm-sort-indicator">
-                                {gridSortConfig.key === column.key
-                                  ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                  : '↕'}
-                              </span>
                             </button>
                           </th>
                         ))}
@@ -5886,11 +5871,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                   title={column.label}
                                 >
                                   <span>{column.label}</span>
-                                  <span className="deals-crm-sort-indicator" aria-hidden="true">
-                                    {gridSortConfig.key === column.key
-                                      ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                      : '↕'}
-                                  </span>
                                 </button>
                               </th>
                             );
@@ -5908,11 +5888,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                     title={column.label}
                                   >
                                     <span>{column.label}</span>
-                                    <span className="deals-crm-sort-indicator" aria-hidden="true">
-                                      {gridSortConfig.key === column.key
-                                        ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                        : '↕'}
-                                    </span>
                                   </button>
                                 </th>
                               );
@@ -5942,11 +5917,6 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                                 title={column.label}
                               >
                                 <span>{column.label}</span>
-                                <span className="deals-crm-sort-indicator" aria-hidden="true">
-                                  {gridSortConfig.key === column.key
-                                    ? (gridSortConfig.direction === 'asc' ? '▲' : '▼')
-                                    : '⇵'}
-                                </span>
                               </button>
                             </th>
                           )

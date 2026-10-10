@@ -49,6 +49,13 @@ const isBlank = (value) => {
   return false
 }
 
+const cleanNullableText = (value) => {
+  if (value === null || value === undefined) return ''
+  const text = String(value).trim()
+  if (!text || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
+  return text
+}
+
 const formatLegacyDate = (value, formatPattern = 'dd-MM-yyyy') => {
   if (isBlank(value)) return MISSING_VALUE
 
@@ -214,8 +221,8 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
   if (typeof accountNameVal === 'string' && /Report Filter/i.test(accountNameVal)) {
     return null
   }
-  const dealNameVal = account.dealName || account.data?.dealName || account.raw?.data?.dealName || account.raw?.dealName || formData['Deal Name'] || formData.dealName || account.raw?.formData?.dealName || ''
-  const rawProjectName = account.projectName || account.data?.projectName || formData['Project Name'] || formData.projectName || account.raw?.projectName || account.raw?.formData?.['Project Name'] || account.raw?.formData?.projectName || ''
+  const dealNameVal = cleanNullableText(account.dealName) || cleanNullableText(account.data?.dealName) || cleanNullableText(account.raw?.data?.dealName) || cleanNullableText(account.raw?.dealName) || cleanNullableText(formData['Deal Name']) || cleanNullableText(formData.dealName) || cleanNullableText(account.raw?.formData?.dealName)
+  const rawProjectName = cleanNullableText(account.projectName) || cleanNullableText(account.data?.projectName) || cleanNullableText(formData['Project Name']) || cleanNullableText(formData.projectName) || cleanNullableText(account.raw?.projectName) || cleanNullableText(account.raw?.formData?.['Project Name']) || cleanNullableText(account.raw?.formData?.projectName)
   const projectNameVal = rawProjectName || dealNameVal || ''
   const primaryEmailVal = primaryEmail || formData['Email'] || formData.email || formData['Alternate Email'] || account.raw?.email || account.raw?.contactEmail || ''
   const primaryPhoneVal = primaryPhone || formData['Phone'] || formData.phone || formData['Alternate Phone'] || account.raw?.phone || account.raw?.contactPhone || ''
