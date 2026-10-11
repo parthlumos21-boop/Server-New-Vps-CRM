@@ -37,7 +37,7 @@ const normalizeMappedDeal = async (record) => {
   if (accountId !== null && (!linkedAccountName || !linkedAccountNumber)) {
     const account = await Lead.findOne(byLegacyId(accountId)).lean()
     const formData = account?.formData && typeof account.formData === 'object' ? account.formData : {}
-    linkedAccountName = linkedAccountName || formData.accountName || account?.customerName || account?.company || ''
+    linkedAccountName = linkedAccountName || account?.accountName || formData.accountName || account?.customerName || formData.customerName || (account?.company !== account?.projectName ? account?.company : '') || ''
     linkedAccountNumber = linkedAccountNumber || formData.accountNumber || formData.accountNo || account?.accountNo || ''
   }
 
@@ -52,6 +52,7 @@ const normalizeMappedDeal = async (record) => {
     customerName: latestText(mapped.customerName, mapped.customer_name, data.customerName, data.customer_name, linkedAccountName),
     customerNumber: latestText(mapped.customerNumber, mapped.customer_number, data.customerNumber, data.customer_number, data.customerNo, data.customer_no),
     accountName: linkedAccountName,
+    linkedAccountName: linkedAccountName,
     accountNumber: linkedAccountNumber,
     status: latestText(data.status, mapped.status, data.stage, mapped.stage),
     stage: latestText(data.stage, mapped.stage, data.status, mapped.status) || 'new',

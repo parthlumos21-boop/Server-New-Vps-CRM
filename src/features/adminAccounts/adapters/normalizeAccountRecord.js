@@ -74,7 +74,7 @@ const toDrawerField = (label, value, options = {}) => {
 
   return {
     label,
-    value: missing ? MISSING_VALUE : resolvedValue,
+    value: (missing || (label === 'Project Name' && (resolvedValue === '' || resolvedValue === 'null' || resolvedValue === 'undefined'))) ? (label === 'Project Name' ? '-' : MISSING_VALUE) : resolvedValue,
     missing,
   }
 }
@@ -223,7 +223,7 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
   }
   const dealNameVal = cleanNullableText(account.dealName) || cleanNullableText(account.data?.dealName) || cleanNullableText(account.raw?.data?.dealName) || cleanNullableText(account.raw?.dealName) || cleanNullableText(formData['Deal Name']) || cleanNullableText(formData.dealName) || cleanNullableText(account.raw?.formData?.dealName)
   const rawProjectName = cleanNullableText(account.projectName) || cleanNullableText(account.data?.projectName) || cleanNullableText(formData['Project Name']) || cleanNullableText(formData.projectName) || cleanNullableText(account.raw?.projectName) || cleanNullableText(account.raw?.formData?.['Project Name']) || cleanNullableText(account.raw?.formData?.projectName)
-  const projectNameVal = rawProjectName || dealNameVal || ''
+  const projectNameVal = rawProjectName || dealNameVal || '-'
   const primaryEmailVal = primaryEmail || formData['Email'] || formData.email || formData['Alternate Email'] || account.raw?.email || account.raw?.contactEmail || ''
   const primaryPhoneVal = primaryPhone || formData['Phone'] || formData.phone || formData['Alternate Phone'] || account.raw?.phone || account.raw?.contactPhone || ''
   const contactPersonVal = account.contactPerson || formData['Contact Person'] || formData.contactPerson || primaryContact.name || account.raw?.contactPerson || account.raw?.formData?.['Contact Person'] || ''

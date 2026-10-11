@@ -557,6 +557,8 @@ const updateLead = async (actor, leadId, payload) => {
           $set: {
             projectName: nextProjectName,
             dealName: nextProjectName,
+            'data.projectName': nextProjectName,
+            'data.dealName': nextProjectName,
             updatedAt: new Date().toISOString(),
           },
         }

@@ -111,9 +111,18 @@ const getAccountColumnKeysWithRequiredFields = (columnKeys = [], columns = []) =
 
 const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
   const raw = row.raw || {}
-  const dealName = row.dealName || raw.dealName || raw.formData?.dealName || ''
-  const rawProj = row.projectName || raw.projectName || raw.formData?.projectName || ''
-  const projectName = rawProj || dealName || ''
+  const cleanProjectValue = (value) => {
+    if (value === null || value === undefined) return ''
+    const text = String(value).trim()
+    if (!text || text === '-' || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
+    return text
+  }
+  const data = raw.data || row.data || {}
+  const formData = raw.formData || row.formData || {}
+  const innerFormData = formData.formData || raw.formData?.formData || {}
+  const dealName = cleanProjectValue(row.dealName) || cleanProjectValue(raw.dealName) || cleanProjectValue(data.dealName) || cleanProjectValue(formData.dealName) || cleanProjectValue(innerFormData.dealName) || cleanProjectValue(formData['Deal Name']) || cleanProjectValue(innerFormData['Deal Name'])
+  const rawProj = cleanProjectValue(row.projectName) || cleanProjectValue(raw.projectName) || cleanProjectValue(data.projectName) || cleanProjectValue(formData.projectName) || cleanProjectValue(innerFormData.projectName) || cleanProjectValue(formData['Project Name']) || cleanProjectValue(innerFormData['Project Name'])
+  const projectName = rawProj || dealName || '-'
   const accountOwner = row.accountOwnerDisplay || row.accountOwnerName || row.accountOwner || raw.accountOwner || raw.ownerName || raw.assignedToName || 'Unassigned'
   const cleanAccountOwner = String(accountOwner || '').trim().toLowerCase() === 'no' ? '-' : accountOwner
 

@@ -50,18 +50,37 @@ const formatProjectNameDisplay = (value, row = {}) => {
   const cleanName = (candidate) => {
     if (candidate === null || candidate === undefined) return ''
     const text = String(candidate).trim()
-    if (!text || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
+    if (!text || text === '-' || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
     return text
   }
-  const name = [
+  const raw = row.raw || row.data || {}
+  const formData = row.formData || raw.formData || {}
+  const data = row.data || raw.data || {}
+  const innerFormData = formData.formData || raw.formData?.formData || {}
+
+  const candidates = [
     value,
     row.projectName,
     row.dealName,
-    row.raw?.projectName,
-    row.raw?.dealName,
-    row.raw?.formData?.projectName,
-    row.raw?.formData?.dealName,
-  ].map(cleanName).find(Boolean) || ''
+    data.projectName,
+    data.dealName,
+    raw.projectName,
+    raw.dealName,
+    formData.projectName,
+    formData.dealName,
+    formData['Project Name'],
+    formData['Deal Name'],
+    raw.formData?.projectName,
+    raw.formData?.dealName,
+    raw.formData?.['Project Name'],
+    raw.formData?.['Deal Name'],
+    innerFormData.projectName,
+    innerFormData.dealName,
+    innerFormData['Project Name'],
+    innerFormData['Deal Name'],
+  ]
+
+  const name = candidates.map(cleanName).find(Boolean) || ''
 
   return name || emptyValue
 }

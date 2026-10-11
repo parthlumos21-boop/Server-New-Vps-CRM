@@ -156,16 +156,16 @@ const buildNormalizedDeal = ({ deal, accounts, customers, users, currentUser }) 
     ...deal,
     id: deal.id,
     linkedAccountId: String(linkedAccount?.id || deal.accountId || ''),
-    linkedAccountName: linkedAccount?.name || linkedAccount?.accountName || deal.accountName || deal.customerName || '',
+    linkedAccountName: linkedAccount?.name || linkedAccount?.accountName || deal.linkedAccountName || deal.accountName || deal.customerName || deal.data?.linkedAccountName || deal.data?.accountName || deal.data?.customerName || deal.data?.data?.linkedAccountName || deal.data?.data?.accountName || deal.data?.data?.customerName || '',
     dealNumber: deal.dealNumber || '',
-    dealName: deal.name || '',
+    dealName: deal.name || deal.dealName || deal.title || '',
     dealDate: deal.dealDate || deal.createdAt || '',
     dealValue: Number(deal.value || 0),
     dealScore: deal.dealScore,
     probability: Number(deal.probability || 0),
     addedBy: deal.createdBy || ownerName,
     lastUpdated: deal.updatedAt || deal.createdAt || '',
-    customerName: deal.customerName || linkedCustomer?.customerName || linkedAccount?.customerName || linkedAccount?.name || '',
+    customerName: deal.customerName || deal.linkedAccountName || deal.accountName || linkedCustomer?.customerName || linkedAccount?.customerName || linkedAccount?.name || '',
     customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || linkedAccount?.accountNumber || '',
     dealType: deal.dealType || deal.customerCategory || linkedAccount?.accountCategory || deal.stage || '',
     dealStatus: deal.status || '',
@@ -196,7 +196,7 @@ const AdminDealDetailPage = () => {
   const { dealId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { deals, convertedDeals, accounts, addNotification, updateDeal } = useData()
+  const { deals, convertedDeals, accounts, addNotification, updateDeal, updateAccount } = useData()
   const { user } = useAuth()
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false)
   const [isReminderOpen, setIsReminderOpen] = useState(false)
@@ -290,7 +290,7 @@ const AdminDealDetailPage = () => {
     let updatePayload = { [key]: editValue }
 
     if (key === 'dealName') {
-      updatePayload = { dealName: editValue, title: editValue, name: editValue }
+      updatePayload = { dealName: editValue, projectName: editValue, title: editValue, name: editValue }
     } else if (key === 'dealValue') {
       const val = editValue ? Number(editValue) : 0
       updatePayload = { dealValue: val, value: val, amount: val }
@@ -517,7 +517,7 @@ const AdminDealDetailPage = () => {
     const query = new URLSearchParams({
       tab: 'deals',
       accountId: deal.accountId || deal.id || '',
-      accountName: deal.accountName || deal.customerName || deal.title || '',
+      accountName: deal.accountName || deal.linkedAccountName || deal.customerName || deal.data?.accountName || deal.data?.linkedAccountName || deal.data?.data?.accountName || '',
       accountNo: deal.accountNumber || deal.dealNumber || '',
     })
     navigate(`${basePath}?${query.toString()}`)

@@ -1059,7 +1059,7 @@ const AdminManageDealPage = () => {
     const query = new URLSearchParams({
       tab: 'deals',
       accountId: activeDeal.accountId || activeDeal.id || '',
-      accountName: activeDeal.accountName || activeDeal.customerName || activeDeal.title || '',
+      accountName: activeDeal.accountName || activeDeal.linkedAccountName || activeDeal.customerName || activeDeal.data?.accountName || activeDeal.data?.linkedAccountName || activeDeal.data?.data?.accountName || '',
       accountNo: activeDeal.accountNumber || activeDeal.dealNumber || '',
     })
     navigate(`${basePath}?${query.toString()}`)

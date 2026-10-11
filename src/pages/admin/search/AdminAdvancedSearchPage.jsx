@@ -209,7 +209,24 @@ const AdminAdvancedSearchPage = () => {
         id: account.id,
         accountNumber: account.accountOwnerCode || getCrmOwnerCode(account.accountOwnerDisplay || account.accountOwnerName || account.accountOwner) || '-',
         accountName: account.name || '-',
-        projectName: account.projectName || '-',
+        projectName: (() => {
+          const cleanProjectValue = (value) => {
+            if (value === null || value === undefined) return ''
+            const text = String(value).trim()
+            if (!text || text.toLowerCase() === 'null' || text.toLowerCase() === 'undefined') return ''
+            return text
+          }
+          const raw = account.raw || {}
+          const data = account.data || raw.data || {}
+          const formData = account.formData || raw.formData || {}
+          return cleanProjectValue(account.projectName)
+            || cleanProjectValue(account.dealName)
+            || cleanProjectValue(data.projectName)
+            || cleanProjectValue(data.dealName)
+            || cleanProjectValue(formData.projectName)
+            || cleanProjectValue(formData.dealName)
+            || '-'
+        })(),
         email: account.email || '-',
         phone: account.phone || '-',
         accountOwnerCode: account.accountOwnerCode || getCrmOwnerCode(account.accountOwnerDisplay || account.accountOwnerName || account.accountOwner) || '-',

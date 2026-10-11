@@ -11,12 +11,18 @@ const pickFirstDefined = (...values) => values.find((value) => value !== undefin
 
 const buildDealData = (body = {}, existing = null) => {
   const data = { ...(existing?.data || {}), ...body }
+  const preservedAccountName = existing?.accountName || existing?.linkedAccountName || existing?.customerName || existing?.data?.accountName || existing?.data?.linkedAccountName || existing?.data?.customerName || existing?.data?.data?.accountName || existing?.data?.data?.linkedAccountName
+  if (preservedAccountName && (!body.accountName || body.accountName === body.title || body.accountName === body.dealName)) {
+    data.accountName = preservedAccountName
+    data.linkedAccountName = existing?.data?.linkedAccountName || existing?.linkedAccountName || preservedAccountName
+  }
 
   return data
 }
 
 const buildPayload = (body = {}, actor, existing) => {
   const title = asTrimmedStringOrNull(pickFirstDefined(body.title, body.name, body.dealName, existing?.title)) || 'Untitled Deal'
+  const dealName = asTrimmedStringOrNull(pickFirstDefined(body.dealName, body.name, body.title, existing?.dealName, existing?.data?.dealName))
   const amount = asOptionalNumber(pickFirstDefined(body.amount, body.value, body.dealValue, existing?.amount, existing?.value, existing?.dealValue))
   const probability = asOptionalInteger(pickFirstDefined(body.probability, existing?.probability))
   const dealNumber = asTrimmedStringOrNull(pickFirstDefined(body.dealNumber, existing?.dealNumber, existing?.data?.dealNumber))
@@ -52,13 +58,14 @@ const buildPayload = (body = {}, actor, existing) => {
 
   return {
     title,
+    dealName,
     ...(dealNumber ? { dealNumber } : {}),
     customerName: asTrimmedStringOrNull(pickFirstDefined(body.customerName, existing?.customerName)),
     customerNumber: asTrimmedStringOrNull(pickFirstDefined(body.customerNumber, existing?.customerNumber, existing?.data?.customerNumber)),
     accountId: asOptionalInteger(pickFirstDefined(body.accountId, body.account_id, existing?.accountId)),
-    accountName: asTrimmedStringOrNull(pickFirstDefined(body.accountName, existing?.accountName, existing?.data?.accountName)),
+    accountName: asTrimmedStringOrNull(pickFirstDefined(existing?.accountName, existing?.data?.accountName, existing?.data?.data?.accountName, (body.accountName !== body.title && body.accountName !== body.dealName ? body.accountName : null))),
     accountNumber: asTrimmedStringOrNull(pickFirstDefined(body.accountNumber, existing?.accountNumber, existing?.data?.accountNumber)),
-    linkedAccountName: asTrimmedStringOrNull(pickFirstDefined(body.linkedAccountName, body.accountName, existing?.linkedAccountName, existing?.accountName, existing?.data?.linkedAccountName, existing?.data?.accountName)),
+    linkedAccountName: asTrimmedStringOrNull(pickFirstDefined(existing?.linkedAccountName, existing?.accountName, existing?.data?.linkedAccountName, existing?.data?.accountName, existing?.data?.data?.linkedAccountName, existing?.data?.data?.accountName, (body.linkedAccountName !== body.title && body.linkedAccountName !== body.dealName ? body.linkedAccountName : null))),
     linkedAccountNumber: asTrimmedStringOrNull(pickFirstDefined(body.linkedAccountNumber, body.accountNumber, existing?.linkedAccountNumber, existing?.accountNumber, existing?.data?.linkedAccountNumber, existing?.data?.accountNumber)),
     companyName: asTrimmedStringOrNull(pickFirstDefined(body.companyName, existing?.companyName, existing?.data?.companyName)),
     companyProfile: asTrimmedStringOrNull(pickFirstDefined(body.companyProfile, existing?.companyProfile, existing?.data?.companyProfile)),
@@ -84,7 +91,7 @@ const buildPayload = (body = {}, actor, existing) => {
     source: asTrimmedStringOrNull(pickFirstDefined(body.source, body.dealSource, existing?.source, existing?.dealSource)),
     dealSubsource: asTrimmedStringOrNull(pickFirstDefined(body.dealSubsource, body.subsource, existing?.dealSubsource, existing?.subsource)),
     subsource: asTrimmedStringOrNull(pickFirstDefined(body.subsource, body.dealSubsource, existing?.subsource, existing?.dealSubsource)),
-    projectName: asTrimmedStringOrNull(pickFirstDefined(body.projectName, existing?.projectName)),
+    projectName: asTrimmedStringOrNull(pickFirstDefined(body.projectName, body.dealName, existing?.projectName)),
     projectStatus: asTrimmedStringOrNull(pickFirstDefined(body.projectStatus, existing?.projectStatus)),
     poValue: asOptionalNumber(pickFirstDefined(body.poValue, existing?.poValue)),
     jobNo: asTrimmedStringOrNull(pickFirstDefined(body.jobNo, existing?.jobNo)),
@@ -176,6 +183,65 @@ const shouldCheckDuplicateOnUpdate = (existing = {}, body = {}) => {
     Object.prototype.hasOwnProperty.call(body, bodyField)
     && normalizeComparable(body[bodyField]) !== normalizeComparable(existing[existingField])
   ))
+}
+
+const syncDealNameToLinkedLead = async (deal = {}, value = '') => {
+  const nextName = String(value || '').trim()
+  if (!nextName) return
+
+  const { getMongoModel } = require('../models/mongoModels')
+  const Lead = getMongoModel('leads')
+  if (!Lead) return
+
+  const data = deal.data && typeof deal.data === 'object' ? deal.data : {}
+  const ids = Array.from(new Set([
+    deal.accountId,
+    deal.customerId,
+    data.accountId,
+    data.customerId,
+    data.sourceLeadId,
+    data.leadId,
+  ].map((entry) => String(entry || '').trim()).filter(Boolean)))
+
+  const accountNumbers = Array.from(new Set([
+    deal.accountNumber,
+    deal.linkedAccountNumber,
+    data.accountNumber,
+    data.linkedAccountNumber,
+    data.accountNo,
+  ].map((entry) => String(entry || '').trim()).filter(Boolean)))
+
+  const orFilters = [
+    ...ids.flatMap((id) => {
+      const numericId = Number(id)
+      return Number.isFinite(numericId)
+        ? [{ legacyId: numericId }, { id: numericId }, { id }, { accountId: numericId }, { accountId: id }]
+        : [{ id }, { accountId: id }]
+    }),
+    ...accountNumbers.flatMap((accountNumber) => [
+      { accountNumber },
+      { accountNo: accountNumber },
+      { 'formData.accountNumber': accountNumber },
+      { 'formData.accountNo': accountNumber },
+    ]),
+  ]
+
+  if (orFilters.length === 0) return
+
+  await Lead.updateMany(
+    { $or: orFilters, frontendDeleted: { $ne: true } },
+    {
+      $set: {
+        dealName: nextName,
+        projectName: nextName,
+        'data.dealName': nextName,
+        'data.projectName': nextName,
+        'formData.dealName': nextName,
+        'formData.projectName': nextName,
+        updatedAt: new Date().toISOString(),
+      },
+    }
+  ).catch(() => {})
 }
 
 const emitConvertedDealRealtime = (action, convertedDeal, actor) => {
@@ -326,6 +392,11 @@ module.exports = {
       }
     }
     const updatedDeal = await baseService.update(actor, id, enhancedBody)
+
+    const editedDealName = enhancedBody.dealName ?? enhancedBody.projectName ?? enhancedBody.name ?? enhancedBody.title
+    if (editedDealName !== undefined) {
+      await syncDealNameToLinkedLead(updatedDeal, editedDealName)
+    }
 
     if (isConvertedDealRecord(updatedDeal) || isConvertedDealRecord(existing)) {
       const convertedDeal = await convertedDealRepository.syncFromDeal(updatedDeal)

@@ -183,6 +183,12 @@ const formatDetailDate = (value, pattern = 'dd-MM-yyyy') => {
 }
 
 const getDisplayFieldValue = (field, value) => {
+  if (field.key === 'projectName') {
+    if (value === null || value === undefined) return '-'
+    const cleanText = String(value).trim()
+    if (!cleanText || cleanText.toLowerCase() === 'null' || cleanText.toLowerCase() === 'undefined') return '-'
+    return cleanText
+  }
   if (!value) return ''
   if (field.key === 'lastUpdated') return formatDetailDate(value, 'dd-MM-yyyy hh:mm a')
   if (field.type === 'date') return formatDetailDate(value)
@@ -236,11 +242,26 @@ const buildInitialForm = (account, deal = {}) => ({
   stateCode: account.stateCode || account.data?.stateCode || account.raw?.stateCode || account.raw?.data?.stateCode || '',
   country: account.raw?.country || account.data?.country || '',
   pincode: account.raw?.pincode || account.raw?.pinCode || account.data?.pincode || '',
-  projectName: [account.projectName, account.data?.projectName, account.dealName, account.data?.dealName, deal.projectName, deal.dealName]
+  projectName: [
+    account.projectName,
+    account.data?.projectName,
+    account.raw?.projectName,
+    account.formData?.projectName,
+    account.formData?.formData?.projectName,
+    account.raw?.formData?.formData?.projectName,
+    account.dealName,
+    account.data?.dealName,
+    account.raw?.dealName,
+    account.formData?.dealName,
+    account.formData?.formData?.dealName,
+    account.raw?.formData?.formData?.dealName,
+    deal.projectName,
+    deal.dealName
+  ]
     .map((value) => {
       if (value === null || value === undefined) return ''
       const text = String(value).trim()
-      return text && text.toLowerCase() !== 'null' && text.toLowerCase() !== 'undefined' ? text : ''
+      return text && text !== '-' && text.toLowerCase() !== 'null' && text.toLowerCase() !== 'undefined' ? text : ''
     })
     .find(Boolean) || '',
   projectType: account.productCategory || account.data?.productCategory || account.raw?.projectType || deal.productCategory || '',

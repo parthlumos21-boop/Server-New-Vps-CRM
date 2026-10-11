@@ -27,7 +27,7 @@ export const normalizeDealRecord = (deal = {}) => {
   const resolvedCompanyName = deal.companyName || deal.company_name || data.companyName || data.company_name || data.company || resolvedAccountName || resolvedCustomerName || ''
   const resolvedTitle = data.name || data.dealName || data.deal_name || deal.name || deal.dealName || deal.deal_name || deal.title || ''
   const resolvedCity = data.city || data.location || data.branchLocation || data.projectLocation || deal.city || deal.location || deal.branchLocation || deal.projectLocation || ''
-  const resolvedProjectName = data.projectName || data.project_name || deal.projectName || deal.project_name || resolvedTitle
+  const resolvedProjectName = data.projectName || data.project_name || deal.projectName || deal.project_name || ''
 
   return {
     ...data,

@@ -528,16 +528,21 @@ const normalizeSearchValue = (value) => String(value || '').trim().replace(/\s+/
 const COMPANY_CUSTOMER_FILTER_KEYS = new Set(['companyCustomerName', 'companyName', 'customerName', 'accountName'])
 const getCompanyCustomerFilterText = (row = {}) => {
   const rawDeal = row.rawDeal || {}
+  const projectTitle = normalizeSearchValue(row.projectName || row.dealName || rawDeal.projectName || rawDeal.dealName || rawDeal.title || '')
+  const compName = normalizeSearchValue(row.companyName)
+  const rawCompName = normalizeSearchValue(rawDeal.companyName)
+  const validComp = (compName && compName !== projectTitle) ? row.companyName : ''
+  const validRawComp = (rawCompName && rawCompName !== projectTitle) ? rawDeal.companyName : ''
 
   return normalizeSearchValue([
     row.companyCustomerName,
-    row.companyName,
+    validComp,
     row.customerName,
     row.accountName,
     row.accountNumber,
     row.customerNumber,
     rawDeal.companyCustomerName,
-    rawDeal.companyName,
+    validRawComp,
     rawDeal.customerName,
     rawDeal.linkedAccountName,
     rawDeal.accountName,
@@ -866,13 +871,27 @@ const getDealCompanyName = (deal = {}, linkedCustomer = null) => (
   cleanDealNameCellValue(deal.companyName || linkedCustomer?.companyName || '')
 )
 
-const getDealCompanyCustomerName = (deal = {}, linkedCustomer = null) => (
-  [...new Set([
-    getDealCompanyName(deal, linkedCustomer),
-    getDealCustomerName(deal, linkedCustomer),
-    cleanDealNameCellValue(deal.linkedAccountName || deal.accountName || ''),
-  ].filter(Boolean))].join(' / ')
-)
+const getDealCompanyCustomerName = (deal = {}, linkedCustomer = null) => {
+  const accountName = cleanDealNameCellValue(
+    deal.linkedAccountName
+    || deal.accountName
+    || deal.data?.linkedAccountName
+    || deal.data?.accountName
+    || deal.data?.data?.linkedAccountName
+    || deal.data?.data?.accountName
+    || ''
+  )
+  if (accountName) {
+    return accountName
+  }
+
+  const custName = getDealCustomerName(deal, linkedCustomer)
+  const compName = getDealCompanyName(deal, linkedCustomer)
+  const projectTitle = cleanDealNameCellValue(deal.projectName || deal.dealName || deal.name || deal.title || '')
+  const validComp = (compName && compName.toLowerCase() !== projectTitle.toLowerCase()) ? compName : ''
+  const fallback = [...new Set([validComp, custName].filter(Boolean))].join(' / ')
+  return fallback || custName || compName || '-'
+}
 
 const mergeDealSources = (deals = [], convertedDeals = []) => {
   const normalDealSourceIds = new Set(
@@ -1547,7 +1566,12 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
     const normalizedDeals = uniqueSourceDeals
       .map((deal, index) => {
         const linkedAccount = accountDirectory[String(deal.accountId || '')]
-          || accountNameDirectory[normalizeSearchValue(deal.accountName || deal.customerName || '')]
+          || accountDirectory[String(deal.data?.accountId || '')]
+          || accountDirectory[String(deal.data?.data?.accountId || '')]
+          || accountDirectory[String(deal.selectedSourceId || '')]
+          || accountDirectory[String(deal.linkedSourceId || '')]
+          || accountDirectory[String(deal.sourceLeadId || '')]
+          || accountNameDirectory[normalizeSearchValue(deal.linkedAccountName || deal.accountName || deal.customerName || deal.data?.accountName || deal.data?.customerName || '')]
           || null
         const linkedCustomer = customerDirectory[deal.customerId] || null
         const resolvedCompanyProfile = resolveDealCompanyProfile(deal, linkedAccount)
@@ -1566,7 +1590,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           || 'Unassigned'
 
         const primaryProjectName = deal.projectName || deal.data?.projectName || linkedAccount?.projectName || deal.title || deal.name || deal.dealName || ''
-        const primaryDealName = deal.name || deal.dealName || deal.title || deal.data?.dealName || deal.data?.name || deal.customerName || primaryProjectName || ''
+        const primaryDealName = deal.name || deal.dealName || deal.title || deal.data?.dealName || deal.data?.name || primaryProjectName || ''
 
         return {
           ...deal,
@@ -1598,7 +1622,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           reminderMode: deal.reminderMode || '',
           reminderNote: deal.reminderNote || '',
           customerName: getDealCustomerName(deal, linkedCustomer),
-          accountName: deal.linkedAccountName || deal.accountName || linkedAccount?.name || deal.customerName || '',
+          accountName: deal.linkedAccountName || deal.accountName || deal.customerName || deal.data?.linkedAccountName || deal.data?.accountName || deal.data?.customerName || deal.data?.data?.linkedAccountName || deal.data?.data?.accountName || deal.data?.data?.customerName || linkedAccount?.name || linkedAccount?.accountName || linkedAccount?.customerName || linkedAccount?.raw?.accountName || linkedAccount?.raw?.customerName || '',
           accountNumber: deal.linkedAccountNumber || deal.accountNumber || linkedAccount?.accountNumber || '',
           companyName: getDealCompanyName(deal, linkedCustomer) || cleanDealNameCellValue(linkedAccount?.company || linkedAccount?.raw?.companyName || ''),
           companyProfile: resolvedCompanyProfile,
@@ -1815,7 +1839,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         quotationOwnerName: quotationOwnerByDealId[String(deal.id || '')] || quotationOwnerByDealNumber[String(deal.dealNumber || '')] || deal.quotationOwnerName || deal.quotationOwner || '',
         location: deal.city || deal.location || linkedCustomer?.city || linkedCustomer?.location || '',
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
-        accountName: deal.linkedAccountName || deal.accountName || '',
+        accountName: deal.linkedAccountName || deal.accountName || getDealCompanyCustomerName(deal, linkedCustomer),
         accountNumber: deal.accountNumber || '',
         dealName: deal.name || '',
         dealDate: formatGridDate(deal.quotationDate || deal.dealDate || deal.createdAt || ''),
@@ -2117,7 +2141,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         const query = new URLSearchParams({
           tab: 'deals',
           accountId: deal.accountId || deal.id || '',
-          accountName: deal.accountName || deal.customerName || deal.title || '',
+          accountName: deal.accountName || deal.customerName || deal.linkedAccountName || '',
           accountNo: deal.accountNumber || deal.dealNumber || '',
         })
         navigate(`${basePath}?${query.toString()}`)
@@ -2209,6 +2233,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
         companyName: getDealCompanyName(deal, linkedCustomer),
         companyCustomerName: getDealCompanyCustomerName(deal, linkedCustomer),
+        accountName: deal.linkedAccountName || deal.accountName || getDealCompanyCustomerName(deal, linkedCustomer),
         companyProfile: deal.companyProfile || '',
         dealDate: formatGridDate(deal.quotationDate || deal.dealDate || deal.createdAt || ''),
         dealOwner: deal.dealOwnerDisplay || getCrmOwnerDisplay(deal.dealOwner || deal.ownerName || '') || deal.dealOwner || deal.ownerName || '',
@@ -2254,6 +2279,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
           customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
           companyName: getDealCompanyName(deal, linkedCustomer),
           companyCustomerName: getDealCompanyCustomerName(deal, linkedCustomer),
+          accountName: deal.linkedAccountName || deal.accountName || getDealCompanyCustomerName(deal, linkedCustomer),
           companyProfile: deal.companyProfile || '',
           dealDate: formatGridDate(deal.quotationDate || deal.dealDate || deal.createdAt || ''),
           dealOwner: deal.dealOwnerDisplay || getCrmOwnerDisplay(deal.dealOwner || deal.ownerName || '') || deal.dealOwner || deal.ownerName || '',
@@ -2296,6 +2322,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
         companyName: getDealCompanyName(deal, linkedCustomer),
         companyCustomerName: getDealCompanyCustomerName(deal, linkedCustomer),
+        accountName: deal.linkedAccountName || deal.accountName || getDealCompanyCustomerName(deal, linkedCustomer),
         companyProfile: deal.companyProfile || '',
         dealDate: formatGridDate(deal.quotationDate || deal.dealDate || deal.createdAt || ''),
         dealOwner: deal.dealOwnerDisplay || getCrmOwnerDisplay(deal.dealOwner || deal.ownerName || '') || deal.dealOwner || deal.ownerName || '',
@@ -2339,6 +2366,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         customerNumber: deal.customerNumber || linkedCustomer?.customerNumber || '',
         companyName: getDealCompanyName(deal, linkedCustomer),
         companyCustomerName: getDealCompanyCustomerName(deal, linkedCustomer),
+        accountName: deal.linkedAccountName || deal.accountName || getDealCompanyCustomerName(deal, linkedCustomer),
         companyProfile: deal.companyProfile || '',
         dealDate: formatGridDate(deal.quotationDate || deal.dealDate || deal.createdAt || ''),
         dealOwner: deal.dealOwnerDisplay || getCrmOwnerDisplay(deal.dealOwner || deal.ownerName || '') || deal.dealOwner || deal.ownerName || '',
@@ -4370,6 +4398,17 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
     if (columnKey === 'dealName') {
       const val = row.dealName || row.name || row.title || row.customerName || row.rawDeal?.dealName || row.rawDeal?.name || row.rawDeal?.title || row.rawDeal?.data?.dealName
       return (val && String(val).trim().toLowerCase() !== 'null' && String(val).trim().toLowerCase() !== 'undefined') ? String(val).trim() : '-'
+    }
+
+    if (columnKey === 'companyCustomerName' || columnKey === 'accountName') {
+      const val = row.accountName
+        || row.rawDeal?.linkedAccountName
+        || row.rawDeal?.accountName
+        || row.rawDeal?.data?.linkedAccountName
+        || row.rawDeal?.data?.accountName
+        || row.companyCustomerName
+      const strVal = cleanDealNameCellValue(val)
+      return (strVal && strVal.toLowerCase() !== 'null' && strVal.toLowerCase() !== 'undefined') ? strVal : '-'
     }
 
     if (columnKey === 'customerName') {
