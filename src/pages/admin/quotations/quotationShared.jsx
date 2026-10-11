@@ -866,7 +866,7 @@ export const buildQuotationDocumentData = (quotation, linkedAccount) => {
     email: quotation.email || linkedAccount?.email || linkedAccount?.contactEmail || '-',
     gstin: quotation.gstin || linkedAccount?.gstin || '-',
     stateCode: quotation.stateCode || linkedAccount?.stateCode || '-',
-    accountOwner: linkedAccount?.accountOwnerDisplay || quotation.selectedAccountOwner || linkedAccount?.accountOwner || '-',
+    accountOwner: quotation.selectedAccountOwner || quotation.accountOwner || quotation.data?.selectedAccountOwner || quotation.data?.accountOwner || linkedAccount?.accountOwnerDisplay || linkedAccount?.accountOwner || '-',
     customerReferenceNumber: quotation.customerReference?.number || '-',
     customerReferenceDate: formatDocumentDate(quotation.customerReference?.date),
     customerReferenceSubject: quotation.customerReference?.subject || '-',
@@ -1693,19 +1693,31 @@ export const renderEditableQuotationValue = (documentData, editable, onEditField
 )
 
 export const QUOTATION_EDIT_ALLOWED_EMAILS = new Set([
-  'keval@swatiswithgears.com',
-  'keval@swatisswitchgears.com',
+  'keval@swatiswitchgears.com',
   'parth@support.com',
   'rushabh@support.com',
+])
+
+export const QUOTATION_EDIT_ALLOWED_IDS = new Set([16, 17, 18, '16', '17', '18'])
+
+export const QUOTATION_EDIT_ALLOWED_USERNAMES = new Set([
+  'kevalvshah',
+  'parth-crm-support',
+  'rushabh-crm-support',
 ])
 
 export const canUserEditQuotation = (user) => {
   if (!user) return false
   const email = String(user.email || '').trim().toLowerCase()
-  const name = String(user.name || user.username || '').trim().toLowerCase()
+  const username = String(user.username || '').trim().toLowerCase()
+  const name = String(user.name || '').trim().toLowerCase()
+  const id = user.id || user.legacyId
+
   if (QUOTATION_EDIT_ALLOWED_EMAILS.has(email)) return true
-  return ['keval v shah', 'keval', 'parth', 'rushabh'].some((authorizedName) => (
-    email.includes(authorizedName) || name.includes(authorizedName)
+  if (QUOTATION_EDIT_ALLOWED_IDS.has(id)) return true
+  if (QUOTATION_EDIT_ALLOWED_USERNAMES.has(username)) return true
+  return ['keval v shah', 'keval shah', 'parth crm support', 'rushabh crm support'].some((authorizedName) => (
+    name === authorizedName
   ))
 }
 

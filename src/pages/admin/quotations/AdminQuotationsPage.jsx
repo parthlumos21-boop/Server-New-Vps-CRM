@@ -923,6 +923,15 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
       }
     }
 
+    if (fieldKey === 'selectedAccountOwner' || fieldKey === 'accountOwner') {
+      return {
+        selectedAccountOwner: value,
+        accountOwner: value,
+        'data.selectedAccountOwner': value,
+        'data.accountOwner': value,
+      }
+    }
+
     return { [fieldKey]: value }
   }
 

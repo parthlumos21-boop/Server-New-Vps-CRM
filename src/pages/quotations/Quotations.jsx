@@ -1128,6 +1128,15 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       }
     }
 
+    if (fieldKey === 'selectedAccountOwner' || fieldKey === 'accountOwner') {
+      return {
+        selectedAccountOwner: value,
+        accountOwner: value,
+        'data.selectedAccountOwner': value,
+        'data.accountOwner': value,
+      }
+    }
+
     return { [fieldKey]: value }
   }
 

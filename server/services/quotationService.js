@@ -550,6 +550,8 @@ const buildPayload = async (body, actor, existing) => {
     ttaOrg: body.ttaOrg ?? existing?.ttaOrg ?? '',
     assignedTo: body.assignedTo ?? existing?.assignedTo ?? (actor.role === 'user' ? actor.id : null),
     createdBy: existing?.createdBy ?? actor.id,
+    selectedAccountOwner: body.selectedAccountOwner ?? body.accountOwner ?? existing?.selectedAccountOwner ?? existing?.accountOwner ?? existing?.data?.selectedAccountOwner ?? existing?.data?.accountOwner ?? '',
+    accountOwner: body.selectedAccountOwner ?? body.accountOwner ?? existing?.selectedAccountOwner ?? existing?.accountOwner ?? existing?.data?.selectedAccountOwner ?? existing?.data?.accountOwner ?? '',
     data: {
       ...(existing?.data || {}),
       ...body,
@@ -572,6 +574,8 @@ const buildPayload = async (body, actor, existing) => {
       ttaOrg: body.ttaOrg ?? existing?.data?.ttaOrg ?? existing?.ttaOrg ?? '',
       quotationNotes: body.quotationNotes ?? existing?.data?.quotationNotes ?? notes,
       createdBy: existing?.createdBy ?? actor.id,
+      selectedAccountOwner: body.selectedAccountOwner ?? body.accountOwner ?? existing?.data?.selectedAccountOwner ?? existing?.selectedAccountOwner ?? '',
+      accountOwner: body.selectedAccountOwner ?? body.accountOwner ?? existing?.data?.accountOwner ?? existing?.accountOwner ?? '',
       userId: body.userId ?? existing?.data?.userId ?? existing?.createdBy ?? actor.id,
     },
   }
@@ -825,6 +829,19 @@ const applyStrictIsolation = (actor) => {
   const email = String(actor?.email || '').toLowerCase().trim()
   if (email === 'keval@swatiswitchgears.com') return { ...actor, role: 'admin' }
   return { ...actor, role: 'user' }
+}
+
+const isSalesExecutiveEditAuthorized = (actor) => {
+  if (!actor) return false
+  const actorId = actor.id || actor._id || actor.legacyId
+  if ([16, 17, 18, '16', '17', '18'].includes(actorId)) return true
+  const email = String(actor.email || '').trim().toLowerCase()
+  if (['keval@swatiswitchgears.com', 'parth@support.com', 'rushabh@support.com'].includes(email)) return true
+  const username = String(actor.username || '').trim().toLowerCase()
+  if (['kevalvshah', 'parth-crm-support', 'rushabh-crm-support'].includes(username)) return true
+  const name = String(actor.name || '').trim().toLowerCase()
+  if (['keval v shah', 'keval shah', 'parth crm support', 'rushabh crm support'].includes(name)) return true
+  return false
 }
 
 module.exports = {
@@ -1120,6 +1137,9 @@ module.exports = {
     return result
   },
   update: async (actor, id, payload) => {
+    if ((payload?.selectedAccountOwner !== undefined || payload?.accountOwner !== undefined || payload?.['data.selectedAccountOwner'] !== undefined) && !isSalesExecutiveEditAuthorized(actor)) {
+      throw new AppError('Only Keval V Shah, Parth, and Rushabh are authorized to edit the Sales Executive.', 403)
+    }
     const result = await quotationService.update(actor, id, payload)
     await syncQuotationToLeadsAndDeals(result)
     return result
