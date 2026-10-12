@@ -18,7 +18,7 @@ const broadcastUserEvent = (eventName, payload) => {
 
 const createUser = async (req, res, next) => {
   try {
-    const { name, email, password, role, designation, state, city, company } = req.body || {}
+    const { name, email, password, role, designation, state, city, mobileNumber, company } = req.body || {}
     const companyId = company === 'lumos' ? 2 : (company === 'swati' ? 1 : req.user.companyId)
     const result = await authService.createAdminManagedUser({
       name,
@@ -28,6 +28,7 @@ const createUser = async (req, res, next) => {
       designation,
       state,
       city,
+      mobileNumber,
       company,
       companyId,
     })
@@ -49,9 +50,9 @@ const updateUser = async (req, res, next) => {
       throw new AppError('Invalid user id.', 400)
     }
 
-    const { name, email, password, role, designation, state, city, company } = req.body || {}
+    const { name, email, password, role, designation, state, city, mobileNumber, company } = req.body || {}
     const companyId = company === 'lumos' ? 2 : (company === 'swati' ? 1 : req.user.companyId)
-    const result = await authService.updateAdminManagedUser(userId, { name, email, password, role, designation, state, city, company, companyId }, req.user)
+    const result = await authService.updateAdminManagedUser(userId, { name, email, password, role, designation, state, city, mobileNumber, company, companyId }, req.user)
     broadcastUserEvent(SOCKET_EVENTS.USER_UPDATED, { user: result.user })
 
     res.json({

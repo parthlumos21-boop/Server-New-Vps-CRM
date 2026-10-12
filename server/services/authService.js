@@ -308,7 +308,7 @@ const register = async ({ name, email, password }) => {
   }
 }
 
-const createAdminManagedUser = async ({ name, email, password, companyId = 1, company = '', role = 'user', designation, state, city }) => {
+const createAdminManagedUser = async ({ name, email, password, companyId = 1, company = '', role = 'user', designation, state, city, mobileNumber = '' }) => {
   const { nameValue, emailValue, passwordValue } = validateUserPayload({ name, email, password })
 
   const existing = await userRepository.findUserByEmail(emailValue)
@@ -323,6 +323,7 @@ const createAdminManagedUser = async ({ name, email, password, companyId = 1, co
   const baseUsername = slugifyUsername(nameValue || emailValue.split('@')[0])
   const username = await ensureUniqueUsername(baseUsername)
   const passwordHash = await hashPassword(passwordValue)
+  const mobileNumberValue = String(mobileNumber || '').replace(/\D/g, '')
 
   const created = await userRepository.createUser({
     username,
@@ -334,6 +335,7 @@ const createAdminManagedUser = async ({ name, email, password, companyId = 1, co
     designation,
     state,
     city,
+    mobileNumber: mobileNumberValue,
     companyId,
     company,
     status: 'pending',
@@ -583,7 +585,7 @@ const logoutAllSessions = async (userId) => {
   return { success: true }
 }
 
-const updateAdminManagedUser = async (userId, { name, email, password, role, designation, state, city, companyId, company }, actor = {}) => {
+const updateAdminManagedUser = async (userId, { name, email, password, role, designation, state, city, mobileNumber, companyId, company }, actor = {}) => {
   const targetUser = await userRepository.findRawUserById(userId)
   if (!targetUser) {
     throw new AppError('User not found.', 404)
@@ -596,6 +598,7 @@ const updateAdminManagedUser = async (userId, { name, email, password, role, des
   const nameValue = String(name || '').trim()
   const emailValue = String(email || '').trim().toLowerCase()
   const passwordValue = String(password || '')
+  const mobileNumberValue = String(mobileNumber || '').replace(/\D/g, '')
 
   if (!nameValue || !emailValue) {
     throw new AppError('Name and email are required.', 400)
@@ -630,6 +633,7 @@ const updateAdminManagedUser = async (userId, { name, email, password, role, des
     designation,
     state,
     city,
+    mobileNumber: mobileNumberValue,
     companyId,
     company,
   })

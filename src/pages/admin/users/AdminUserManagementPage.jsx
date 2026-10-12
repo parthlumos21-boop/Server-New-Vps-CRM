@@ -62,6 +62,7 @@ const initialFormState = {
   designation: '',
   state: '',
   city: '',
+  mobileNumber: '',
 }
 
 const initialGroupFormState = {
@@ -1900,6 +1901,7 @@ const AdminUserManagementPage = () => {
       designation: user.designation || '',
       state: user.state || '',
       city: user.city || '',
+      mobileNumber: user.mobileNumber || '',
     })
     setFormError('')
     setPageSuccess('')
@@ -1915,7 +1917,8 @@ const AdminUserManagementPage = () => {
 
   const handleUserFormChange = (field, value) => {
     setFormError('')
-    setFormData((currentValue) => ({ ...currentValue, [field]: value }))
+    const nextValue = field === 'mobileNumber' ? String(value || '').replace(/\D/g, '') : value
+    setFormData((currentValue) => ({ ...currentValue, [field]: nextValue }))
   }
 
   const handleToggleMenuVisibility = useCallback((itemKey) => {
@@ -2096,6 +2099,7 @@ const AdminUserManagementPage = () => {
           designation: formData.designation,
           state: formData.state,
           city: formData.city,
+          mobileNumber: formData.mobileNumber,
         }
 
         if (formData.password.trim()) {
@@ -2419,15 +2423,27 @@ const AdminUserManagementPage = () => {
             />
           </div>
 
-          <Input
-            label="Email *"
-            type="email"
-            value={formData.email}
-            onChange={(event) => handleUserFormChange('email', event.target.value)}
-            fullWidth
-            required
-            className="admin-user-management-form-field"
-          />
+          <div className="admin-user-management-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <Input
+              label="Mobile Number"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={formData.mobileNumber || ''}
+              onChange={(event) => handleUserFormChange('mobileNumber', event.target.value)}
+              fullWidth
+              className="admin-user-management-form-field"
+            />
+            <Input
+              label="Email *"
+              type="email"
+              value={formData.email}
+              onChange={(event) => handleUserFormChange('email', event.target.value)}
+              fullWidth
+              required
+              className="admin-user-management-form-field"
+            />
+          </div>
 
           <Input
             label={editingUser ? 'New Password' : 'Password *'}

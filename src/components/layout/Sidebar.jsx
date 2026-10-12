@@ -18,6 +18,7 @@ import {
   FaUserTie,
   FaTasks,
   FaComments,
+  FaEnvelope,
 } from 'react-icons/fa'
 import { FiChevronDown, FiChevronRight, FiChevronUp } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
@@ -622,6 +623,15 @@ const Sidebar = ({ isAdmin = false }) => {
           >
             <span className="sb-link-icon"><FaChartPie /></span>
             <span>Charts</span>
+          </NavLink>
+
+          <NavLink
+            to="/admin/email-templates"
+            className={({ isActive }) => `sb-link ${isActive ? 'sb-link--active' : ''}`}
+            title="Email Templates"
+          >
+            <span className="sb-link-icon"><FaEnvelope /></span>
+            <span>Email Templates</span>
           </NavLink>
 
           {(user?.role === 'super_admin' || user?.actualRole === 'super_admin') ? (

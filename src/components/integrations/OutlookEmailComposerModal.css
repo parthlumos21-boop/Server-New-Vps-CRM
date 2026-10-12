@@ -21,6 +21,21 @@
   animation: oecSlideIn 0.2s ease-out;
 }
 
+.oec-page-shell {
+  min-height: calc(100vh - 80px);
+  padding: 1rem;
+  background: var(--surface-app, #f8fafc);
+}
+
+.oec-page-card {
+  width: min(100%, 900px);
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
 @keyframes oecSlideIn {
   from {
     opacity: 0;
@@ -156,6 +171,64 @@
   background: #f8fafc;
   border: 1px dashed #cbd5e1;
   border-radius: 12px;
+}
+
+.oec-signature-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.oec-message-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.oec-message-preview-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.oec-message-preview-html {
+  overflow-wrap: anywhere;
+  color: #0f172a;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.oec-signature-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.oec-signature-preview img {
+  max-width: 260px;
+  max-height: 150px;
+  object-fit: contain;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.45rem;
+}
+
+.oec-signature-file {
+  color: #64748b;
+  font-size: 0.78rem;
 }
 
 .oec-attachments-title {

@@ -23,6 +23,7 @@ const toLegacyUser = (record) => {
     designation: record.designation ?? record.designation ?? '',
     state: record.state ?? record.state ?? '',
     city: record.city ?? record.city ?? '',
+    mobileNumber: record.mobileNumber ?? record.mobile_number ?? '',
     actualRole: record.actualRole ?? record.actual_role ?? record.role,
     userRoleMode: record.userRoleMode ?? record.user_role_mode ?? '',
     canActAsUser: Boolean(record.canActAsUser ?? record.can_act_as_user ?? false),
@@ -59,6 +60,7 @@ const sanitizeUserRow = (row) => {
     designation: user.designation,
     state: user.state,
     city: user.city,
+    mobileNumber: user.mobileNumber,
     actualRole: user.actualRole,
     userRoleMode: user.userRoleMode,
     canActAsUser: user.canActAsUser,
@@ -357,7 +359,7 @@ const getNextOwnerCode = async (companyId) => {
   return String(maxCode + 1)
 }
 
-const createUser = async ({ username, name, email, passwordHash, assignedPassword = '', role, companyId = 1, company = '', status = 'pending', isApproved = false, designation = '', state = '', city = '' }) => {
+const createUser = async ({ username, name, email, passwordHash, assignedPassword = '', role, companyId = 1, company = '', status = 'pending', isApproved = false, designation = '', state = '', city = '', mobileNumber = '' }) => {
   const legacyId = await getNextLegacyId('users')
   const ownerCode = await getNextOwnerCode(companyId)
 
@@ -372,6 +374,7 @@ const createUser = async ({ username, name, email, passwordHash, assignedPasswor
     designation,
     state,
     city,
+    mobileNumber,
     companyId,
     company,
     ownerCode,
@@ -450,7 +453,7 @@ const upsertMicrosoftUser = async ({
   return sanitizeUserRow(record)
 }
 
-const updateUserDetails = async (userId, { name, email, passwordHash = null, assignedPassword = null, role, companyId, company, designation, state, city }) => {
+const updateUserDetails = async (userId, { name, email, passwordHash = null, assignedPassword = null, role, companyId, company, designation, state, city, mobileNumber }) => {
   const updates = { name, email }
   if (passwordHash) {
     updates.passwordHash = passwordHash
@@ -464,6 +467,7 @@ const updateUserDetails = async (userId, { name, email, passwordHash = null, ass
   if (designation !== undefined) updates.designation = designation
   if (state !== undefined) updates.state = state
   if (city !== undefined) updates.city = city
+  if (mobileNumber !== undefined) updates.mobileNumber = mobileNumber
 
   const record = await User.findOneAndUpdate(byLegacyId(userId), { $set: updates }, { new: true }).lean()
   return sanitizeUserRow(record)

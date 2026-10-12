@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FaEnvelope } from 'react-icons/fa'
-import OutlookEmailComposerModal from './OutlookEmailComposerModal'
 import './ContactIntegrationActions.css'
 
 const ContactIntegrationActions = ({
@@ -11,19 +11,32 @@ const ContactIntegrationActions = ({
   emailMessage = '',
   onStatus,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
   const cleanEmail = String(email || '').trim()
 
   const emitStatus = (type, message) => {
     if (onStatus) onStatus(type, message)
   }
 
-  const handleOpenComposer = () => {
+  const handleOpenComposer = (event) => {
+    event.preventDefault()
+    event.stopPropagation()
     if (!cleanEmail || !cleanEmail.includes('@')) {
       emitStatus('error', 'A valid email address is required.')
       return
     }
-    setIsModalOpen(true)
+    const isAdminRoute = location.pathname.startsWith('/admin')
+    const basePath = isAdminRoute ? '/admin/email/compose' : '/email/compose'
+    const entityType = String(targetType || 'account').trim() || 'account'
+    const entityId = encodeURIComponent(String(targetId || '').trim() || 'new')
+    const params = new URLSearchParams({
+      to: cleanEmail,
+      subject: emailSubject || 'CRM Message',
+      message: emailMessage || '',
+      returnTo: `${location.pathname}${location.search}`,
+    })
+    navigate(`${basePath}/${entityType}/${entityId}?${params.toString()}`)
   }
 
   return (
@@ -41,16 +54,6 @@ const ContactIntegrationActions = ({
         ) : null}
       </span>
 
-      <OutlookEmailComposerModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        recipientEmail={cleanEmail}
-        targetType={targetType}
-        targetId={targetId}
-        defaultSubject={emailSubject}
-        defaultMessage={emailMessage}
-        onSuccess={() => emitStatus('success', 'Email message sent successfully via Outlook!')}
-      />
     </>
   )
 }

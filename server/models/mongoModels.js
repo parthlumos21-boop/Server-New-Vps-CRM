@@ -131,8 +131,18 @@ const COLLECTION_INDEXES = {
   ],
   email_logs: [
     { fields: { userId: 1, sentDate: -1 } },
+    { fields: { companyId: 1, sentDate: -1 } },
+    { fields: { templateId: 1, sentDate: -1 }, options: { sparse: true } },
     { fields: { messageId: 1 }, options: { sparse: true } },
     { fields: { deliveryStatus: 1 } },
+  ],
+  email_templates: [
+    { fields: { companyId: 1, category: 1, status: 1 } },
+    { fields: { companyId: 1, createdAt: -1 } },
+    { fields: { companyId: 1, category: 1, isDefault: 1 } },
+  ],
+  email_settings: [
+    { fields: { companyId: 1 }, options: { unique: true, sparse: true } },
   ],
   outlook_integrations: [
     { fields: { userId: 1 }, options: { unique: true, sparse: true } },

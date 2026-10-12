@@ -870,6 +870,8 @@ class IntegrationService {
           name: att.name || att.filename || 'attachment',
           contentType: att.contentType || att.mimeType || 'application/octet-stream',
           contentBytes: cleanBytes,
+          isInline: Boolean(att.isInline),
+          contentId: att.contentId || undefined,
         }
       }).filter((att) => Boolean(att.contentBytes))
       : undefined

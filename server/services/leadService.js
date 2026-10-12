@@ -546,6 +546,28 @@ const updateLead = async (actor, leadId, payload) => {
     throw new AppError('Lead not found.', 404)
   }
 
+  if (payload.email !== undefined || payload.contactEmail !== undefined) {
+    const nextEmail = String(payload.email ?? payload.contactEmail ?? '').trim()
+    const { getMongoModel } = require('../models/mongoModels')
+    const Deal = getMongoModel('deals')
+    if (Deal) {
+      await Deal.updateMany(
+        { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
+        {
+          $set: {
+            email: nextEmail,
+            contactEmail: nextEmail,
+            'data.email': nextEmail,
+            'data.contactEmail': nextEmail,
+            'formData.email': nextEmail,
+            'formData.contactEmail': nextEmail,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
+  }
+
   if (payload.projectName !== undefined || payload.dealName !== undefined) {
     const nextProjectName = payload.projectName !== undefined ? payload.projectName : payload.dealName
     const { getMongoModel } = require('../models/mongoModels')

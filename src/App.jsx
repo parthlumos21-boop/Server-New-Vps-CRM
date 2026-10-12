@@ -37,6 +37,7 @@ import TicketPage from './pages/tickets/TicketPage'
 import AddTicketPage from './pages/tickets/AddTicketPage'
 import IntegrationQrPage from './pages/integrations/IntegrationQrPage'
 import OutlookMailPage from './pages/integrations/OutlookMailPage'
+import OutlookEmailComposePage from './pages/integrations/OutlookEmailComposePage'
 import Login from './pages/auth/Login'
 import AdminLogin from './pages/auth/AdminLogin'
 import Logout from './pages/auth/Logout'
@@ -64,6 +65,8 @@ import AdminAdvancedSearchPage from './pages/admin/search/AdminAdvancedSearchPag
 import ProjectDetailsPage from './pages/admin/projects/ProjectDetailsPage'
 import AdminLaunchpad from './pages/admin/launchpad/AdminLaunchpad'
 import DataManagerPage from './pages/admin/data-manager/DataManagerPage'
+import EmailTemplatesPage from './pages/admin/email-templates/EmailTemplatesPage'
+import EmailTemplatesAllPage from './pages/admin/email-templates/EmailTemplatesAllPage'
 
 import DocumentBasePage from './pages/admin/data-manager/DocumentBasePage'
 import ImageGalleryPage from './pages/admin/data-manager/ImageGalleryPage'
@@ -272,6 +275,7 @@ function App() {
                 <Route path="outlook" element={<Navigate to="/dashboard" replace />} />
                 <Route path="messages" element={<AdminMessagesPage />} />
                 <Route path="settings" element={<AdminSettingsPage />} />
+                <Route path="email/compose/:targetType/:targetId" element={<OutlookEmailComposePage />} />
               </Route>
 
               <Route
@@ -375,10 +379,13 @@ function App() {
                 <Route path="user-management/manage-user-types" element={<AdminUserManagementPage />} />
                 <Route path="password-reset-requests" element={<PasswordResetRequestsPage />} />
                 <Route path="messages" element={<AdminMessagesPage />} />
+                <Route path="email-templates" element={<EmailTemplatesPage />} />
+                <Route path="email-templates/all" element={<EmailTemplatesAllPage />} />
                 <Route path="integrations/outlook" element={<Navigate to="/admin/settings" replace />} />
                 <Route path="integrations" element={<IntegrationQrPage />} />
                 <Route path="integrations/:channel" element={<IntegrationQrPage />} />
                 <Route path="outlook" element={<OutlookMailPage />} />
+                <Route path="email/compose/:targetType/:targetId" element={<OutlookEmailComposePage />} />
                 <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="data-manager" element={<DataManagerPage />} />
 
