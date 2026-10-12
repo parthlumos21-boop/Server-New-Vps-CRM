@@ -13,16 +13,36 @@ const escapeHtml = (value) => String(value || '')
 
 const looksLikeHtml = (value) => /<\/?[a-z][\s\S]*>/i.test(String(value || ''))
 
+const normalizeTextSpacing = (value) => String(value || '')
+  .replace(/\r\n/g, '\n')
+  .replace(/\r/g, '\n')
+  .replace(/[ \t]+$/gm, '')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim()
+
 const htmlToPlainText = (value) => {
   const body = String(value || '')
   if (!body) return ''
-  if (!looksLikeHtml(body)) return body
-  return body
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(div|p|li|tr|h[1-6])>/gi, '\n')
-    .replace(/<li[^>]*>/gi, '- ')
+
+  let str = body
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&nbsp;/gi, ' ')
+
+  if (!looksLikeHtml(str)) return normalizeTextSpacing(str)
+
+  const converted = str
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<(div|p)[^>]*>\s*(?:<br\/?>|\s*)\s*<\/(div|p)>/gi, '\n\n')
+    .replace(/<(div|p|tr|h[1-6])[^>]*>/gi, '\n')
+    .replace(/<\/(div|p|tr|h[1-6])>/gi, '')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<\/li>/gi, '\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -30,14 +50,22 @@ const htmlToPlainText = (value) => {
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+
+  return normalizeTextSpacing(converted)
 }
 
 const buildBodyHtml = (value) => {
-  const body = String(value || '')
-  const content = escapeHtml(looksLikeHtml(body) ? htmlToPlainText(body) : body)
-  return `<div style="white-space:pre-wrap;font-family:Arial,sans-serif;font-size:14px;line-height:1.45;color:#111827;">${content}</div>`
+  const plainText = htmlToPlainText(value)
+  if (!plainText) return ''
+  const paragraphs = plainText.split(/\n\n+/)
+  const pTags = paragraphs.map((p) => {
+    const cleanP = p.trim()
+    if (!cleanP) return ''
+    const lines = cleanP.split('\n').map((line) => escapeHtml(line))
+    return `<p style="margin:0 0 12px 0;font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#111827;">${lines.join('<br/>')}</p>`
+  }).filter(Boolean)
+
+  return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#111827;">${pTags.join('')}</div>`
 }
 
 const buildSignatureHtml = (signatureImage, contentIdOrSrc) => {
@@ -72,7 +100,7 @@ const OutlookEmailComposerModal = ({
 }) => {
   const [to, setTo] = useState(recipientEmail)
   const [subject, setSubject] = useState(defaultSubject)
-  const [message, setMessage] = useState(defaultMessage)
+  const [message, setMessage] = useState(() => htmlToPlainText(defaultMessage))
   const [attachments, setAttachments] = useState([])
   const [templates, setTemplates] = useState([])
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
@@ -85,6 +113,12 @@ const OutlookEmailComposerModal = ({
   React.useEffect(() => {
     setTo(recipientEmail)
   }, [recipientEmail])
+
+  React.useEffect(() => {
+    if (defaultMessage) {
+      setMessage(htmlToPlainText(defaultMessage))
+    }
+  }, [defaultMessage])
 
   React.useEffect(() => {
     if (!isOpen) return

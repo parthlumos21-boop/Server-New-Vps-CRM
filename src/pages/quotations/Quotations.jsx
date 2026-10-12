@@ -414,7 +414,7 @@ const createInitialQuotationForm = () => ({
   customerReferenceDate: getTodayInputValue(),
   customerReferenceSubject: '',
   productGroup: 'Non TTA',
-  ttaOrg: 'Abp',
+  ttaOrg: 'ABB',
   productName: '',
   hsn: '',
   r0Amount: '',
@@ -484,7 +484,7 @@ const buildQuotationFormFromExisting = (quotation = {}, nextQuotationNumber = ''
     validUntil: addDaysToInputValue(quotationDate, 7),
     status: 'approved',
     productGroup: quotation.productGroup || 'Non TTA',
-    ttaOrg: quotation.ttaOrg || 'Abp',
+    ttaOrg: quotation.ttaOrg === 'Abp' ? 'ABB' : (quotation.ttaOrg || 'ABB'),
     productName: quotation.productName || quotation.product || '',
     hsn: quotation.hsn || '',
     r0Amount: hasR0 ? String(r0Val) : '',
@@ -1453,7 +1453,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const autofillPmcName = latestQuote?.pmcName || latestQuote?.data?.pmcName || account?.pmcName || ''
     const autofillProductName = latestQuote?.productName || latestQuote?.product || account?.productName || account?.productCategory || account?.product || ''
     const autofillProductGroup = latestQuote?.productGroup || account?.productGroup || 'Non TTA'
-    const autofillTtaOrg = latestQuote?.ttaOrg || latestQuote?.data?.ttaOrg || account?.ttaOrg || 'Abp'
+    const autofillTtaOrg = (latestQuote?.ttaOrg === 'Abp' ? 'ABB' : latestQuote?.ttaOrg) || (account?.ttaOrg === 'Abp' ? 'ABB' : account?.ttaOrg) || 'ABB'
     const autofillHsn = latestQuote?.hsn || account?.hsn || ''
 
     const autofillLineItems = (Array.isArray(latestQuote?.lineItems) && latestQuote.lineItems.length > 0)
@@ -1948,7 +1948,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
         subject: quotationForm.customerReferenceSubject,
       },
       productGroup: quotationForm.productGroup || 'Non TTA',
-      ttaOrg: quotationForm.productGroup === 'TTA' ? (quotationForm.ttaOrg || 'Abp') : '',
+      ttaOrg: (quotationForm.productGroup === 'TTA' || quotationForm.productGroup === 'Non TTA') ? ((quotationForm.ttaOrg === 'Abp' ? 'ABB' : quotationForm.ttaOrg) || 'ABB') : '',
       productName: quotationForm.productName || quotationForm.product || '',
       hsn: quotationForm.hsn || '',
       revisionCode: revisionCodeVal,
@@ -3195,14 +3195,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <option value="ELECTRICAL PANEL">ELECTRICAL PANEL</option>
                     </select>
                   </label>
-                  {quotationForm.productGroup === 'TTA' && (
+                  {(quotationForm.productGroup === 'TTA' || quotationForm.productGroup === 'Non TTA') && (
                     <label className="quotation-builder-field">
                       <span>TTA Org</span>
                       <select
-                        value={quotationForm.ttaOrg || 'Abp'}
+                        value={quotationForm.ttaOrg === 'Abp' ? 'ABB' : (quotationForm.ttaOrg || 'ABB')}
                         onChange={(event) => handleBuilderFieldChange('ttaOrg', event.target.value)}
                       >
-                        <option value="Abp">Abp</option>
+                        <option value="ABB">ABB</option>
                         <option value="Schneider">Schneider</option>
                         <option value="Siemens">Siemens</option>
                         <option value="L&K/L&T">L&K/L&T</option>

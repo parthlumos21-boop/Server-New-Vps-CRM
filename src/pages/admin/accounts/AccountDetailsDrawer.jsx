@@ -233,7 +233,8 @@ const buildInitialForm = (account, deal = {}) => ({
   mobile: account.contactMobile || account.phone || '',
   alternatePhone: account.alternatePhone || '',
   alternateEmail: account.alternateEmail || '',
-  email: account.email || account.contactEmail || '',
+  email: account.email || account.contactEmail || account.formData?.email || '',
+  contactEmail: account.contactEmail || account.email || account.formData?.contactEmail || '',
   website: account.website || '',
   address: account.address || '',
   city: account.location || account.raw?.city || '',
@@ -325,8 +326,8 @@ const buildUpdatePayload = (form) => ({
   phone: form.mobile,
   alternatePhone: form.alternatePhone,
   alternateEmail: form.alternateEmail,
-  contactEmail: form.email,
-  email: form.email,
+  contactEmail: form.email || form.contactEmail || '',
+  email: form.email || form.contactEmail || '',
   website: form.website,
   address: form.address,
   location: form.city,
@@ -542,6 +543,15 @@ const AccountDetailsDrawer = ({
         ...currentForm,
         status: nextStatus,
         accountState: getAccountStatusLabel(nextStatus),
+      }))
+      return
+    }
+
+    if (key === 'email' || key === 'contactEmail') {
+      setForm((currentForm) => ({
+        ...currentForm,
+        email: value,
+        contactEmail: value,
       }))
       return
     }

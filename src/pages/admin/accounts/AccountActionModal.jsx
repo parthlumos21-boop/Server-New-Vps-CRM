@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { FaSave } from 'react-icons/fa'
 import AddRemarksModal from '../../../components/common/AddRemarksModal'
 import AddReminderModal from '../../../components/common/AddReminderModal'
 import Button from '../../../components/common/Button'
@@ -57,6 +58,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
   const [reasonForLost, setReasonForLost] = useState('')
   const [formError, setFormError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isSavingPoValue, setIsSavingPoValue] = useState(false)
   const [ownerOptions, setOwnerOptions] = useState(getCachedAccountOwnerOptions)
 
   useEffect(() => {
@@ -78,7 +80,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
   useEffect(() => {
     if (!account) return
 
-    setStage(getAllowedActionStatusOption(account.status || account.stage)?.value || ACTION_CHANGE_STATUS_OPTIONS[0]?.value || 'new')
+    setStage(getAllowedActionStatusOption(account.stage || account.status || account.accountStatus)?.value || ACTION_CHANGE_STATUS_OPTIONS[0]?.value || 'new')
     setStatusNote('')
     setPoValue(account.poValue || '')
     setReasonForLost(account.reasonForLost || account.reasonForLostOrder || '')
@@ -170,6 +172,34 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
     )
   }
 
+  const handleSavePoValueOnly = async (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    if (!account) return
+
+    setFormError('')
+    setIsSavingPoValue(true)
+    const numericPoValue = String(poValue).trim() === '' ? 0 : Number(poValue)
+    const result = await updateAccount(account.raw?.id || account.id, {
+      poValue: numericPoValue,
+      isOnlyPoValueUpdate: true,
+      preserveStatus: true,
+      updatedAt: new Date().toISOString(),
+    })
+    setIsSavingPoValue(false)
+
+    if (!result.success) {
+      setFormError(result.message || 'Unable to save PO Value.')
+      addNotification('error', 'Failed to save PO Value', result.message || 'Unable to save PO Value.')
+      return
+    }
+
+    setPoValue(numericPoValue)
+    addNotification('success', 'PO Value saved', `PO Value ${numericPoValue} saved successfully in MongoDB.`)
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setFormError('')
@@ -197,6 +227,8 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
 
       const selectedStatus = getAccountChangeStatusOption(targetStage)
       const selectedStatusLabel = selectedStatus?.label || targetStage
+      const targetStageKey = selectedStatus?.stageKey || targetStage
+      const isQuotationSent = targetStageKey === 'quotation_sent'
 
       if (actionKey === 'converted-deal' || showPoDetails) {
         if (!String(poValue).trim()) {
@@ -206,10 +238,10 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
       }
 
       updates = {
-        stage: selectedStatus?.stageKey || targetStage,
-        status: isNotQuoted ? 'not_quoted' : selectedStatusLabel,
-        accountStatus: isNotQuoted ? 'not_quoted' : (targetStage === 'convert_to_po' ? 'convert_to_po' : 'Pending'),
-        accountState: isNotQuoted ? 'not_quoted' : (targetStage === 'convert_to_po' ? 'convert_to_po' : (accountState || selectedStatusLabel)),
+        stage: targetStageKey,
+        status: isQuotationSent ? 'quotation_sent' : (isNotQuoted ? 'not_quoted' : selectedStatusLabel),
+        accountStatus: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : (targetStageKey === 'convert_to_po' ? 'convert_to_po' : selectedStatusLabel)),
+        accountState: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : (targetStageKey === 'convert_to_po' ? 'convert_to_po' : (accountState || selectedStatusLabel))),
         latestRemark: statusNote.trim() || account.latestRemark,
         ...(targetStage === 'rejected' ? { reasonForLost: reasonForLost.trim(), reasonForLostOrder: reasonForLost.trim() } : {}),
       }
@@ -372,8 +404,41 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
               <div className="admin-accounts-action-section-label">Please fill in the PO Converted details below</div>
               <div className="admin-accounts-action-form-grid admin-accounts-action-form-grid--section">
                 <label className="admin-accounts-bulk-field">
-                  PO Value <span style={{ color: '#dc2626' }}>* (Mandatory)</span>
-                  <input type="number" min="0" value={poValue} onChange={(event) => setPoValue(event.target.value)} placeholder="Enter PO value" />
+                  <span>PO Value <span style={{ color: '#dc2626' }}>* (Mandatory to Convert)</span></span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="number"
+                      min="0"
+                      value={poValue}
+                      onChange={(event) => setPoValue(event.target.value)}
+                      placeholder="Enter PO value"
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      title="Save PO Value only"
+                      aria-label="Save PO Value"
+                      onClick={handleSavePoValueOnly}
+                      disabled={isSavingPoValue}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px 12px',
+                        backgroundColor: '#991b1b',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: isSavingPoValue ? 'not-allowed' : 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        height: '38px',
+                      }}
+                    >
+                      <FaSave style={{ marginRight: isSavingPoValue ? '0px' : '4px' }} />
+                      {isSavingPoValue ? 'Saving...' : 'Save'}
+                    </button>
+                  </div>
                 </label>
                 <label className="admin-accounts-bulk-field">
                   Status Of Customer As Per Order Received

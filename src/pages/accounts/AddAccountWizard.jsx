@@ -1082,13 +1082,13 @@ const AddAccountWizard = () => {
                       {dealRightFieldsWithOwners.map((field) => (
                         <React.Fragment key={field.name}>
                           {renderFieldGroup([field], { layout: 'inline' })}
-                          {field.name === 'productCategory' && formData.productCategory === 'TTA' && (
+                          {field.name === 'productCategory' && (formData.productCategory === 'TTA' || formData.productCategory === 'LT/TTA' || String(formData.productCategory || '').includes('TTA')) && (
                             <div className="add-account-panel-assemblies">
                               <label className="add-account-panel-assemblies-title">
                                 Panel Assemblies
                               </label>
                               <div className="add-account-panel-assemblies-options">
-                                {['L&T/L&K', 'ABP', 'Siemens', 'Schneider'].map((option) => {
+                                {['L&T/L&K', 'ABB', 'Siemens', 'Schneider'].map((option) => {
                                   const isChecked = Array.isArray(formData.panelAssemblies)
                                     ? formData.panelAssemblies.includes(option)
                                     : String(formData.panelAssemblies || '').split(',').map((s) => s.trim()).includes(option)

@@ -97,8 +97,10 @@ export const USER_SIDEBAR_GROUPS = [
     icon: FaTasks,
     routePrefix: '/tasks',
     items: [
-      { label: 'Add Tasks', to: '/tasks?add=true' },
-      { label: 'View Tasks', to: '/tasks' },
+      { label: 'My Work', to: '/tasks/my-work' },
+      { label: 'My Tasks', to: '/tasks/all' },
+      { label: 'Projects', to: '/tasks/projects' },
+      { label: 'Reminders', to: '/tasks/reminders' },
     ],
   },
   {

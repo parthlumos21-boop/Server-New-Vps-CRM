@@ -196,6 +196,33 @@ const COLLECTION_INDEXES = {
     { fields: { remarkId: 1, reminderAt: 1 } },
     { fields: { companyId: 1, status: 1 } },
   ],
+  tasks: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { companyId: 1, assignedTo: 1, status: 1 } },
+    { fields: { companyId: 1, createdBy: 1 } },
+    { fields: { companyId: 1, projectId: 1 } },
+    { fields: { dueDate: 1 } },
+    { fields: { updatedAt: -1 } },
+  ],
+  work_projects: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { companyId: 1, status: 1 } },
+    { fields: { companyId: 1, projectManagerEmail: 1 } },
+    { fields: { updatedAt: -1 } },
+  ],
+  time_entries: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { companyId: 1, userEmail: 1, date: -1 } },
+    { fields: { taskId: 1 } },
+  ],
+  work_workflows: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { companyId: 1, active: 1 } },
+  ],
+  work_approvals: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { companyId: 1, status: 1, approverEmail: 1 } },
+  ],
   reminders: [
     { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
     { fields: { companyId: 1, assignedTo: 1, remindAt: 1 } },

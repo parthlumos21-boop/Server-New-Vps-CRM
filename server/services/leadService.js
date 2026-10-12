@@ -183,27 +183,69 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     ? (sanitizedPayload.reasonForLost || sanitizedPayload.reasonForLostOrder || '')
     : (existingLead?.reasonForLost || existingLead?.reasonForLostOrder || existingLead?.formData?.reasonForLost || existingLead?.formData?.reasonForLostOrder || '')
 
-  const shouldPreserveStatus = Boolean(sanitizedPayload.preserveStatus)
+  const isQuotationSentPayload = sanitizedPayload.stage === 'quotation_sent' || sanitizedPayload.status === 'quotation_sent' || sanitizedPayload.accountStatus === 'Quotation Sent' || sanitizedPayload.accountStatus === 'quotation_sent' || sanitizedPayload.accountState === 'Quotation Sent' || sanitizedPayload.accountState === 'quotation_sent'
+  const isOnlyPoValueUpdate = Boolean(sanitizedPayload.isOnlyPoValueUpdate)
+  const shouldPreserveStatus = Boolean(sanitizedPayload.preserveStatus) || isOnlyPoValueUpdate
   const targetStatus = shouldPreserveStatus
     ? (existingLead?.status || sanitizedPayload.accountState || sanitizedPayload.status || 'pending')
-    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending'))))
+    : (isExistingSourceProject
+        ? 'new'
+        : (isNotQuotedPayload
+            ? 'not_quoted'
+            : (isQuotationSentPayload
+                ? 'quotation_sent'
+                : (isPoConvertedStage
+                    ? 'convert_to_po'
+                    : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending')))))
   const targetAccountStatus = shouldPreserveStatus
     ? (existingLead?.accountStatus || sanitizedPayload.accountStatus || existingLead?.formData?.accountStatus || 'Pending')
-    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending'))))
+    : (isExistingSourceProject
+        ? 'new'
+        : (isNotQuotedPayload
+            ? 'not_quoted'
+            : (isQuotationSentPayload
+                ? 'Quotation Sent'
+                : (isPoConvertedStage
+                    ? 'convert_to_po'
+                    : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending')))))
   const targetAccountState = shouldPreserveStatus
     ? (existingLead?.accountState || sanitizedPayload.accountState || existingLead?.formData?.accountState || 'Pending')
-    : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (Boolean(resolvedPoValue) ? 'convert_to_po' : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending'))))
+    : (isExistingSourceProject
+        ? 'new'
+        : (isNotQuotedPayload
+            ? 'not_quoted'
+            : (isQuotationSentPayload
+                ? 'Quotation Sent'
+                : (isPoConvertedStage
+                    ? 'convert_to_po'
+                    : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending')))))
+  const targetStage = shouldPreserveStatus
+    ? (existingLead?.stage || 'new')
+    : (isExistingSourceProject
+        ? 'new'
+        : (isNotQuotedPayload
+            ? 'not_quoted'
+            : (isQuotationSentPayload
+                ? 'quotation_sent'
+                : (isPoConvertedStage
+                    ? 'convert_to_po'
+                    : (sanitizedPayload.stage || existingLead?.stage || 'new')))))
+  const resolvedPanelAssemblies = sanitizedPayload.panelAssemblies !== undefined
+    ? sanitizedPayload.panelAssemblies
+    : (existingLead?.panelAssemblies || existingLead?.formData?.panelAssemblies || [])
 
   const normalizedPayload = applyOwnershipMetadata(actor, {
     ...sanitizedPayload,
     customerName: sanitizedPayload.accountName || sanitizedPayload.customerName || existingLead?.customerName || '',
     mobile: sanitizedPayload.alternatePhone || sanitizedPayload.mobile || existingLead?.mobile || '',
-    email: sanitizedPayload.alternateEmail || sanitizedPayload.email || existingLead?.email || '',
+    email: sanitizedPayload.email ?? sanitizedPayload.contactEmail ?? sanitizedPayload.alternateEmail ?? existingLead?.email ?? existingLead?.contactEmail ?? '',
+    contactEmail: sanitizedPayload.contactEmail ?? sanitizedPayload.email ?? existingLead?.contactEmail ?? existingLead?.email ?? '',
     company: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (sanitizedPayload.company || existingLead?.company || ''),
     projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
     dealName: sanitizedPayload.dealName !== undefined ? sanitizedPayload.dealName : (sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.dealName || existingLead?.projectName || '')),
     status: targetStatus,
-    stage: shouldPreserveStatus ? (existingLead?.stage || 'new') : (isExistingSourceProject ? 'new' : (isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'))),
+    stage: targetStage,
+    panelAssemblies: resolvedPanelAssemblies,
     accountStatus: targetAccountStatus,
     accountState: targetAccountState,
     reasonForLost: resolvedReasonForLost,
@@ -228,6 +270,8 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
       accountNumber: accountNo,
       accountNo,
       account_no: accountNo,
+      email: sanitizedPayload.email ?? sanitizedPayload.contactEmail ?? existingLead?.email ?? existingLead?.contactEmail ?? '',
+      contactEmail: sanitizedPayload.contactEmail ?? sanitizedPayload.email ?? existingLead?.contactEmail ?? existingLead?.email ?? '',
       accountOwner: ownerName,
       accountOwnerCode: ownerCode,
       assignedTo: assignedUser?.id || existingLead?.assignedTo || null,
@@ -242,7 +286,8 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
       department: sanitizedPayload.department || existingLead?.department || '',
       userEmail: sanitizedPayload.userEmail || existingLead?.userEmail || actor.email || '',
       status: targetStatus,
-      stage: isNotQuotedPayload ? 'not_quoted' : (sanitizedPayload.stage || existingLead?.stage || 'new'),
+      stage: targetStage,
+      panelAssemblies: resolvedPanelAssemblies,
       accountStatus: targetAccountStatus,
       accountState: targetAccountState,
       projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
@@ -549,7 +594,22 @@ const updateLead = async (actor, leadId, payload) => {
   if (payload.email !== undefined || payload.contactEmail !== undefined) {
     const nextEmail = String(payload.email ?? payload.contactEmail ?? '').trim()
     const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
     const Deal = getMongoModel('deals')
+    if (Lead) {
+      await Lead.updateMany(
+        { $or: [{ legacyId: normalizeLeadId(leadId) }, { id: String(leadId) }, { _id: String(leadId) }] },
+        {
+          $set: {
+            email: nextEmail,
+            contactEmail: nextEmail,
+            'formData.email': nextEmail,
+            'formData.contactEmail': nextEmail,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
     if (Deal) {
       await Deal.updateMany(
         { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
@@ -581,6 +641,50 @@ const updateLead = async (actor, leadId, payload) => {
             dealName: nextProjectName,
             'data.projectName': nextProjectName,
             'data.dealName': nextProjectName,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
+  }
+
+  const isQuotationSentTarget = targetStage === 'quotation_sent' || payload.stage === 'quotation_sent' || payload.status === 'quotation_sent' || payload.accountStatus === 'Quotation Sent' || payload.accountStatus === 'quotation_sent'
+  if (isQuotationSentTarget) {
+    const { getMongoModel } = require('../models/mongoModels')
+    const Deal = getMongoModel('deals')
+    if (Deal) {
+      await Deal.updateMany(
+        { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
+        {
+          $set: {
+            stage: 'quotation_sent',
+            status: 'quotation_sent',
+            dealStage: 'quotation_sent',
+            accountStatus: 'Quotation Sent',
+            accountState: 'Quotation Sent',
+            'formData.status': 'quotation_sent',
+            'formData.stage': 'quotation_sent',
+            'formData.dealStage': 'quotation_sent',
+            'formData.accountStatus': 'Quotation Sent',
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
+  }
+
+  if (payload.poValue !== undefined && !isPoConversionTarget) {
+    const numericPoValue = payload.poValue === '' || payload.poValue === null ? 0 : Number(payload.poValue)
+    const { getMongoModel } = require('../models/mongoModels')
+    const Deal = getMongoModel('deals')
+    if (Deal) {
+      await Deal.updateMany(
+        { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
+        {
+          $set: {
+            poValue: numericPoValue,
+            'formData.poValue': numericPoValue,
+            'data.poValue': numericPoValue,
             updatedAt: new Date().toISOString(),
           },
         }

@@ -98,7 +98,7 @@ const SectionLabel = ({ children, isCollapsed }) => (
 const SubLink = ({ to, label, accent, end, isActiveMatch, onClick }) => (
   <NavLink
     to={to}
-    end={end}
+    end={end ?? (to === '/admin/tasks' || to === '/tasks')}
     title={label}
     onClick={onClick}
     className={({ isActive, isPending }) => {
@@ -252,16 +252,14 @@ const Sidebar = ({ isAdmin = false }) => {
   ]
 
   const tasksMenuItems = [
-    { 
-      label: 'Add Tasks', 
-      to: '/admin/tasks?add=true',
-      isActiveMatch: () => location.pathname === '/admin/tasks' && location.search.includes('add=true')
-    },
-    { 
-      label: 'View Tasks', 
-      to: '/admin/tasks',
-      isActiveMatch: () => location.pathname === '/admin/tasks' && !location.search.includes('add=true')
-    },
+    { label: 'Management Dashboard', to: '/admin/tasks', end: true },
+    { label: 'My Work', to: '/admin/tasks/my-work' },
+    { label: 'All Tasks', to: '/admin/tasks/all' },
+    { label: 'Projects', to: '/admin/tasks/projects' },
+    { label: 'Workload', to: '/admin/tasks/workload' },
+    { label: 'Approvals', to: '/admin/tasks/approvals' },
+    { label: 'Reminders', to: '/admin/tasks/reminders' },
+    { label: 'Activity', to: '/admin/tasks/activity' },
   ]
 
   const reportsMenuItems = [
@@ -412,8 +410,10 @@ const Sidebar = ({ isAdmin = false }) => {
               isCollapsed={isSidebarCollapsed}
               onToggle={() => setUserTasksOpen(!userTasksOpen)}
             >
-              <SubLink to="/tasks?add=true" label="Add Tasks" isActiveMatch={() => location.pathname === '/tasks' && location.search.includes('add=true')} />
-              <SubLink to="/tasks" label="View Tasks" isActiveMatch={() => location.pathname === '/tasks' && !location.search.includes('add=true')} />
+              <SubLink to="/tasks/my-work" label="My Work" />
+              <SubLink to="/tasks/all" label="My Tasks" />
+              <SubLink to="/tasks/projects" label="Projects" />
+              <SubLink to="/tasks/reminders" label="Reminders" />
             </SidebarGroup>
 
             <SidebarGroup
@@ -583,7 +583,7 @@ const Sidebar = ({ isAdmin = false }) => {
             onToggle={() => setTasksOpen(!tasksOpen)}
           >
             {tasksMenuItems.map((item) => (
-              <SubLink key={item.label} to={item.to} label={item.label} isActiveMatch={item.isActiveMatch} />
+              <SubLink key={item.label} to={item.to} label={item.label} end={item.end} isActiveMatch={item.isActiveMatch} />
             ))}
           </SidebarGroup>
 

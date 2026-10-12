@@ -120,6 +120,16 @@ const SummaryReportsPage = React.lazy(() => import('./pages/admin/reports/Summar
 const TeamViewPage = React.lazy(() => import('./pages/admin/team-view/TeamViewPage'))
 const CommunicationActivitiesPage = React.lazy(() => import('./pages/communication/CommunicationActivitiesPage'))
 
+const AdminTaskDashboard = React.lazy(() => import('./pages/tasks/AdminTaskDashboard'))
+const MyWorkPage = React.lazy(() => import('./pages/tasks/MyWorkPage'))
+const TasksWorkspacePage = React.lazy(() => import('./pages/tasks/TasksWorkspacePage'))
+const ProjectsPortfolioPage = React.lazy(() => import('./pages/tasks/ProjectsPortfolioPage'))
+const TeamWorkloadPage = React.lazy(() => import('./pages/tasks/TeamWorkloadPage'))
+const ApprovalsHubPage = React.lazy(() => import('./pages/tasks/ApprovalsHubPage'))
+const AddTaskPage = React.lazy(() => import('./pages/tasks/AddTaskPage'))
+const ActivityLogPage = React.lazy(() => import('./pages/tasks/ActivityLogPage'))
+const TaskRemindersPage = React.lazy(() => import('./pages/tasks/TaskRemindersPage'))
+
 const LandingPage = React.lazy(() => import('./pages/landing/LandingPage'))
 const PrivacyPolicyPage = React.lazy(() => import('./pages/legal/PrivacyPolicyPage'))
 const TermsPage = React.lazy(() => import('./pages/legal/TermsPage'))
@@ -215,7 +225,12 @@ function App() {
                 <Route path="deals/ahmadabad" element={<Deals variantKey="ahmadabad" />} />
                 <Route path="deals/vadodara" element={<Deals variantKey="vadodara" />} />
                 <Route path="deals/converted" element={<ConvertedDeals />} />
-                <Route path="tasks" element={<Tasks />} />
+                <Route path="tasks" element={<MyWorkPage />} />
+                <Route path="tasks/my-work" element={<MyWorkPage />} />
+                <Route path="tasks/all" element={<TasksWorkspacePage />} />
+                <Route path="tasks/add" element={<AddTaskPage />} />
+                <Route path="tasks/projects" element={<ProjectsPortfolioPage />} />
+                <Route path="tasks/reminders" element={<TaskRemindersPage />} />
                 <Route path="team-view" element={<TeamViewPage isAdminView={false} />} />
                 <Route path="communication-activities" element={<CommunicationActivitiesPage isAdmin={false} />} />
                 <Route path="quotations" element={<Quotations />} />
@@ -344,7 +359,15 @@ function App() {
                 <Route path="reminders/my" element={<AdminRemindersPage variantKey="my" />} />
                 <Route path="reminders/active" element={<AdminRemindersPage variantKey="active" />} />
                 <Route path="reminders/closed" element={<AdminRemindersPage variantKey="closed" />} />
-                <Route path="tasks" element={<Tasks />} />
+                <Route path="tasks" element={<AdminTaskDashboard />} />
+                <Route path="tasks/my-work" element={<MyWorkPage />} />
+                <Route path="tasks/all" element={<TasksWorkspacePage />} />
+                <Route path="tasks/add" element={<AddTaskPage />} />
+                <Route path="tasks/projects" element={<ProjectsPortfolioPage />} />
+                <Route path="tasks/workload" element={<TeamWorkloadPage />} />
+                <Route path="tasks/approvals" element={<ApprovalsHubPage />} />
+                <Route path="tasks/reminders" element={<TaskRemindersPage />} />
+                <Route path="tasks/activity" element={<ActivityLogPage />} />
                 <Route path="team-view" element={<TeamViewPage />} />
                 <Route path="communication-activities" element={<CommunicationActivitiesPage isAdmin />} />
                 <Route path="reports"               element={<Navigate to="/admin/reports/custom" replace />} />

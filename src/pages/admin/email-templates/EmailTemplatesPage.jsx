@@ -19,7 +19,6 @@ const EMPTY_FORM = {
 const CATEGORIES = ['general', 'account', 'deal']
 
 const looksLikeHtml = (value) => /<\/?[a-z][\s\S]*>/i.test(String(value || ''))
-const isRenderedTemplateHtml = (value) => /white-space\s*:\s*pre-wrap/i.test(String(value || ''))
 
 const escapeHtml = (value) => String(value || '')
   .replace(/&/g, '&amp;')
@@ -28,16 +27,26 @@ const escapeHtml = (value) => String(value || '')
   .replace(/"/g, '&quot;')
   .replace(/'/g, '&#39;')
 
+const normalizeTextSpacing = (value) => String(value || '')
+  .replace(/\r\n/g, '\n')
+  .replace(/\r/g, '\n')
+  .replace(/[ \t]+$/gm, '')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim()
+
 const htmlToPlainText = (value) => {
   const body = String(value || '')
   if (!body) return ''
-  if (!looksLikeHtml(body)) return body
-  return body
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(div|p|li|tr|h[1-6])>/gi, '\n')
-    .replace(/<li[^>]*>/gi, '- ')
+  if (!looksLikeHtml(body)) return normalizeTextSpacing(body)
+  const converted = body
     .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<(div|p)[^>]*>\s*(?:<br\/?>|\s*)\s*<\/(div|p)>/gi, '\n\n')
+    .replace(/<(div|p|tr|h[1-6])[^>]*>/gi, '\n')
+    .replace(/<\/(div|p|tr|h[1-6])>/gi, '')
+    .replace(/<li[^>]*>/gi, '- ')
+    .replace(/<\/li>/gi, '\n')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -45,15 +54,57 @@ const htmlToPlainText = (value) => {
     .replace(/&gt;/gi, '>')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  return normalizeTextSpacing(converted)
 }
 
 const buildTemplateBodyHtml = (value) => {
-  const body = String(value || '').trim()
-  if (!body) return ''
-  const content = escapeHtml(isRenderedTemplateHtml(body) || looksLikeHtml(body) ? htmlToPlainText(body) : body)
-  return `<div style="white-space:pre-wrap;font-family:Arial,sans-serif;font-size:14px;line-height:1.45;color:#111827;">${content}</div>`
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+
+  const hasFormattingTags = /<(b|strong|i|em|u|ul|ol|li)\b/i.test(raw)
+
+  let cleanContent = ''
+  if (hasFormattingTags) {
+    let html = raw
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<(div|p)[^>]*>\s*(?:<br\/?>|\s*)\s*<\/(div|p)>/gi, '\n\n')
+      .replace(/<(div|p)[^>]*>/gi, '\n')
+      .replace(/<\/(div|p)>/gi, '')
+      .replace(/<(?!(\/?(b|strong|i|em|u|ul|ol|li|a)\b))[^>]+>/gi, '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/[ \t]+$/gm, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+
+    const paragraphs = html.split(/\n\n+/)
+    const pTags = paragraphs.map((p) => {
+      const cleanP = p.trim()
+      if (!cleanP) return ''
+      if (cleanP.startsWith('<ul') || cleanP.startsWith('<ol')) {
+        return cleanP
+      }
+      const lines = cleanP.split('\n')
+      return `<p style="margin:0 0 12px 0;">${lines.join('<br/>')}</p>`
+    }).filter(Boolean)
+
+    cleanContent = pTags.join('')
+  } else {
+    const plainText = htmlToPlainText(raw)
+    const paragraphs = plainText.split(/\n\n+/)
+    const pTags = paragraphs.map((p) => {
+      const cleanP = p.trim()
+      if (!cleanP) return ''
+      const lines = cleanP.split('\n').map((line) => escapeHtml(line))
+      return `<p style="margin:0 0 12px 0;">${lines.join('<br/>')}</p>`
+    }).filter(Boolean)
+
+    cleanContent = pTags.join('')
+  }
+
+  return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#111827;">${cleanContent}</div>`
 }
 
 const renderBodyPreview = (value) => {
@@ -90,10 +141,10 @@ const EmailTemplatesPage = () => {
   }, [])
 
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerText !== form.bodyHtml) {
-      editorRef.current.innerText = form.bodyHtml
+    if (editorRef.current && form.id && !editorRef.current.innerHTML) {
+      editorRef.current.innerHTML = form.bodyHtml
     }
-  }, [form.id, form.bodyHtml])
+  }, [form.id])
 
   useEffect(() => {
     if (location.state?.template) {
@@ -107,7 +158,8 @@ const EmailTemplatesPage = () => {
   }
 
   const updateEditorBody = () => {
-    updateField('bodyHtml', editorRef.current?.innerText || '')
+    const rawContent = editorRef.current?.innerHTML || editorRef.current?.innerText || ''
+    updateField('bodyHtml', rawContent)
   }
 
   const applyEditorCommand = (command) => {
@@ -116,23 +168,37 @@ const EmailTemplatesPage = () => {
     updateEditorBody()
   }
 
+  const handleEditorPaste = (e) => {
+    e.preventDefault()
+    const text = (e.clipboardData || window.clipboardData)?.getData('text/plain') || ''
+    document.execCommand('insertText', false, text)
+    updateEditorBody()
+  }
+
   const editTemplate = (template) => {
+    const rawHtml = template.bodyHtml || ''
     setForm({
       id: template.id,
       name: template.name || '',
       description: template.description || '',
       category: template.category || 'general',
       subject: template.subject || '',
-      bodyHtml: htmlToPlainText(template.bodyHtml || ''),
+      bodyHtml: rawHtml,
       status: template.status || 'active',
       isDefault: Boolean(template.isDefault),
       signatureImage: template.signatureImage || null,
     })
+    if (editorRef.current) {
+      editorRef.current.innerHTML = rawHtml
+    }
     setMessage(null)
   }
 
   const resetForm = () => {
     setForm(EMPTY_FORM)
+    if (editorRef.current) {
+      editorRef.current.innerHTML = ''
+    }
     setMessage(null)
   }
 
@@ -306,6 +372,7 @@ const EmailTemplatesPage = () => {
               suppressContentEditableWarning
               onInput={updateEditorBody}
               onBlur={updateEditorBody}
+              onPaste={handleEditorPaste}
             />
             <textarea className="email-template-generated-html" rows={6} value={buildTemplateBodyHtml(form.bodyHtml)} readOnly />
           </div>

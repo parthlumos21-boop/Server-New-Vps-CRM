@@ -24,7 +24,7 @@ export const ACCOUNT_CHANGE_STATUS_OPTIONS = [
   { value: 'priority_1', label: 'Priority 1', stageKey: 'priority_1' },
   { value: 'commercial_offer', label: 'Commercial Offer', stageKey: 'commercial_offer' },
   { value: 'priority_2', label: 'Priority 2', stageKey: 'priority_2' },
-  { value: 'quotation_sent', label: 'Quotation Sent', stageKey: 'quotation_sent', aliases: ['quote sent'] },
+  { value: 'quotation_sent', label: 'Quotation Sent', stageKey: 'quotation_sent', aliases: ['quote sent', 'quotation sent'] },
   { value: 'quote_revision', label: 'Quote Revision', stageKey: 'quote_revision' },
   { value: 'order_received', label: 'Order Received', stageKey: 'order_received' },
   { value: 'not_quoted', label: 'Not Quoted', stageKey: 'not_quoted' },

@@ -67,7 +67,9 @@ const resolveLinkedUserScope = (user = {}) => {
   return {
     ids: unique([
       user.id,
+      user.email ? String(user.email).trim().toLowerCase() : '',
       ...linkedUsers.map((entry) => entry.id),
+      ...linkedUsers.map((entry) => entry.email ? String(entry.email).trim().toLowerCase() : ''),
     ].map((value) => String(value || ''))),
     names: unique([
       user.name,
@@ -185,6 +187,29 @@ export const canUserAccessEntity = (user, entityType, payload) => {
 
   if (!record) {
     return false
+  }
+
+  if (entityType === 'task') {
+    const userEmail = String(user?.email || user?.username || '').trim().toLowerCase()
+    const assignedEmails = Array.isArray(record?.assignedToUserEmails)
+      ? record.assignedToUserEmails.map((e) => String(e || '').trim().toLowerCase())
+      : []
+    const singleAssigned = String(record?.assignedTo || '').trim().toLowerCase()
+    const createdBy = String(record?.createdBy || '').trim().toLowerCase()
+    const followers = Array.isArray(record?.followers)
+      ? record.followers.map((f) => String(f || '').trim().toLowerCase())
+      : []
+
+    if (
+      assignedEmails.includes(userEmail) ||
+      singleAssigned === userEmail ||
+      createdBy === userEmail ||
+      followers.includes(userEmail) ||
+      String(record?.assignedTo) === String(user?.id) ||
+      String(record?.userId) === String(user?.id)
+    ) {
+      return true
+    }
   }
 
   if (entityType === 'account') {

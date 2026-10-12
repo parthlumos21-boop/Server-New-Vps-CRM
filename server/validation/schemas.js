@@ -152,6 +152,17 @@ if (!zod) {
     assignedTo: z.union([integerInput, optionalString]).optional(),
   }).passthrough()
 
+  const taskUpdate = z.object({
+    title: optionalString.optional(),
+    description: optionalString.optional(),
+    status: optionalString.optional(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']).optional(),
+    dueDate: optionalDateString.optional(),
+    relatedEntityType: optionalString.optional(),
+    relatedEntityId: z.union([z.string(), z.number(), z.null()]).optional(),
+    assignedTo: z.union([integerInput, optionalString]).optional(),
+  }).passthrough()
+
   const reminder = z.object({
     title: trimmedString('Reminder title is required.'),
     message: optionalString.optional(),
@@ -337,6 +348,7 @@ if (!zod) {
     convertedDealCreate: convertedDealBase,
     convertedDealUpdate: convertedDealBase,
     task,
+    taskUpdate,
     reminder,
     quotationLineItem,
     quotation,

@@ -289,10 +289,10 @@ const mockProducts = [
 export const AddProductModal = ({ isOpen, onClose, onAdd }) => {
   const [showAlert, setShowAlert] = useState(true)
   const [productGroup, setProductGroup] = useState('TTA')
-  const [ttaOrg, setTtaOrg] = useState('Abp')
+  const [ttaOrg, setTtaOrg] = useState('ABB')
 
-  const productGroupOptions = ['TTA', 'Non TT', 'ELECTRICAL PANEL']
-  const ttaOrgOptions = ['Abp', 'Siemens', 'L&T', 'Schinder']
+  const productGroupOptions = ['TTA', 'Non TTA', 'ELECTRICAL PANEL']
+  const ttaOrgOptions = ['ABB', 'Siemens', 'L&T', 'Schinder']
 
   const handleDoubleClick = (product) => {
     const selectedOrgPrefix = productGroup === 'TTA' ? ` (${ttaOrg})` : ''
