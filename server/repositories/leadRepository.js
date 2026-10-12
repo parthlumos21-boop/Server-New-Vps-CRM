@@ -100,7 +100,28 @@ const mapLeadRow = (record) => {
       customerRefNo: row.customerRefNo || mergedFormData.customerRefNo || null,
       jobNo: row.jobNo || mergedFormData.jobNo || row.customerRefNo || mergedFormData.customerRefNo || null,
       consultantName: row.consultantName || mergedFormData.consultantName || null,
-      poValue: row.poValue !== undefined ? row.poValue : (mergedFormData.poValue !== undefined ? mergedFormData.poValue : null),
+      poValue: [
+        row.poValue,
+        mergedFormData.poValue,
+        mergedData.poValue,
+        row.dealValue,
+        mergedFormData.dealValue,
+        mergedData.dealValue,
+        mergedFormData['PO Value'],
+        mergedData['PO Value'],
+        row['PO Value'],
+        row.projectValue,
+        mergedFormData.projectValue,
+      ].find((v) => v !== undefined && v !== null && String(v).trim() !== '') ?? null,
+      dealValue: [
+        row.dealValue,
+        row.poValue,
+        mergedFormData.dealValue,
+        mergedFormData.poValue,
+        mergedData.dealValue,
+        mergedData.poValue,
+        mergedFormData['PO Value'],
+      ].find((v) => v !== undefined && v !== null && String(v).trim() !== '') ?? null,
       userGroup: row.userGroup || mergedFormData.userGroup || null,
       mobile: row.mobile || row.phone || mergedFormData.alternatePhone || mergedFormData.phone || '',
       company: row.company || row.projectName || mergedFormData.projectName || mergedFormData.company || '',
@@ -159,13 +180,74 @@ const buildLeadScopeFilter = (actor, { companyWide = false, scopeUserIds = null,
   })
 )
 
+const enrichLeadsWithDealsPoValue = async (mappedRecords = []) => {
+  if (!Array.isArray(mappedRecords) || mappedRecords.length === 0) return mappedRecords
+  try {
+    const Deal = getMongoModel('deals')
+    if (!Deal) return mappedRecords
+
+    const missingIds = mappedRecords
+      .filter((r) => r.poValue === null || r.poValue === '' || r.poValue === undefined)
+      .map((r) => r.legacyId || r.id)
+      .filter(Boolean)
+
+    if (missingIds.length === 0) return mappedRecords
+
+    const matchingDeals = await Deal.find({
+      $or: [
+        { accountId: { $in: missingIds } },
+        { accountId: { $in: missingIds.map(String) } },
+        { accountId: { $in: missingIds.map(Number).filter(n => !isNaN(n)) } },
+      ],
+      frontendDeleted: { $ne: true },
+    }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+
+    if (matchingDeals && matchingDeals.length > 0) {
+      const dealPoMap = new Map()
+      matchingDeals.forEach((d) => {
+        const accId = String(d.accountId || '')
+        if (accId && !dealPoMap.has(accId)) {
+          const val = [
+            d.poValue,
+            d.dealValue,
+            d.amount,
+            d.value,
+            d.formData?.poValue,
+            d.formData?.dealValue,
+            d.data?.poValue,
+            d.data?.dealValue,
+          ].find((v) => v !== undefined && v !== null && String(v).trim() !== '')
+          if (val !== undefined) {
+            dealPoMap.set(accId, val)
+          }
+        }
+      })
+
+      mappedRecords.forEach((row) => {
+        if (row.poValue === null || row.poValue === '' || row.poValue === undefined) {
+          const accId = String(row.legacyId || row.id || '')
+          if (dealPoMap.has(accId)) {
+            const foundVal = dealPoMap.get(accId)
+            row.poValue = foundVal
+            row.dealValue = foundVal
+          }
+        }
+      })
+    }
+  } catch (err) {
+    console.warn('enrichLeadsWithDealsPoValue warning:', err.message)
+  }
+  return mappedRecords
+}
+
 const listLeadsForActor = async (actor, options = {}) => {
   const records = await Lead
     .find(mergeFilters(buildLeadScopeFilter(actor, options), buildAccountSearchFilter(options.filters || {}), visibleFilter))
     .sort({ accountNo: 1, legacyId: 1 })
     .lean()
 
-  return records.map(mapLeadRow).filter(Boolean)
+  const mapped = records.map(mapLeadRow).filter(Boolean)
+  return enrichLeadsWithDealsPoValue(mapped)
 }
 
 const listAssignedLeads = async (userId) => {
@@ -223,12 +305,18 @@ const listCreatedLeadsForActor = async (actor, filters = {}) => {
 
 const findLeadById = async (leadId) => {
   const record = await Lead.findOne(mergeFilters(byLegacyId(leadId), visibleFilter)).lean()
-  return mapLeadRow(record)
+  const mapped = mapLeadRow(record)
+  if (!mapped) return null
+  const [enriched] = await enrichLeadsWithDealsPoValue([mapped])
+  return enriched || mapped
 }
 
 const findLeadByIdForActor = async (leadId, actor, options = {}) => {
   const record = await Lead.findOne(mergeFilters(byLegacyId(leadId), buildLeadScopeFilter(actor, options), visibleFilter)).lean()
-  return mapLeadRow(record)
+  const mapped = mapLeadRow(record)
+  if (!mapped) return null
+  const [enriched] = await enrichLeadsWithDealsPoValue([mapped])
+  return enriched || mapped
 }
 
 const createLead = async (payload) => {

@@ -202,6 +202,7 @@ const AccountActionPlaceholderPage = () => {
     const numericPoValue = String(poValue).trim() === '' ? 0 : Number(poValue)
     const result = await updateAccount(selectedAccount.raw?.id || selectedAccount.id, {
       poValue: numericPoValue,
+      dealValue: numericPoValue,
       isOnlyPoValueUpdate: true,
       preserveStatus: true,
       updatedAt: new Date().toISOString(),

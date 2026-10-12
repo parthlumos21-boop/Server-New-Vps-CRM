@@ -109,7 +109,7 @@ const getAccountColumnKeysWithRequiredFields = (columnKeys = [], columns = []) =
   return nextColumnKeys
 }
 
-const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
+const getAccountRowsWithRequiredFields = (rows = [], deals = []) => rows.map((row = {}) => {
   const raw = row.raw || {}
   const cleanProjectValue = (value) => {
     if (value === null || value === undefined) return ''
@@ -126,6 +126,49 @@ const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
   const accountOwner = row.accountOwnerDisplay || row.accountOwnerName || row.accountOwner || raw.accountOwner || raw.ownerName || raw.assignedToName || 'Unassigned'
   const cleanAccountOwner = String(accountOwner || '').trim().toLowerCase() === 'no' ? '-' : accountOwner
 
+  const resolveRowPo = () => {
+    const candidates = [
+      row.poValue,
+      row.dealValue,
+      raw.poValue,
+      raw.dealValue,
+      formData.poValue,
+      formData.dealValue,
+      formData['PO Value'],
+      innerFormData.poValue,
+      innerFormData.dealValue,
+      data.poValue,
+      data.dealValue,
+    ]
+    for (const v of candidates) {
+      if (v !== undefined && v !== null && String(v).trim() !== '' && String(v).trim() !== '-') {
+        return v
+      }
+    }
+    if (Array.isArray(deals) && deals.length > 0) {
+      const rowId = String(row.id || raw.id || raw._id || raw.legacyId || '')
+      const rowAccNo = String(row.accountNumber || row.accountNo || raw.accountNumber || raw.accountNo || '').trim()
+      const rowAccName = String(row.accountName || row.name || raw.accountName || raw.name || '').trim().toLowerCase()
+      const matchingDeal = deals.find((d) => {
+        const dAccId = String(d.accountId || d.raw?.accountId || '')
+        if (rowId && dAccId && dAccId === rowId) return true
+        const dAccNo = String(d.linkedAccountNumber || d.accountNumber || d.accountNo || '').trim()
+        if (rowAccNo && dAccNo && dAccNo === rowAccNo) return true
+        const dAccName = String(d.linkedAccountName || d.accountName || d.customerName || '').trim().toLowerCase()
+        if (rowAccName && dAccName && dAccName === rowAccName) return true
+        return false
+      })
+      if (matchingDeal) {
+        const dealPo = matchingDeal.poValue ?? matchingDeal.dealValue ?? matchingDeal.amount ?? matchingDeal.value ?? matchingDeal.data?.poValue ?? matchingDeal.formData?.poValue
+        if (dealPo !== undefined && dealPo !== null && String(dealPo).trim() !== '' && String(dealPo).trim() !== '-') {
+          return dealPo
+        }
+      }
+    }
+    return ''
+  }
+  const resolvedPoValue = resolveRowPo()
+
   return {
     ...row,
     dealName,
@@ -133,6 +176,8 @@ const getAccountRowsWithRequiredFields = (rows = []) => rows.map((row = {}) => {
     accountOwner: cleanAccountOwner,
     accountOwnerName: row.accountOwnerName || cleanAccountOwner,
     accountOwnerDisplay: row.accountOwnerDisplay || cleanAccountOwner,
+    poValue: resolvedPoValue || row.poValue || '',
+    dealValue: resolvedPoValue || row.dealValue || '',
   }
 })
 
@@ -663,7 +708,7 @@ const MyGroupAccountsPage = ({ variantKey = 'myGroup' }) => {
   const navigate = useNavigate()
   const location = useLocation()
   const addAccountPath = location.pathname.startsWith('/admin') ? '/admin/accounts/new' : '/accounts/new'
-  const { accounts, convertedDeals, quotations = [], loading, refreshData, addNotification, updateAccount, deleteAccount, convertAccountToDeal } = useData()
+  const { accounts, deals = [], convertedDeals, quotations = [], loading, refreshData, addNotification, updateAccount, deleteAccount, convertAccountToDeal } = useData()
   const { user } = useAuth()
   const [dbMongoUsers, setDbMongoUsers] = useState([]);
   useEffect(() => {
@@ -803,13 +848,14 @@ const activeStageParam = searchParams.get('stage')
 
   const convertedBoardRecords = useMemo(
     () => getAccountRowsWithRequiredFields(
-      isConvertedAccountsView ? boardData.records.map(buildConvertedAccountsRow) : boardData.records
+      isConvertedAccountsView ? boardData.records.map(buildConvertedAccountsRow) : boardData.records,
+      deals
     ),
-    [boardData.records, isConvertedAccountsView]
+    [boardData.records, isConvertedAccountsView, deals]
   )
   const stageRows = useMemo(
-    () => getAccountRowsWithRequiredFields(boardData.rowsByStage[activeStage] || []),
-    [activeStage, boardData.rowsByStage]
+    () => getAccountRowsWithRequiredFields(boardData.rowsByStage[activeStage] || [], deals),
+    [activeStage, boardData.rowsByStage, deals]
   )
   const boardRows = showStageTabs ? stageRows : convertedBoardRecords
   const convertedFieldOptions = useMemo(() => (

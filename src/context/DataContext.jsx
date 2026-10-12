@@ -781,9 +781,26 @@ export const DataProvider = ({ children }) => {
     try {
       await refreshAccountStorageStatus()
       const updated = await leadApi.updateLead(id, updates)
-      const account = enrichRealtimeRecord(SOCKET_ENTITY_TYPES.ACCOUNT, updated)
+      const targetPo = updates.poValue !== undefined ? updates.poValue : (updates.dealValue !== undefined ? updates.dealValue : updated?.poValue)
+      const account = enrichRealtimeRecord(SOCKET_ENTITY_TYPES.ACCOUNT, {
+        ...updated,
+        ...(targetPo !== undefined ? { poValue: targetPo, dealValue: targetPo } : {}),
+      })
 
       setFrontendAccounts((prev) => replaceById(prev, account))
+
+      if (targetPo !== undefined) {
+        setDeals((prev) => prev.map((deal) => {
+          if (String(deal.accountId) === String(id) || String(deal.id) === String(account.dealId) || String(deal.legacyId) === String(id)) {
+            return {
+              ...deal,
+              poValue: targetPo,
+              dealValue: targetPo,
+            }
+          }
+          return deal
+        }))
+      }
 
       return { success: true, data: account }
     } catch (error) {

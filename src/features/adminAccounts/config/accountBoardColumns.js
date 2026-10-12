@@ -153,6 +153,29 @@ const formatAccountStatusDisplay = (value, row = {}) => {
   return raw || emptyValue
 }
 
+const formatPoValueDisplay = (value, row = {}) => {
+  const candidates = [
+    value,
+    row.poValue,
+    row.dealValue,
+    row.formData?.poValue,
+    row.formData?.dealValue,
+    row.formData?.['PO Value'],
+    row.raw?.poValue,
+    row.raw?.dealValue,
+    row.raw?.formData?.poValue,
+    row.raw?.formData?.dealValue,
+    row.raw?.data?.poValue,
+    row.raw?.data?.dealValue,
+  ]
+  for (const v of candidates) {
+    if (v !== undefined && v !== null && String(v).trim() !== '' && String(v).trim() !== '-') {
+      return String(v)
+    }
+  }
+  return emptyValue
+}
+
 export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
   { key: 'name', label: 'Account Name', filterPlaceholder: 'Search Account Name', width: '220px', searchable: true, exportable: true, cellFormatter: formatAccountNameDisplay, exportFormatter: formatAccountNameDisplay },
@@ -167,7 +190,7 @@ export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'contactPerson', label: 'Contact Person', filterPlaceholder: 'Search Contact Person', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'projectName', label: 'Project Name', filterPlaceholder: 'Search Project Name', width: '210px', searchable: true, exportable: true, cellFormatter: formatProjectNameDisplay, exportFormatter: formatProjectNameDisplay },
   { key: 'consultantName', label: 'Consultant Name', filterPlaceholder: 'Search Consultant Name', width: '190px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.consultantName || row.formData?.['Consultant Name'] || row.formData?.consultantName || emptyValue },
-  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   { key: 'jobNo', label: 'Job No', filterPlaceholder: 'Search Job No', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   {
     key: 'quotationNumber',
@@ -219,7 +242,7 @@ export const NO_FOLLOW_LEAD_COLUMNS = [
   { key: 'accountCategory', label: 'Account Category', filterPlaceholder: 'Search Account Category', width: '180px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'status', label: 'Account Status', filterPlaceholder: 'Search Account Status', width: '150px', searchable: true, exportable: true, cellFormatter: formatAccountStatusDisplay, exportFormatter: formatAccountStatusDisplay },
   { key: 'accountSource', label: 'Account Source', filterPlaceholder: 'Search Account Source', width: '150px', searchable: true, exportable: true },
-  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   { key: 'jobNo', label: 'Job No', filterPlaceholder: 'Search Job No', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'quotationNumber', label: 'Quotation No.', filterPlaceholder: 'Search Quotation No.', width: '165px', searchable: true, exportable: true, cellFormatter: formatQuotationNumberDisplay, exportFormatter: formatQuotationNumberDisplay },
   { key: 'quotationOwner', label: 'Quotation Owner', filterPlaceholder: 'Search Quotation Owner', width: '180px', searchable: true, exportable: true, cellFormatter: formatQuotationOwnerDisplay, exportFormatter: formatQuotationOwnerDisplay },
@@ -322,15 +345,7 @@ export const ACCOUNT_LIST_BOARD_COLUMNS = [
     exportable: true,
     cellFormatter: (value, row) => value || row.consultantName || row.formData?.['Consultant Name'] || row.formData?.consultantName || emptyValue,
   },
-  {
-    key: 'poValue',
-    label: 'PO Value',
-    filterPlaceholder: 'Search PO Value',
-    width: '155px',
-    searchable: true,
-    exportable: true,
-    cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue,
-  },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   {
     key: 'quotationNumber',
     label: 'Quotations Number',
@@ -546,15 +561,7 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     cellFormatter: formatAddedByDisplay,
     exportFormatter: formatAddedByDisplay,
   },
-  {
-    key: 'poValue',
-    label: 'PO Value',
-    filterPlaceholder: 'Search PO Value',
-    width: '155px',
-    searchable: true,
-    exportable: true,
-    cellFormatter: (value, row) => value || row.poValue || row.formData?.['PO Value'] || row.formData?.poValue || emptyValue,
-  },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   {
     key: 'quotationNumber',
     label: 'Quotation No.',
@@ -892,15 +899,7 @@ export const SW_BARODA_MUM_COLUMNS = [
     exportable: true,
     cellFormatter: (value) => value || emptyValue,
   },
-  {
-    key: 'poValue',
-    label: 'PO Value',
-    filterPlaceholder: 'Search PO Value',
-    width: '155px',
-    searchable: true,
-    exportable: true,
-    cellFormatter: (value) => value || emptyValue,
-  },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   {
     key: 'updatedAtDisplay',
     label: 'Last Updated',
@@ -968,15 +967,7 @@ export const USER_WISE_LEADS_COLUMNS = [
     searchable: true,
     exportable: true,
   },
-  {
-    key: 'poValue',
-    label: 'PO Value',
-    filterPlaceholder: 'Search PO Value',
-    width: '180px',
-    searchable: true,
-    exportable: true,
-    cellFormatter: (value) => value || emptyValue,
-  },
+  { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '180px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   {
     key: 'latestRemark',
     label: 'Latest Remark',

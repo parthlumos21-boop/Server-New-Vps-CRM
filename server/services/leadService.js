@@ -234,8 +234,20 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     ? sanitizedPayload.panelAssemblies
     : (existingLead?.panelAssemblies || existingLead?.formData?.panelAssemblies || [])
 
+  const resolvedExplicitPoValue = sanitizedPayload.poValue !== undefined
+    ? sanitizedPayload.poValue
+    : (sanitizedPayload.dealValue !== undefined
+        ? sanitizedPayload.dealValue
+        : (existingLead?.poValue !== undefined
+            ? existingLead?.poValue
+            : (existingLead?.dealValue !== undefined
+                ? existingLead?.dealValue
+                : (existingLead?.formData?.poValue !== undefined ? existingLead?.formData?.poValue : null))))
+
   const normalizedPayload = applyOwnershipMetadata(actor, {
     ...sanitizedPayload,
+    poValue: resolvedExplicitPoValue,
+    dealValue: resolvedExplicitPoValue,
     customerName: sanitizedPayload.accountName || sanitizedPayload.customerName || existingLead?.customerName || '',
     mobile: sanitizedPayload.alternatePhone || sanitizedPayload.mobile || existingLead?.mobile || '',
     email: sanitizedPayload.email ?? sanitizedPayload.contactEmail ?? sanitizedPayload.alternateEmail ?? existingLead?.email ?? existingLead?.contactEmail ?? '',
@@ -673,22 +685,54 @@ const updateLead = async (actor, leadId, payload) => {
     }
   }
 
-  if (payload.poValue !== undefined && !isPoConversionTarget) {
-    const numericPoValue = payload.poValue === '' || payload.poValue === null ? 0 : Number(payload.poValue)
+  if ((payload.poValue !== undefined || payload.dealValue !== undefined) && !isPoConversionTarget) {
+    const rawPo = payload.poValue !== undefined ? payload.poValue : payload.dealValue
+    const numericPoValue = rawPo === '' || rawPo === null ? 0 : Number(rawPo)
     const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
     const Deal = getMongoModel('deals')
+
+    if (Lead) {
+      await Lead.updateMany(
+        { $or: [{ legacyId: normalizeLeadId(leadId) }, { id: String(leadId) }, { _id: String(leadId) }] },
+        {
+          $set: {
+            poValue: numericPoValue,
+            dealValue: numericPoValue,
+            'formData.poValue': numericPoValue,
+            'formData.dealValue': numericPoValue,
+            'data.poValue': numericPoValue,
+            'data.dealValue': numericPoValue,
+            updatedAt: new Date().toISOString(),
+          },
+        }
+      ).catch(() => {})
+    }
+
     if (Deal) {
       await Deal.updateMany(
         { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
         {
           $set: {
             poValue: numericPoValue,
+            dealValue: numericPoValue,
             'formData.poValue': numericPoValue,
+            'formData.dealValue': numericPoValue,
             'data.poValue': numericPoValue,
+            'data.dealValue': numericPoValue,
             updatedAt: new Date().toISOString(),
           },
         }
       ).catch(() => {})
+    }
+
+    if (updatedLead) {
+      updatedLead.poValue = numericPoValue
+      updatedLead.dealValue = numericPoValue
+      if (updatedLead.formData) {
+        updatedLead.formData.poValue = numericPoValue
+        updatedLead.formData.dealValue = numericPoValue
+      }
     }
   }
 

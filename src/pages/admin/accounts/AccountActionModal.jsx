@@ -184,6 +184,7 @@ const AccountActionModal = ({ account, actionKey, onClose, onSaved }) => {
     const numericPoValue = String(poValue).trim() === '' ? 0 : Number(poValue)
     const result = await updateAccount(account.raw?.id || account.id, {
       poValue: numericPoValue,
+      dealValue: numericPoValue,
       isOnlyPoValueUpdate: true,
       preserveStatus: true,
       updatedAt: new Date().toISOString(),

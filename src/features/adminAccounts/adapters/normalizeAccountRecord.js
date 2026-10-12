@@ -233,7 +233,11 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
   const industryTypeVal = titleize(account.industryType || account.industry || formData['Industry type'] || formData['Industry Type'] || formData.industryType || account.raw?.industryType || account.raw?.industry || '')
   const customerRefNoVal = account.customerRefNo || formData['Customer Ref. No.'] || formData.customerRefNo || account.raw?.customerRefNo || ''
   const consultantNameVal = account.consultantName || formData['Consultant Name'] || formData.consultantName || account.raw?.consultantName || account.raw?.formData?.['Consultant Name'] || ''
-  const poValueVal = account.poValue || formData['PO Value'] || formData.poValue || account.raw?.poValue || ''
+  const poValueVal = (account.poValue !== undefined && account.poValue !== null && String(account.poValue).trim() !== '')
+    ? account.poValue
+    : (account.dealValue !== undefined && account.dealValue !== null && String(account.dealValue).trim() !== ''
+        ? account.dealValue
+        : (formData['PO Value'] || formData.poValue || formData.dealValue || formData['Deal Value'] || account.raw?.poValue || account.raw?.dealValue || account.raw?.formData?.poValue || account.raw?.formData?.dealValue || account.raw?.data?.poValue || account.raw?.data?.dealValue || ''))
   const productCategoryVal = titleize(account.productCategory || formData['Product Category'] || formData.productCategory || account.raw?.productCategory || '')
   const userGroupVal = account.userGroup || formData['User Group'] || formData.userGroup || account.raw?.userGroup || account.raw?.formData?.['User Group'] || ''
 
