@@ -48,10 +48,26 @@ export const taskApi = {
     return list.map(normalizeTaskRecord)
   },
 
+  async getTasksCreatedByMe() {
+    const response = await apiClient.get('/tasks/created-by-me')
+    const list = Array.isArray(response) ? response : (Array.isArray(response?.data) ? response.data : [])
+    return list.map(normalizeTaskRecord)
+  },
+
   async getTaskById(id) {
     const response = await apiClient.get(`/tasks/${encodeURIComponent(id)}`)
     const record = response?.data || response
     return normalizeTaskRecord(record)
+  },
+
+  async getTaskDetails(id) {
+    try {
+      const response = await apiClient.get(`/tasks/${encodeURIComponent(id)}/details`)
+      const record = response?.data || response
+      return normalizeTaskRecord(record)
+    } catch (e) {
+      return this.getTaskById(id)
+    }
   },
 
   async createTask(payload) {
@@ -79,6 +95,53 @@ export const taskApi = {
 
   async addComment(taskId, payload) {
     const response = await apiClient.post(`/tasks/${encodeURIComponent(taskId)}/comments`, payload)
+    return response?.data || response
+  },
+
+  async getActivity(taskId) {
+    const response = await apiClient.get(`/tasks/${encodeURIComponent(taskId)}/activity`)
+    const list = response?.data || response
+    return Array.isArray(list) ? list : []
+  },
+
+  async getTimeEntries(taskId) {
+    const response = await apiClient.get(`/tasks/${encodeURIComponent(taskId)}/time-entries`)
+    const list = response?.data || response
+    return Array.isArray(list) ? list : []
+  },
+
+  async addTimeEntry(taskId, payload) {
+    const response = await apiClient.post(`/tasks/${encodeURIComponent(taskId)}/time-entries`, payload)
+    return response?.data || response
+  },
+
+  async getReaders(taskId) {
+    const response = await apiClient.get(`/tasks/${encodeURIComponent(taskId)}/readers`)
+    return response?.data || response || { readers: [], readCount: 0, totalCount: 8 }
+  },
+
+  async markAsRead(taskId) {
+    const response = await apiClient.post(`/tasks/${encodeURIComponent(taskId)}/read`)
+    return response?.data || response
+  },
+
+  async getAttachments(taskId) {
+    const response = await apiClient.get('/attachments', {
+      params: { entityType: 'task', entityId: String(taskId) },
+    })
+    const list = response?.data || response
+    return Array.isArray(list) ? list : []
+  },
+
+  async uploadAttachment(formData) {
+    const response = await apiClient.post('/attachments', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response?.data || response
+  },
+
+  async deleteAttachment(attachmentId) {
+    const response = await apiClient.delete(`/attachments/${encodeURIComponent(attachmentId)}`)
     return response?.data || response
   },
 

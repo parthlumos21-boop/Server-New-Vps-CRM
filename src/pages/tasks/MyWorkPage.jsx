@@ -26,6 +26,7 @@ import { UserEmailBadge } from './components/common/UserEmailBadge'
 import workManagementService from '../../services/workManagementService'
 import { ProfessionalTaskModal } from '../../components/common/ProfessionalTaskModal'
 import AddReminderModal from '../../components/common/AddReminderModal'
+import TaskDetailsWorkspaceModal from './components/details/TaskDetailsWorkspaceModal'
 
 export const MyWorkPage = () => {
   const { user } = useAuth()
@@ -287,10 +288,12 @@ export const MyWorkPage = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
                     <button
                       type="button"
-                      className="ap-header-item-btn"
                       style={{
+                        width: '84px',
                         minWidth: '84px',
                         height: '32px',
+                        minHeight: '32px',
+                        maxHeight: '32px',
                         padding: '0 0.75rem',
                         fontSize: '0.76rem',
                         fontWeight: '700',
@@ -299,6 +302,19 @@ export const MyWorkPage = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxSizing: 'border-box',
+                        background: 'rgba(198, 0, 22, 0.06)',
+                        color: '#c60016',
+                        border: '1.5px solid rgba(198, 0, 22, 0.25)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#c60016'
+                        e.currentTarget.style.color = '#ffffff'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(198, 0, 22, 0.06)'
+                        e.currentTarget.style.color = '#c60016'
                       }}
                       onClick={() => setActiveTaskDrawer(t)}
                     >
@@ -306,10 +322,12 @@ export const MyWorkPage = () => {
                     </button>
                     <button
                       type="button"
-                      className="ap-tab-add"
                       style={{
+                        width: '84px',
                         minWidth: '84px',
                         height: '32px',
+                        minHeight: '32px',
+                        maxHeight: '32px',
                         padding: '0 0.75rem',
                         fontSize: '0.76rem',
                         fontWeight: '700',
@@ -318,6 +336,20 @@ export const MyWorkPage = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         boxSizing: 'border-box',
+                        background: 'linear-gradient(135deg, #c60016 0%, #990011 100%)',
+                        color: '#ffffff',
+                        border: '1.5px solid #990011',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 6px rgba(198, 0, 22, 0.22)',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-1px)'
+                        e.currentTarget.style.boxShadow = '0 4px 10px rgba(198, 0, 22, 0.35)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none'
+                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(198, 0, 22, 0.22)'
                       }}
                       onClick={() => navigate(user?.role === 'admin' ? `/admin/tasks/edit/${t.id}` : `/tasks/edit/${t.id}`)}
                     >
@@ -620,133 +652,24 @@ export const MyWorkPage = () => {
         onClose={() => setAddReminderOpen(false)}
       />
 
-      {/* Task Details Side Drawer (Changes-4) */}
-      {activeTaskDrawer && createPortal(
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.45)',
-            backdropFilter: 'blur(3px)',
-            zIndex: 9999,
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}
-          onClick={() => setActiveTaskDrawer(null)}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '520px',
-              height: '100%',
-              background: '#ffffff',
-              boxShadow: '-8px 0 28px rgba(0, 0, 0, 0.15)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflowY: 'auto',
-              padding: '1.5rem',
-              boxSizing: 'border-box',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header with Update button on top right */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1.5px solid #e2e8f0', gap: '0.75rem' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', textTransform: 'uppercase' }}>
-                  Task Details &bull; ID #{activeTaskDrawer.id}
-                </span>
-                <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {activeTaskDrawer.title}
-                </h3>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                <button
-                  type="button"
-                  style={{
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
-                    color: '#ffffff',
-                    fontWeight: '800',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
-                  }}
-                  onClick={() => {
-                    navigate(user?.role === 'admin' ? `/admin/tasks/edit/${activeTaskDrawer.id}` : `/tasks/edit/${activeTaskDrawer.id}`)
-                  }}
-                  title="Update Task"
-                >
-                  <FaEdit /> <span>Update</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTaskDrawer(null)}
-                  style={{ background: 'none', border: 'none', fontSize: '1.15rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', padding: '0.2rem' }}
-                  title="Close Details"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-            </div>
+      {/* REDESIGNED TASK DETAILS TWO-PANEL WORKSPACE MODAL (MATCHING IMAGE 1) */}
+      <TaskDetailsWorkspaceModal
+        isOpen={Boolean(activeTaskDrawer)}
+        task={activeTaskDrawer}
+        initialTab="comments"
+        onClose={() => setActiveTaskDrawer(null)}
+        onUpdateTask={(updated) => {
+          setActiveTaskDrawer(updated)
+          if (updated && updated.id) {
+            updateTask?.(updated.id, updated)
+          }
+        }}
+        allTasks={myTasks}
+        currentUser={user}
+        availableUsers={overview?.teamMembers || []}
+        isAdmin={isAdminRoute}
+      />
 
-            {/* Meta Tags & CRM Pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: '1rem 0' }}>
-              <TaskStatusBadge value={activeTaskDrawer.status} type="status" />
-              <TaskStatusBadge value={activeTaskDrawer.priority} type="priority" />
-              <TaskStatusBadge value={activeTaskDrawer.slaStatus || 'compliant'} type="sla" />
-              {activeTaskDrawer.projectId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#fef2f2', color: '#c60016', fontWeight: '800' }}>
-                  Project #{activeTaskDrawer.projectId}
-                </span>
-              )}
-              {activeTaskDrawer.dealId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', fontWeight: '700' }}>
-                  Deal #{activeTaskDrawer.dealId}
-                </span>
-              )}
-              {activeTaskDrawer.accountId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#faf5ff', color: '#7c3aed', fontWeight: '700' }}>
-                  Account #{activeTaskDrawer.accountId}
-                </span>
-              )}
-            </div>
-
-            {/* Description */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b' }}>Description</span>
-              <p style={{ fontSize: '0.84rem', color: '#334155', marginTop: '0.25rem', lineHeight: 1.5, background: '#f8fafc', padding: '0.75rem', borderRadius: '10px' }}>
-                {activeTaskDrawer.description || 'No description provided.'}
-              </p>
-            </div>
-
-            {/* People & Multi-Assignees */}
-            <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <FaUserCheck style={{ color: '#c60016' }} /> Assigned Team Members
-                </span>
-                <div style={{ marginTop: '0.35rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {(Array.isArray(activeTaskDrawer.assignedToUserEmails) && activeTaskDrawer.assignedToUserEmails.length > 0
-                    ? activeTaskDrawer.assignedToUserEmails
-                    : (activeTaskDrawer.assignedTo ? [activeTaskDrawer.assignedTo] : [])
-                  ).map((email) => (
-                    <UserEmailBadge key={email} email={email} showEmail />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </TaskWorkspaceLayout>
   )
 }

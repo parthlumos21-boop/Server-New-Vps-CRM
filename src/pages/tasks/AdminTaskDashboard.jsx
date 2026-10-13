@@ -321,7 +321,6 @@ export const AdminTaskDashboard = () => {
                       <UserEmailBadge email={usr.email} name={usr.name} showEmail />
                       <div style={{ marginTop: '0.25rem', fontSize: '0.72rem', color: '#64748b' }}>
                         <span style={{ fontWeight: '700', textTransform: 'capitalize', color: '#1e293b' }}>{usr.role || 'User'}</span>
-                        {usr.department && ` &bull; ${usr.department}`}
                       </div>
                     </div>
 
@@ -610,7 +609,7 @@ export const AdminTaskDashboard = () => {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#fef2f2', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
-                        #{(projectPage - 1) * PAGE_SIZE + idx + 1} &bull; {p.projectCode}
+                        {(projectPage - 1) * PAGE_SIZE + idx + 1} &bull; {p.projectCode}
                       </span>
                       <TaskStatusBadge value={p.status} />
                     </div>

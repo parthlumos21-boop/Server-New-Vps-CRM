@@ -4,6 +4,8 @@ const { getMongoModel, getNextLegacyId } = require('../models/mongoModels')
 const User = getMongoModel('users')
 const Task = getMongoModel('tasks')
 const WorkProject = getMongoModel('projects')
+const Lead = getMongoModel('leads')
+const Deal = getMongoModel('deals')
 const TimeEntry = getMongoModel('time_entries')
 const WorkWorkflow = getMongoModel('work_workflows')
 const WorkApproval = getMongoModel('work_approvals')
@@ -79,6 +81,18 @@ const getOverviewData = async (actor) => {
   }
   const projects = await WorkProject.find(projectQuery).sort({ updatedAt: -1 }).lean()
 
+  // Concurrently query leads and deals for user workload matrix real counts
+  const leadQuery = { companyId: companyId, frontendDeleted: { $ne: true } }
+  const dealQuery = { companyId: companyId, frontendDeleted: { $ne: true } }
+  const [leads, deals] = await Promise.all([
+    Lead.find(leadQuery)
+      .select({ _id: 1, legacyId: 1, accountOwner: 1, createdBy: 1, ownerCode: 1 })
+      .lean(),
+    Deal.find(dealQuery)
+      .select({ _id: 1, legacyId: 1, dealOwner: 1, createdBy: 1, ownerCode: 1 })
+      .lean(),
+  ])
+
   // Time entries (Removed)
   const totalMinutesTracked = 0
 
@@ -89,10 +103,20 @@ const getOverviewData = async (actor) => {
   }
   const pendingApprovalsCount = await WorkApproval.countDocuments(approvalQuery)
 
-  // User-Wise Performance Summary Table (Level 2 Drill-down)
+  // User-Wise Performance Summary Table (Level 2 Drill-down with real MongoDB counts)
   const userPerformanceSummary = users.map((u) => {
     const email = String(u.email || '').trim().toLowerCase()
-    const userTasks = tasks.filter((t) => String(t.assignedTo || '').toLowerCase() === email)
+    const userTasks = tasks.filter((t) => {
+      const assigned = String(t.assignedTo || '').toLowerCase().trim()
+      const assignedList = Array.isArray(t.assignedToUserEmails)
+        ? t.assignedToUserEmails.map((e) => String(e).toLowerCase().trim())
+        : []
+      return (
+        assigned === email ||
+        assignedList.includes(email) ||
+        String(t.assignedTo) === String(u.legacyId || u.id)
+      )
+    })
     const userCompleted = userTasks.filter((t) => ['completed', 'closed'].includes(String(t.status || '').toLowerCase())).length
     const userOverdue = userTasks.filter((t) => {
       if (!t.dueDate || ['completed', 'closed'].includes(String(t.status || '').toLowerCase())) return false
@@ -105,9 +129,35 @@ const getOverviewData = async (actor) => {
     const workloadPercent = Math.min(Math.round((userEstimatedHours / weeklyCapacityHours) * 100), 200)
 
     const userProjectsCount = projects.filter((p) => {
-      const pmEmail = String(p.projectManagerEmail || '').toLowerCase()
-      const members = (p.teamMemberEmails || []).map((m) => String(m).toLowerCase())
+      const pmEmail = String(p.projectManagerEmail || '').toLowerCase().trim()
+      const members = (p.teamMemberEmails || []).map((m) => String(m).toLowerCase().trim())
       return pmEmail === email || members.includes(email)
+    }).length
+
+    const userLeadsCount = leads.filter((l) => {
+      const creator = String(l.createdBy || '').toLowerCase().trim()
+      const owner = String(l.accountOwner || '').toLowerCase().trim()
+      const uName = String(u.name || '').toLowerCase().trim()
+      const uOwnerCode = String(u.ownerCode || '').toLowerCase().trim()
+      return (
+        creator === email ||
+        creator === String(u.legacyId || u.id) ||
+        (uName && owner === uName) ||
+        (uOwnerCode && String(l.ownerCode || '').toLowerCase().trim() === uOwnerCode)
+      )
+    }).length
+
+    const userDealsCount = deals.filter((d) => {
+      const creator = String(d.createdBy || '').toLowerCase().trim()
+      const owner = String(d.dealOwner || '').toLowerCase().trim()
+      const uName = String(u.name || '').toLowerCase().trim()
+      const uOwnerCode = String(u.ownerCode || '').toLowerCase().trim()
+      return (
+        creator === email ||
+        creator === String(d.legacyId || d.id) ||
+        (uName && owner === uName) ||
+        (uOwnerCode && String(d.ownerCode || '').toLowerCase().trim() === uOwnerCode)
+      )
     }).length
 
     return {
@@ -115,7 +165,7 @@ const getOverviewData = async (actor) => {
       name: u.name || u.username || email,
       email,
       role: u.role || 'user',
-      department: u.department || 'Sales',
+      department: u.department || 'Operations',
       ownerCode: u.ownerCode || null,
       activeTasks: userTasks.length - userCompleted,
       completedTasks: userCompleted,
@@ -123,6 +173,8 @@ const getOverviewData = async (actor) => {
       workloadPercent,
       estimatedHours: Math.round(userEstimatedHours),
       projectsCount: userProjectsCount,
+      leadsCount: userLeadsCount,
+      dealsCount: userDealsCount,
       slaComplianceRate: userTasks.length > 0 ? Math.round(((userTasks.length - userOverdue) / userTasks.length) * 100) : 100,
     }
   })

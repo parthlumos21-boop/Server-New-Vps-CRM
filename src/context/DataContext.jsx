@@ -24,18 +24,26 @@ import {
 
 const DataContext = createContext(null)
 
-const upsertToTop = (items, record) => [
-  record,
-  ...items.filter((entry) => entry.id !== record.id),
-]
+const upsertToTop = (items, record) => {
+  if (!record) return items || []
+  const recordIdStr = String(record.id ?? '')
+  return [
+    record,
+    ...(items || []).filter((entry) => String(entry?.id ?? '') !== recordIdStr),
+  ]
+}
 
 const replaceById = (items, record) => {
-  const exists = items.some((entry) => entry.id === record.id)
+  if (!record) return items || []
+  const recordIdStr = String(record.id ?? '')
+  const exists = (items || []).some((entry) => String(entry?.id ?? '') === recordIdStr)
   if (!exists) {
     return upsertToTop(items, record)
   }
 
-  return items.map((entry) => (entry.id === record.id ? record : entry))
+  return (items || []).map((entry) =>
+    String(entry?.id ?? '') === recordIdStr ? { ...entry, ...record } : entry
+  )
 }
 
 const replaceDealRecord = (items, record) => {

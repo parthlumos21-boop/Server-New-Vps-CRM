@@ -337,7 +337,7 @@ export const EditTaskPage = () => {
             </button>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '800', color: '#1e293b' }}>
-                Update Task #{taskId}
+                Update Task #{taskId}{title ? ` - ${title}` : ''}
               </h2>
               <p style={{ margin: '0.15rem 0 0', fontSize: '0.8rem', color: '#64748b' }}>
                 Update task schedule, assignees, checklist subtasks, and CRM workflow links.

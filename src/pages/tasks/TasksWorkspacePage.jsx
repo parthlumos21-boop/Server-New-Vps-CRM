@@ -30,6 +30,7 @@ import { TaskFilterBar } from './components/common/TaskFilterBar'
 import { TaskStatusBadge } from './components/common/TaskStatusBadge'
 import { UserEmailBadge } from './components/common/UserEmailBadge'
 import ProfessionalTaskModal from '../../components/common/ProfessionalTaskModal'
+import TaskDetailsWorkspaceModal from './components/details/TaskDetailsWorkspaceModal'
 import workManagementService from '../../services/workManagementService'
 import taskApi from '../../services/taskApi'
 import { userApi } from '../../services/userApi'
@@ -37,7 +38,7 @@ import { userApi } from '../../services/userApi'
 export const TasksWorkspacePage = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { tasks, updateTask } = useData()
+  const { tasks, updateTask, accounts, deals } = useData()
   const [searchParams] = useSearchParams()
 
   const [activeView, setActiveView] = useState('list') // 'list' | 'kanban' | 'calendar' | 'cards'
@@ -52,6 +53,7 @@ export const TasksWorkspacePage = () => {
   })
   const [selectedStatuses, setSelectedStatuses] = useState([])
   const [filterCreatedByMe, setFilterCreatedByMe] = useState(false)
+  const [createdByMeTasks, setCreatedByMeTasks] = useState(null)
   const [dateFilterPreset, setDateFilterPreset] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState(searchParams.get('assignee') || '')
@@ -70,6 +72,26 @@ export const TasksWorkspacePage = () => {
 
   const isAdmin = ['admin', 'super_admin'].includes(user?.role)
   const currentUserEmail = String(user?.email || user?.username || '').trim().toLowerCase()
+
+  // Fetch tasks created by me from Express backend when filter is active
+  useEffect(() => {
+    if (!filterCreatedByMe) {
+      setCreatedByMeTasks(null)
+      return
+    }
+    let isMounted = true
+    taskApi
+      .getTasksCreatedByMe()
+      .then((list) => {
+        if (isMounted) setCreatedByMeTasks(Array.isArray(list) ? list : [])
+      })
+      .catch((err) => {
+        console.error('Failed to fetch tasks created by me from Express backend', err)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [filterCreatedByMe])
 
   // Fetch comments when task drawer opens
   useEffect(() => {
@@ -258,10 +280,45 @@ export const TasksWorkspacePage = () => {
         }
       }
 
-      // Star filter: Created by me
+      // Star filter: Created by me (MongoDB Express layer + multi-collection link resolution)
       if (filterCreatedByMe) {
-        const created = String(t.createdBy || '').trim().toLowerCase()
-        if (created !== currentUserEmail) return false
+        if (Array.isArray(createdByMeTasks)) {
+          const match = createdByMeTasks.some((m) => String(m.id) === String(t.id))
+          if (!match) return false
+        } else {
+          const currentUserIdStr = String(user?.id || user?.legacyId || '').trim()
+          const currentEmail = currentUserEmail
+          const currentName = String(user?.name || '').trim().toLowerCase()
+          const currentOwnerCode = String(user?.ownerCode || '').trim().toLowerCase()
+
+          const taskCreator = String(t.createdBy || '').trim().toLowerCase()
+          const isDirectCreator =
+            taskCreator === currentEmail ||
+            taskCreator === currentUserIdStr.toLowerCase() ||
+            (currentName && taskCreator === currentName)
+
+          const matchedAccount = (accounts || []).find(
+            (a) => String(a.id) === String(t.accountId) || String(a.accountNumber) === String(t.accountId)
+          )
+          const isAccountCreator =
+            matchedAccount &&
+            (String(matchedAccount.createdBy || '').toLowerCase() === currentEmail ||
+              String(matchedAccount.createdBy || '') === currentUserIdStr ||
+              (currentName && String(matchedAccount.accountOwner || '').toLowerCase() === currentName) ||
+              (currentOwnerCode && String(matchedAccount.ownerCode || '').toLowerCase() === currentOwnerCode))
+
+          const matchedDeal = (deals || []).find(
+            (d) => String(d.id) === String(t.dealId) || String(d.dealNumber) === String(t.dealId)
+          )
+          const isDealCreator =
+            matchedDeal &&
+            (String(matchedDeal.createdBy || '').toLowerCase() === currentEmail ||
+              String(matchedDeal.createdBy || '') === currentUserIdStr ||
+              (currentName && String(matchedDeal.dealOwner || '').toLowerCase() === currentName) ||
+              (currentOwnerCode && String(matchedDeal.ownerCode || '').toLowerCase() === currentOwnerCode))
+
+          if (!isDirectCreator && !isAccountCreator && !isDealCreator) return false
+        }
       }
 
       // Quick status chip multi-select
@@ -400,6 +457,7 @@ export const TasksWorkspacePage = () => {
       setIsUpdating(true)
       const isComplete = targetStatus === 'completed'
       await updateTask(taskId, {
+        ...matchedTask,
         status: targetStatus,
         progress: isComplete ? 100 : (matchedTask.progress || (targetStatus === 'in_progress' ? 50 : 25)),
       })
@@ -464,7 +522,7 @@ export const TasksWorkspacePage = () => {
         dateFilterPreset={dateFilterPreset}
         onDateFilterChange={setDateFilterPreset}
         onAddTask={() => handleOpenAddModal('open')}
-        title={isAdmin ? 'My Task' : 'My Task'}
+        title={isAdmin ? 'Tasks' : 'Tasks'}
       />
 
       {/* VIEW 1: MODERN SCREENSHOT-STYLE LIST VIEW MATCHING IMAGE 1 */}
@@ -624,6 +682,7 @@ export const TasksWorkspacePage = () => {
         >
           {kanbanColumns.map((col) => {
             const colTasks = filteredTasks.filter((t) => {
+              if (!t || !t.id || (!t.title && !t.description)) return false
               const st = String(t.status || 'open').toLowerCase()
               return st === col.key
             })
@@ -766,365 +825,23 @@ export const TasksWorkspacePage = () => {
         </div>
       )}
 
-      {/* TASK DETAIL DRAWER (SLIDE-OVER) WITH REAL-TIME OPEN, UPDATE, IN PROGRESS BUTTONS */}
-      {activeTaskDrawer && createPortal(
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.45)',
-            zIndex: 99999,
-            display: 'flex',
-            justifyContent: 'flex-end',
-          }}
-          onClick={() => setActiveTaskDrawer(null)}
-        >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '540px',
-              height: '100vh',
-              maxHeight: '100vh',
-              background: '#ffffff',
-              boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.15)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflowY: 'auto',
-              padding: '1.5rem',
-              boxSizing: 'border-box',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Drawer Header with Update button on top right */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1.5px solid #e2e8f0', gap: '0.75rem' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', textTransform: 'uppercase' }}>
-                  Task Details &bull; ID #{activeTaskDrawer.id}
-                </span>
-                <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {activeTaskDrawer.title}
-                </h3>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
-                <button
-                  type="button"
-                  disabled={isUpdating}
-                  style={{
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
-                    color: '#ffffff',
-                    fontWeight: '800',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
-                  }}
-                  onClick={() => {
-                    navigate(isAdmin ? `/admin/tasks/edit/${activeTaskDrawer.id}` : `/tasks/edit/${activeTaskDrawer.id}`)
-                  }}
-                  title="Update Task"
-                >
-                  <FaEdit /> <span>Update</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTaskDrawer(null)}
-                  style={{ background: 'none', border: 'none', fontSize: '1.15rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', padding: '0.2rem' }}
-                  title="Close Details"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-            </div>
+      {/* REDESIGNED TASK DETAILS TWO-PANEL WORKSPACE MODAL (MATCHING IMAGE 1) */}
+      <TaskDetailsWorkspaceModal
+        isOpen={Boolean(activeTaskDrawer)}
+        task={activeTaskDrawer}
+        onClose={() => setActiveTaskDrawer(null)}
+        onUpdateTask={(updated) => {
+          setActiveTaskDrawer(updated)
+          if (updated && updated.id) {
+            updateTask?.(updated.id, updated)
+          }
+        }}
+        allTasks={filteredTasks}
+        currentUser={user}
+        availableUsers={userList}
+        isAdmin={isAdmin}
+      />
 
-            {/* Meta Tags & CRM Pills */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: '1rem 0' }}>
-              <TaskStatusBadge value={activeTaskDrawer.status} type="status" />
-              <TaskStatusBadge value={activeTaskDrawer.priority} type="priority" />
-              <TaskStatusBadge value={activeTaskDrawer.slaStatus || 'compliant'} type="sla" />
-              {activeTaskDrawer.projectId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#fef2f2', color: '#c60016', fontWeight: '800' }}>
-                  Project #{activeTaskDrawer.projectId}
-                </span>
-              )}
-              {activeTaskDrawer.dealId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', fontWeight: '700' }}>
-                  Deal #{activeTaskDrawer.dealId}
-                </span>
-              )}
-              {activeTaskDrawer.accountId && (
-                <span style={{ fontSize: '0.74rem', padding: '0.2rem 0.5rem', borderRadius: '10px', background: '#faf5ff', color: '#7c3aed', fontWeight: '700' }}>
-                  Account #{activeTaskDrawer.accountId}
-                </span>
-              )}
-            </div>
-
-            {/* Description */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b' }}>Description</span>
-              <p style={{ fontSize: '0.84rem', color: '#334155', marginTop: '0.25rem', lineHeight: 1.5, background: '#f8fafc', padding: '0.75rem', borderRadius: '10px' }}>
-                {activeTaskDrawer.description || 'No description provided.'}
-              </p>
-            </div>
-
-            {/* People & Multi-Assignees (MongoDB Users) */}
-            <div style={{ marginBottom: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <FaUserCheck style={{ color: '#c60016' }} /> Assigned Team Members
-                </span>
-                <div style={{ marginTop: '0.35rem', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {(Array.isArray(activeTaskDrawer.assignedToUserEmails) && activeTaskDrawer.assignedToUserEmails.length > 0
-                    ? activeTaskDrawer.assignedToUserEmails
-                    : (activeTaskDrawer.assignedTo ? [activeTaskDrawer.assignedTo] : [])
-                  ).map((email) => (
-                    <UserEmailBadge
-                      key={email}
-                      email={email}
-                      name={resolveAssigneeName(email)}
-                      showEmail
-                    />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b' }}>Created By</span>
-                <div style={{ marginTop: '0.25rem' }}>
-                  <UserEmailBadge
-                    email={activeTaskDrawer.createdByEmail || activeTaskDrawer.createdBy}
-                    name={activeTaskDrawer.createdByName}
-                    showEmail
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Interactive Checklist / Subtasks */}
-            <div style={{ marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b' }}>Checklist & Subtasks</span>
-                <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#c60016' }}>
-                  {activeTaskDrawer.progress || 0}% Complete
-                </span>
-              </div>
-
-              {(!activeTaskDrawer.subtasks || activeTaskDrawer.subtasks.length === 0) ? (
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.5rem 0' }}>
-                  No subtasks defined.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                  {activeTaskDrawer.subtasks.map((st) => (
-                    <label
-                      key={st.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.6rem',
-                        fontSize: '0.82rem',
-                        cursor: 'pointer',
-                        padding: '0.4rem 0.6rem',
-                        borderRadius: '8px',
-                        background: st.completed ? '#f0fdf4' : '#f8fafc',
-                        border: '1px solid #e2e8f0',
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={Boolean(st.completed)}
-                        onChange={() => handleToggleSubtask(activeTaskDrawer, st.id)}
-                        style={{ accentColor: '#c60016', cursor: 'pointer' }}
-                      />
-                      <span style={{ textDecoration: st.completed ? 'line-through' : 'none', color: st.completed ? '#64748b' : '#1e293b', flex: 1 }}>
-                        {st.title}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* JIRA TICKET ACTIVITY & COMMENTS SYSTEM */}
-            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1.5px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <FaCommentDots style={{ color: '#c60016' }} /> Activity & Comments ({comments.length})
-                </span>
-                {activeTaskDrawer.projectId && (
-                  <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '600' }}>
-                    Project #{activeTaskDrawer.projectId}
-                  </span>
-                )}
-              </div>
-
-              {/* Scrollable Comments History List */}
-              <div
-                style={{
-                  maxHeight: '260px',
-                  overflowY: 'auto',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.65rem',
-                  paddingRight: '0.25rem',
-                }}
-              >
-                {loadingComments ? (
-                  <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.75rem 0' }}>
-                    Loading comments...
-                  </div>
-                ) : comments.length === 0 ? (
-                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.5rem 0' }}>
-                    No comments yet. Be the first to comment on this task.
-                  </div>
-                ) : (
-                  comments.map((cm, idx) => {
-                    const commenterName = cm.userName || (cm.userEmail ? cm.userEmail.split('@')[0] : 'User')
-                    const initials = commenterName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U'
-                    const dateStr = cm.createdAt
-                      ? new Date(cm.createdAt).toLocaleDateString('en-IN', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : 'Recently'
-
-                    return (
-                      <div
-                        key={cm.id || idx}
-                        style={{
-                          display: 'flex',
-                          gap: '0.6rem',
-                          background: '#f8fafc',
-                          padding: '0.65rem 0.75rem',
-                          borderRadius: '10px',
-                          border: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '50%',
-                            background: '#eff6ff',
-                            color: '#2563eb',
-                            fontWeight: '800',
-                            fontSize: '0.72rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            border: '1px solid #bfdbfe',
-                          }}
-                        >
-                          {initials}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap' }}>
-                              <span style={{ fontWeight: '800', fontSize: '0.8rem', color: '#1e293b' }}>
-                                {commenterName}
-                              </span>
-                              {cm.userEmail && (
-                                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
-                                  &lt;{cm.userEmail}&gt;
-                                </span>
-                              )}
-                            </div>
-                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', flexShrink: 0 }}>
-                              {dateStr}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.82rem', color: '#334155', marginTop: '0.25rem', whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
-                            {cm.comment}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-
-              {/* Jira-style Comment Box */}
-              <form onSubmit={handleAddComment} style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add a comment... (Ctrl+Enter to post)"
-                  rows={2}
-                  onKeyDown={(e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                      handleAddComment(e)
-                    }
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1.5px solid #cbd5e1',
-                    fontSize: '0.82rem',
-                    outline: 'none',
-                    resize: 'vertical',
-                    boxSizing: 'border-box',
-                    fontFamily: 'inherit',
-                  }}
-                />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.45rem' }}>
-                  {newComment.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => setNewComment('')}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#64748b',
-                        fontSize: '0.76rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        padding: '0.3rem 0.6rem',
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={!newComment.trim() || isPostingComment}
-                    style={{
-                      background: newComment.trim() ? '#2563eb' : '#94a3b8',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '0.4rem 0.85rem',
-                      fontSize: '0.78rem',
-                      fontWeight: '700',
-                      cursor: newComment.trim() && !isPostingComment ? 'pointer' : 'not-allowed',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      transition: 'background 0.15s ease',
-                    }}
-                  >
-                    <FaPaperPlane style={{ fontSize: '0.68rem' }} />
-                    <span>{isPostingComment ? 'Posting...' : 'Save Comment'}</span>
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
 
       {/* Professional Task Modal with Multi-User Checkboxes & CRM Linking */}
       <ProfessionalTaskModal

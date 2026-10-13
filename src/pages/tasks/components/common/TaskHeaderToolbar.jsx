@@ -315,9 +315,9 @@ export const TaskHeaderToolbar = ({
                 justifyContent: 'center',
                 padding: '0.52rem 0.65rem',
                 borderRadius: '10px',
-                border: dateFilterPreset !== 'all' ? '1.5px solid #2563eb' : '1px solid #cbd5e1',
-                background: dateFilterPreset !== 'all' ? '#eff6ff' : '#ffffff',
-                color: dateFilterPreset !== 'all' ? '#2563eb' : '#64748b',
+                border: dateFilterPreset !== 'all' ? '1.5px solid #c60016' : '1px solid #cbd5e1',
+                background: dateFilterPreset !== 'all' ? '#fef2f2' : '#ffffff',
+                color: dateFilterPreset !== 'all' ? '#c60016' : '#64748b',
                 fontSize: '0.85rem',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
@@ -389,20 +389,20 @@ export const TaskHeaderToolbar = ({
               gap: '0.45rem',
               padding: '0.52rem 1.15rem',
               borderRadius: '10px',
-              background: '#2563eb',
+              background: '#c60016',
               color: '#ffffff',
               border: 'none',
               fontSize: '0.84rem',
               fontWeight: '700',
               cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(37, 99, 235, 0.35)',
+              boxShadow: '0 2px 6px rgba(198, 0, 22, 0.35)',
               transition: 'background 0.15s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#1d4ed8'
+              e.currentTarget.style.background = '#a80012'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = '#2563eb'
+              e.currentTarget.style.background = '#c60016'
             }}
           >
             <FaPlus style={{ fontSize: '0.75rem' }} />
@@ -411,7 +411,7 @@ export const TaskHeaderToolbar = ({
         </div>
       </div>
 
-      {/* Sub Header Bar: View Selector (List / Kanban / Calendar) + Customize / More */}
+      {/* Sub Header Bar: View Selector (List / Kanban / Calendar) */}
       <div
         style={{
           display: 'flex',
@@ -441,7 +441,7 @@ export const TaskHeaderToolbar = ({
                   padding: '0.45rem 0.2rem 0.65rem 0.2rem',
                   background: 'transparent',
                   border: 'none',
-                  borderBottom: isActive ? '2.5px solid #2563eb' : '2.5px solid transparent',
+                  borderBottom: isActive ? '2.5px solid #c60016' : '2.5px solid transparent',
                   color: isActive ? '#0f172a' : '#64748b',
                   fontSize: '0.88rem',
                   fontWeight: isActive ? '800' : '600',
@@ -451,55 +451,13 @@ export const TaskHeaderToolbar = ({
                   marginBottom: '-1px',
                 }}
               >
-                <span style={{ fontSize: '0.8rem', color: isActive ? '#2563eb' : '#94a3b8' }}>
+                <span style={{ fontSize: '0.8rem', color: isActive ? '#c60016' : '#94a3b8' }}>
                   {tab.icon}
                 </span>
                 <span>{tab.label}</span>
               </button>
             )
           })}
-        </div>
-
-        {/* Right Subtle Utilities: Customize & More */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <button
-            type="button"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              fontSize: '0.78rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              padding: '0.2rem 0.4rem',
-              borderRadius: '6px',
-            }}
-          >
-            <FaSlidersH style={{ fontSize: '0.75rem' }} />
-            <span>Customize</span>
-          </button>
-          <button
-            type="button"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              background: 'transparent',
-              border: 'none',
-              color: '#64748b',
-              fontSize: '0.78rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              padding: '0.2rem 0.4rem',
-              borderRadius: '6px',
-            }}
-          >
-            <FaEllipsisH style={{ fontSize: '0.75rem' }} />
-            <span>More</span>
-          </button>
         </div>
       </div>
     </div>
