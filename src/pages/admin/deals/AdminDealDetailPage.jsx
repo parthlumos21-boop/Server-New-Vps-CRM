@@ -460,6 +460,7 @@ const AdminDealDetailPage = () => {
         openGenerator: true,
         preselectedDeal: targetDeal,
         activeTab: 'deal',
+        quotationContext: 'deal',
       },
     })
   }

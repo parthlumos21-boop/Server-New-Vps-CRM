@@ -1,8 +1,9 @@
 import React from 'react'
 
 export const UserEmailBadge = ({ email, name, role, size = 'normal', showEmail = false }) => {
-  const cleanEmail = String(email || '').trim().toLowerCase()
-  const displayName = name || cleanEmail.split('@')[0] || 'Unassigned'
+  const cleanEmail = String(email || '').trim()
+  const isEmailAddress = cleanEmail.includes('@')
+  const displayName = name || (isEmailAddress ? cleanEmail.split('@')[0] : cleanEmail) || 'Unassigned'
   const initial = (displayName.charAt(0) || 'U').toUpperCase()
 
   const avatarSize = size === 'small' ? '1.5rem' : '1.85rem'
@@ -16,7 +17,7 @@ export const UserEmailBadge = ({ email, name, role, size = 'normal', showEmail =
         gap: '0.45rem',
         maxWidth: '100%',
       }}
-      title={`${displayName} (${cleanEmail})`}
+      title={`${displayName}${isEmailAddress ? ` (${cleanEmail})` : ''}`}
     >
       <div
         style={{
@@ -49,9 +50,9 @@ export const UserEmailBadge = ({ email, name, role, size = 'normal', showEmail =
         >
           {displayName}
         </span>
-        {showEmail && cleanEmail && (
+        {showEmail && isEmailAddress && (
           <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-            {cleanEmail}
+            {cleanEmail.toLowerCase()}
           </span>
         )}
       </div>

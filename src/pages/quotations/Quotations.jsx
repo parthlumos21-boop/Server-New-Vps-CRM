@@ -1231,12 +1231,14 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
 
     if (preselectedCustomerFromRoute) {
       const customerAccount = buildQuotationCustomerAccount(preselectedCustomerFromRoute)
+      customerAccount.quotationContext = 'account'
       const profileValue = getQuotationProfileForAccount(customerAccount)
 
       handleCloseQuotationBuilder()
       setSelectedProfile(profileValue)
       setSelectedAccountId(customerAccount.id)
       setIsGenerateOpen(false)
+      setActiveTab('account')
       openQuotationBuilder(profileValue, customerAccount)
       navigate(location.pathname, { replace: true, state: {} })
       return
@@ -1245,6 +1247,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
     const activePreselectedDeal = preselectedDeal || preselectedDealFromRoute
     if (activePreselectedDeal) {
       const dealAccount = buildQuotationDealAccount(activePreselectedDeal, normalizedAccounts)
+      dealAccount.quotationContext = 'deal'
       const profileValue = getQuotationProfileForAccount(dealAccount)
 
       close()
@@ -1528,6 +1531,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       selectedAccountId: account?.quotationContext === 'deal' ? '' : account?.id || '',
       dealId: account?.quotationContext === 'deal' ? (account?.sourceDealId || account?.source_deal_id || account?.dealId || account?.id || '') : '',
       selectedAccountOwner: account?.accountOwnerName || account?.accountOwner || '',
+      quotationContext: account?.quotationContext || (account?.sourceDealId || account?.dealId ? 'deal' : 'account'),
       lineItems: autofillLineItems,
     }
   }
@@ -1932,7 +1936,8 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
       selectedAccountId: quotationForm.selectedAccountId,
       dealId: quotationForm.dealId,
       selectedAccountOwner: quotationForm.selectedAccountOwner,
-      quotationContext: isAccountQuotation ? 'account' : (quotationForm.quotationContext || (quotationForm.selectedAccountId ? 'account' : 'deal')),
+      quotationContext: isDealQuotation ? 'deal' : 'account',
+      quotationScope: isDealQuotation ? 'deal' : 'account',
       architectName: quotationForm.architectName,
       pmcName: quotationForm.pmcName,
       quotationNotes: quotationForm.quotationNotes,

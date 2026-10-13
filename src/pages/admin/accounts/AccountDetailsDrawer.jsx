@@ -769,6 +769,7 @@ const AccountDetailsDrawer = ({
                                 openGenerator: true,
                                 preselectedAccountId: account.id,
                                 preselectedCustomer: account,
+                                quotationContext: 'account',
                               },
                             })
                             return

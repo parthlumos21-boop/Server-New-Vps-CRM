@@ -211,3 +211,64 @@ html body #root .tasks-page table thead th * {
   visibility: visible !important;
   flex-shrink: 0 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME SYNCHRONIZATION: /tasks/* EXACT PARITY WITH /admin/tasks/* (Changes-4)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html:has(.tasks-workspace-root) body,
+body:has(.tasks-workspace-root),
+.layout--user:has(.tasks-workspace-root),
+.layout--user:has(.tasks-workspace-root) .layout-stage,
+.layout--user:has(.tasks-workspace-root) .layout-body,
+.layout--user:has(.tasks-workspace-root) .layout-main,
+.layout--user:has(.tasks-workspace-root) .layout-main-inner,
+.layout--user:has(.tasks-workspace-root) .layout-content-frame {
+  background: #f8fafc !important;
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
+}
+
+.layout--user .tasks-workspace-root {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #1e293b !important;
+}
+
+.layout--user .tasks-workspace-root .ap-tabbar {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 20px !important;
+}
+
+.layout--user .tasks-workspace-root .ap-dashboard-card,
+.tasks-workspace-root .ap-dashboard-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e2e8f0 !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03) !important;
+  color: #1e293b !important;
+  border-radius: 20px !important;
+}
+
+.layout--user .tasks-workspace-root .ap-dashboard-card-title,
+.tasks-workspace-root .ap-dashboard-card-title {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+}
+
+.layout--user .tasks-workspace-root .ap-dashboard-subtitle,
+.tasks-workspace-root .ap-dashboard-subtitle {
+  color: #64748b !important;
+}
+
+.layout--user .tasks-workspace-root :not(.add-account-landscape-page) :is(input, select, textarea):not(.legacy-form-control),
+.tasks-workspace-root :not(.add-account-landscape-page) :is(input, select, textarea):not(.legacy-form-control) {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+

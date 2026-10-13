@@ -217,6 +217,12 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
         const amountNumber = toNumber(quotation.amount)
           || buildLineItems(quotation).reduce((sum, item) => sum + toNumber(item.amount), 0)
 
+        const rawCtx = String(quotation.quotationContext || quotation.quotationScope || quotation.data?.quotationContext || '').trim().toLowerCase()
+        const hasDeal = Boolean(quotation.dealId || quotation.dealName || quotation.sourceDealId || quotation.data?.dealId || quotation.data?.dealName)
+        const resolvedContext = rawCtx === 'deal' || rawCtx === 'deals' || (hasDeal && !rawCtx)
+          ? 'deal'
+          : 'account'
+
         return {
           id: quotation.id || `quotation-${index}`,
           num: quotation.quotationNumber || `Quotation ${index + 1}`,
@@ -231,6 +237,7 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
           project: quotation.projectName || quotation.product || quotation.otherProduct || quotation.otherService || '-',
           profileName: quotation.profileName || '-',
           linkedAccount,
+          quotationContext: resolvedContext,
           raw: quotation,
         }
       })
@@ -354,7 +361,14 @@ const AdminQuotationsPage = ({ allowUsers = false, generatorPath = '/admin/quota
 
   const filteredRows = useMemo(() => {
     return rows.filter((row) => {
-      if (activeTab !== 'account' && activeTab !== 'deal') {
+      // Isolate Account quotations vs Deal quotations
+      if (activeTab === 'account') {
+        const isAccount = row.quotationContext === 'account'
+        if (!isAccount) return false
+      } else if (activeTab === 'deal') {
+        const isDeal = row.quotationContext === 'deal'
+        if (!isDeal) return false
+      } else {
         return false
       }
 

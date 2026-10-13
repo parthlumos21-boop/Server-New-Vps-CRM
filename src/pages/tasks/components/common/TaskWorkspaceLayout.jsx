@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../../../../context/AuthContext'
 import workManagementService from '../../../../services/workManagementService'
 import '../../../admin/AdminPanel.css'
+import '../../Tasks.css'
 
 export const TaskWorkspaceLayout = ({ children, activeTabKey }) => {
   const { user } = useAuth()
@@ -76,18 +77,16 @@ export const TaskWorkspaceLayout = ({ children, activeTabKey }) => {
         { key: 'projects', label: 'Projects', icon: <FaProjectDiagram />, route: '/admin/tasks/projects' },
         { key: 'workload', label: 'Workload', icon: <FaUsers />, route: '/admin/tasks/workload' },
         { key: 'approvals', label: 'Approvals', icon: <FaCheckCircle />, route: '/admin/tasks/approvals' },
-        { key: 'reminders', label: 'Reminders', icon: <FaBell />, route: '/admin/tasks/reminders' },
         { key: 'activity', label: 'Activity', icon: <FaHistory />, route: '/admin/tasks/activity' },
       ]
     : [
         { key: 'my-work', label: 'My Work', icon: <FaBriefcase />, route: '/tasks/my-work' },
         { key: 'all', label: 'My Tasks', icon: <FaTasks />, route: '/tasks/all' },
         { key: 'projects', label: 'Projects', icon: <FaProjectDiagram />, route: '/tasks/projects' },
-        { key: 'reminders', label: 'Reminders', icon: <FaBell />, route: '/tasks/reminders' },
       ]
 
   return (
-    <div className="admin-panel" style={{ padding: '0.5rem 1rem' }}>
+    <div className="admin-panel tasks-workspace-root" style={{ padding: '0.5rem 1rem' }}>
       {/* Top Navigation Tab Bar styled with Swati Maroon .ap-tabbar */}
       <div className="ap-tabbar" style={{ marginBottom: '1rem', borderBottom: '2px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="ap-tabs" style={{ display: 'flex', gap: '0.35rem', overflowX: 'auto', paddingBottom: '2px' }}>

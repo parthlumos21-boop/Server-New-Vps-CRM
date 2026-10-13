@@ -127,6 +127,7 @@ const ProjectsPortfolioPage = React.lazy(() => import('./pages/tasks/ProjectsPor
 const TeamWorkloadPage = React.lazy(() => import('./pages/tasks/TeamWorkloadPage'))
 const ApprovalsHubPage = React.lazy(() => import('./pages/tasks/ApprovalsHubPage'))
 const AddTaskPage = React.lazy(() => import('./pages/tasks/AddTaskPage'))
+const EditTaskPage = React.lazy(() => import('./pages/tasks/EditTaskPage'))
 const ActivityLogPage = React.lazy(() => import('./pages/tasks/ActivityLogPage'))
 const TaskRemindersPage = React.lazy(() => import('./pages/tasks/TaskRemindersPage'))
 
@@ -229,6 +230,7 @@ function App() {
                 <Route path="tasks/my-work" element={<MyWorkPage />} />
                 <Route path="tasks/all" element={<TasksWorkspacePage />} />
                 <Route path="tasks/add" element={<AddTaskPage />} />
+                <Route path="tasks/edit/:taskId" element={<EditTaskPage />} />
                 <Route path="tasks/projects" element={<ProjectsPortfolioPage />} />
                 <Route path="tasks/reminders" element={<TaskRemindersPage />} />
                 <Route path="team-view" element={<TeamViewPage isAdminView={false} />} />
@@ -363,6 +365,7 @@ function App() {
                 <Route path="tasks/my-work" element={<MyWorkPage />} />
                 <Route path="tasks/all" element={<TasksWorkspacePage />} />
                 <Route path="tasks/add" element={<AddTaskPage />} />
+                <Route path="tasks/edit/:taskId" element={<EditTaskPage />} />
                 <Route path="tasks/projects" element={<ProjectsPortfolioPage />} />
                 <Route path="tasks/workload" element={<TeamWorkloadPage />} />
                 <Route path="tasks/approvals" element={<ApprovalsHubPage />} />

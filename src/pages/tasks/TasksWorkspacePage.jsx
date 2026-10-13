@@ -15,17 +15,24 @@ import {
   FaUserCheck,
   FaCommentDots,
   FaPaperPlane,
+  FaThLarge,
+  FaChevronDown,
+  FaChevronRight,
 } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
 import { TaskWorkspaceLayout } from './components/common/TaskWorkspaceLayout'
 import { TaskCardShell } from './components/common/TaskCardShell'
+import { TaskHeaderToolbar } from './components/common/TaskHeaderToolbar'
+import { TaskGroupListView } from './components/common/TaskGroupListView'
+import { TaskCalendarView } from './components/common/TaskCalendarView'
 import { TaskFilterBar } from './components/common/TaskFilterBar'
 import { TaskStatusBadge } from './components/common/TaskStatusBadge'
 import { UserEmailBadge } from './components/common/UserEmailBadge'
 import ProfessionalTaskModal from '../../components/common/ProfessionalTaskModal'
 import workManagementService from '../../services/workManagementService'
 import taskApi from '../../services/taskApi'
+import { userApi } from '../../services/userApi'
 
 export const TasksWorkspacePage = () => {
   const navigate = useNavigate()
@@ -33,7 +40,19 @@ export const TasksWorkspacePage = () => {
   const { tasks, updateTask } = useData()
   const [searchParams] = useSearchParams()
 
-  const [activeView, setActiveView] = useState('list') // 'list' | 'kanban'
+  const [activeView, setActiveView] = useState('list') // 'list' | 'kanban' | 'calendar' | 'cards'
+  const [collapsedGroups, setCollapsedGroups] = useState({})
+  const [filterRules, setFilterRules] = useState(() => {
+    const initial = []
+    const assigneeParam = searchParams.get('assignee')
+    if (assigneeParam) {
+      initial.push({ id: 'rule-init-assignee', field: 'assignee', value: assigneeParam })
+    }
+    return initial
+  })
+  const [selectedStatuses, setSelectedStatuses] = useState([])
+  const [filterCreatedByMe, setFilterCreatedByMe] = useState(false)
+  const [dateFilterPreset, setDateFilterPreset] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState(searchParams.get('assignee') || '')
   const [selectedStatus, setSelectedStatus] = useState('')
@@ -120,14 +139,27 @@ export const TasksWorkspacePage = () => {
     }
   }
 
-  // Fetch users directory from MongoDB
+  // Fetch users directory from MongoDB users collection and CRM directory
   useEffect(() => {
     const fetchTeam = async () => {
       try {
-        const overview = await workManagementService.getOverview()
-        if (overview?.teamMembers) {
-          setUserList(overview.teamMembers)
-        }
+        const [overview, directoryUsers] = await Promise.all([
+          workManagementService.getOverview().catch(() => null),
+          userApi.listDirectory().catch(() => []),
+        ])
+        const combined = []
+        if (overview?.teamMembers) combined.push(...overview.teamMembers)
+        if (Array.isArray(directoryUsers)) combined.push(...directoryUsers)
+        const seen = new Set()
+        const unique = []
+        combined.forEach((u) => {
+          const key = String(u._id || u.id || u.email || '').toLowerCase()
+          if (key && !seen.has(key)) {
+            seen.add(key)
+            unique.push(u)
+          }
+        })
+        setUserList(unique)
       } catch (err) {
         console.error('Failed to fetch team members', err)
       }
@@ -135,7 +167,74 @@ export const TasksWorkspacePage = () => {
     fetchTeam()
   }, [])
 
-  // Filter tasks based on role and active search/filters
+  // Build user name lookup dictionary so MongoDB IDs and raw strings are resolved to full names
+  const userNameMap = useMemo(() => {
+    const map = {}
+    userList.forEach((u) => {
+      const name = u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || u.email
+      if (u._id) map[String(u._id)] = name
+      if (u.id) map[String(u.id)] = name
+      if (u.email) map[String(u.email).toLowerCase().trim()] = name
+      if (u.username) map[String(u.username).toLowerCase().trim()] = name
+    })
+    return map
+  }, [userList])
+
+  const resolveAssigneeName = (raw) => {
+    if (!raw) return 'Unassigned'
+    const key = String(raw).trim()
+    if (userNameMap[key]) return userNameMap[key]
+    if (userNameMap[key.toLowerCase()]) return userNameMap[key.toLowerCase()]
+    if (key.includes('@')) {
+      const prefix = key.split('@')[0]
+      return prefix.charAt(0).toUpperCase() + prefix.slice(1)
+    }
+    return key
+  }
+
+  const toggleGroup = (key) => {
+    setCollapsedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleToggleTaskDone = async (taskItem, e) => {
+    if (e) e.stopPropagation()
+    try {
+      const isDone = ['completed', 'closed'].includes(String(taskItem.status || '').toLowerCase())
+      await updateTask(taskItem.id, {
+        status: isDone ? 'in_progress' : 'completed',
+        progress: isDone ? 50 : 100,
+      })
+    } catch (err) {
+      console.error('Failed to toggle task completion in MongoDB', err)
+    }
+  }
+
+  // Inline status update via TaskStatusPill dropdown
+  const handleInlineStatusUpdate = async (taskId, newStatus) => {
+    try {
+      const isComplete = ['completed', 'closed'].includes(String(newStatus).toLowerCase())
+      const matched = (tasks || []).find((t) => String(t.id) === String(taskId))
+      const progress = isComplete
+        ? 100
+        : newStatus === 'in_progress' || newStatus === 'processing'
+        ? 50
+        : (matched?.progress || 25)
+      await updateTask(taskId, {
+        status: newStatus,
+        progress: progress,
+      })
+    } catch (err) {
+      console.error('Failed to update task status inline', err)
+    }
+  }
+
+  const handleToggleStatusFilter = (statusKey) => {
+    setSelectedStatuses((prev) =>
+      prev.includes(statusKey) ? prev.filter((k) => k !== statusKey) : [...prev, statusKey]
+    )
+  }
+
+  // Filter tasks based on role, star filter, status multi-chip, date preset, and dynamic rules
   const filteredTasks = useMemo(() => {
     return (tasks || []).filter((t) => {
       // Role scope: If not admin, restrict to tasks where user email is assignedTo, in assignedToUserEmails, createdBy, or follower
@@ -145,7 +244,9 @@ export const TasksWorkspacePage = () => {
           ? t.assignedToUserEmails.map((e) => String(e).toLowerCase().trim())
           : []
         const created = String(t.createdBy || '').trim().toLowerCase()
-        const isFollower = Array.isArray(t.followers) && t.followers.some((f) => String(f).trim().toLowerCase() === currentUserEmail)
+        const isFollower =
+          Array.isArray(t.followers) &&
+          t.followers.some((f) => String(f).trim().toLowerCase() === currentUserEmail)
         if (
           assigned !== currentUserEmail &&
           !assignedList.includes(currentUserEmail) &&
@@ -157,24 +258,75 @@ export const TasksWorkspacePage = () => {
         }
       }
 
-      // Assignee dropdown filter
-      if (selectedAssignee) {
-        const assigned = String(t.assignedTo || '').trim().toLowerCase()
-        const assignedList = Array.isArray(t.assignedToUserEmails)
-          ? t.assignedToUserEmails.map((e) => String(e).toLowerCase().trim())
-          : []
-        const target = selectedAssignee.toLowerCase()
-        if (assigned !== target && !assignedList.includes(target)) return false
+      // Star filter: Created by me
+      if (filterCreatedByMe) {
+        const created = String(t.createdBy || '').trim().toLowerCase()
+        if (created !== currentUserEmail) return false
       }
 
-      // Status filter
-      if (selectedStatus) {
-        if (String(t.status || '').toLowerCase() !== selectedStatus.toLowerCase()) return false
+      // Quick status chip multi-select
+      if (selectedStatuses.length > 0) {
+        const st = String(t.status || 'open').toLowerCase()
+        const matchesAny = selectedStatuses.some((target) => {
+          if (target === 'processing' && (st === 'in_progress' || st === 'processing')) return true
+          if (target === 'checking' && (st === 'review' || st === 'checking')) return true
+          if (target === 'pending' && (st === 'pending' || st === 'open')) return true
+          if (target === 'completed' && (st === 'completed' || st === 'closed')) return true
+          return st === target
+        })
+        if (!matchesAny) return false
       }
 
-      // Priority filter
-      if (selectedPriority) {
-        if (String(t.priority || '').toLowerCase() !== selectedPriority.toLowerCase()) return false
+      // Date filter preset
+      if (dateFilterPreset && dateFilterPreset !== 'all') {
+        if (!t.dueDate) return false
+        const due = new Date(t.dueDate)
+        const now = new Date()
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
+
+        if (dateFilterPreset === 'today') {
+          if (due < todayStart || due > todayEnd) return false
+        } else if (dateFilterPreset === 'this_week') {
+          const weekEnd = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000)
+          if (due < todayStart || due > weekEnd) return false
+        } else if (dateFilterPreset === 'overdue') {
+          const isDone = ['completed', 'closed'].includes(String(t.status || '').toLowerCase())
+          if (isDone || due >= todayStart) return false
+        }
+      }
+
+      // Dynamic Filter Rules (from Floating Popover)
+      for (const rule of filterRules) {
+        if (!rule.value) continue
+        const val = String(rule.value).toLowerCase().trim()
+
+        if (rule.field === 'task') {
+          const titleMatch = String(t.title || '').toLowerCase().includes(val)
+          const descMatch = String(t.description || '').toLowerCase().includes(val)
+          const dealMatch = String(t.dealId || '').toLowerCase().includes(val)
+          const accMatch = String(t.accountId || '').toLowerCase().includes(val)
+          if (!titleMatch && !descMatch && !dealMatch && !accMatch) return false
+        } else if (rule.field === 'assignee') {
+          const assigned = String(t.assignedTo || '').trim().toLowerCase()
+          const assignedList = Array.isArray(t.assignedToUserEmails)
+            ? t.assignedToUserEmails.map((e) => String(e).toLowerCase().trim())
+            : []
+          if (assigned !== val && !assignedList.includes(val)) return false
+        } else if (rule.field === 'status') {
+          const st = String(t.status || '').toLowerCase()
+          if (val === 'pending' && (st === 'open' || st === 'pending')) {
+            // match
+          } else if (val === 'processing' && (st === 'in_progress' || st === 'processing')) {
+            // match
+          } else if (val === 'checking' && (st === 'review' || st === 'checking')) {
+            // match
+          } else if (st !== val) {
+            return false
+          }
+        } else if (rule.field === 'priority') {
+          if (String(t.priority || '').toLowerCase() !== val) return false
+        }
       }
 
       // Text search
@@ -189,7 +341,47 @@ export const TasksWorkspacePage = () => {
 
       return true
     })
-  }, [tasks, isAdmin, currentUserEmail, selectedAssignee, selectedStatus, selectedPriority, searchQuery, user?.id])
+  }, [
+    tasks,
+    isAdmin,
+    currentUserEmail,
+    filterCreatedByMe,
+    selectedStatuses,
+    dateFilterPreset,
+    filterRules,
+    searchQuery,
+    user?.id,
+  ])
+
+  // Group tasks for screenshot-style List View (Ongoing, Pinned, Today, Completed)
+  const listGroups = useMemo(() => {
+    const ongoing = []
+    const pinned = []
+    const today = []
+    const completed = []
+
+    filteredTasks.forEach((t) => {
+      const status = String(t.status || 'open').toLowerCase()
+      const priority = String(t.priority || 'medium').toLowerCase()
+
+      if (['completed', 'closed'].includes(status)) {
+        completed.push(t)
+      } else if (['in_progress', 'review', 'processing'].includes(status)) {
+        ongoing.push(t)
+      } else if (['urgent', 'high'].includes(priority) || t.pinned) {
+        pinned.push(t)
+      } else {
+        today.push(t)
+      }
+    })
+
+    return [
+      { key: 'ongoing', label: 'Ongoing', color: '#2563eb', tasks: ongoing },
+      { key: 'pinned', label: 'Pinned', color: '#dc2626', tasks: pinned },
+      { key: 'today', label: 'Today', color: '#c60016', tasks: today },
+      { key: 'completed', label: 'Completed', color: '#15803d', tasks: completed },
+    ]
+  }, [filteredTasks])
 
   // Drag and drop for Kanban board
   const handleDragStart = (e, taskItem) => {
@@ -258,187 +450,166 @@ export const TasksWorkspacePage = () => {
 
   return (
     <TaskWorkspaceLayout activeTabKey="all">
-      {/* Workspace Header Toolbar with Maroon Accents */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button
-            type="button"
-            className={`ap-tab ${activeView === 'list' ? 'ap-tab--active' : ''}`}
-            style={{
-              borderRadius: '12px',
-              minHeight: '2.2rem',
-              padding: '0.4rem 0.85rem',
-              color: activeView === 'list' ? '#c60016' : '#475569',
-              background: activeView === 'list' ? '#fef2f2' : '#ffffff',
-              border: activeView === 'list' ? '1.5px solid #c60016' : '1px solid #cbd5e1',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            onClick={() => setActiveView('list')}
-          >
-            <FaList style={{ fontSize: '0.8rem', marginRight: '0.4rem', color: activeView === 'list' ? '#c60016' : '#64748b' }} />
-            <span>List View</span>
-          </button>
-          <button
-            type="button"
-            className={`ap-tab ${activeView === 'kanban' ? 'ap-tab--active' : ''}`}
-            style={{
-              borderRadius: '12px',
-              minHeight: '2.2rem',
-              padding: '0.4rem 0.85rem',
-              color: activeView === 'kanban' ? '#c60016' : '#475569',
-              background: activeView === 'kanban' ? '#fef2f2' : '#ffffff',
-              border: activeView === 'kanban' ? '1.5px solid #c60016' : '1px solid #cbd5e1',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            onClick={() => setActiveView('kanban')}
-          >
-            <FaColumns style={{ fontSize: '0.8rem', marginRight: '0.4rem', color: activeView === 'kanban' ? '#c60016' : '#64748b' }} />
-            <span>Kanban Board</span>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => handleOpenAddModal('open')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            padding: '0.45rem 1rem',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
-            color: '#ffffff',
-            border: 'none',
-            fontSize: '0.82rem',
-            fontWeight: '800',
-            cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
-          }}
-        >
-          <FaPlus />
-          <span>New Task</span>
-        </button>
-      </div>
-
-      {/* Filter Bar */}
-      <TaskFilterBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedAssignee={selectedAssignee}
-        onAssigneeChange={setSelectedAssignee}
-        selectedStatus={selectedStatus}
-        onStatusChange={setSelectedStatus}
-        selectedPriority={selectedPriority}
-        onPriorityChange={setSelectedPriority}
+      {/* SaaS Header Toolbar matching Image 1 */}
+      <TaskHeaderToolbar
+        activeView={activeView}
+        onViewChange={setActiveView}
+        filterRules={filterRules}
+        onFilterRulesChange={setFilterRules}
         userList={userList}
-        showAddButton={false}
+        selectedStatuses={selectedStatuses}
+        onToggleStatusFilter={handleToggleStatusFilter}
+        filterCreatedByMe={filterCreatedByMe}
+        onToggleCreatedByMe={() => setFilterCreatedByMe((prev) => !prev)}
+        dateFilterPreset={dateFilterPreset}
+        onDateFilterChange={setDateFilterPreset}
+        onAddTask={() => handleOpenAddModal('open')}
+        title={isAdmin ? 'My Task' : 'My Task'}
       />
 
-      {/* VIEW 1: LIST VIEW */}
+      {/* VIEW 1: MODERN SCREENSHOT-STYLE LIST VIEW MATCHING IMAGE 1 */}
       {activeView === 'list' && (
-        <TaskCardShell
-          title={`${isAdmin ? 'Organization Tasks' : 'My Tasks'} (${filteredTasks.length})`}
-          icon={<FaTasks style={{ color: '#c60016' }} />}
-        >
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0', color: '#475569', fontWeight: '700' }}>
-                  <th style={{ padding: '0.75rem 1rem' }}>Task Name & Relations</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Assignees (MongoDB Users)</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>Priority</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Due Date</th>
-                  <th style={{ padding: '0.75rem 1rem' }}>Checklist Progress</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>Status</th>
-                  <th style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTasks.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" style={{ padding: '2.5rem', textAlign: 'center', color: '#64748b' }}>
-                      No tasks match the selected filters.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredTasks.map((t) => {
-                    const assignees = Array.isArray(t.assignedToUserEmails) && t.assignedToUserEmails.length > 0
-                      ? t.assignedToUserEmails
-                      : (t.assignedTo ? [t.assignedTo] : [])
+        <TaskGroupListView
+          groups={listGroups}
+          collapsedGroups={collapsedGroups}
+          onToggleGroup={toggleGroup}
+          onToggleTaskDone={handleToggleTaskDone}
+          onOpenTask={setActiveTaskDrawer}
+          onUpdateStatus={handleInlineStatusUpdate}
+          resolveAssigneeName={resolveAssigneeName}
+          userNameMap={userNameMap}
+        />
+      )}
 
-                    return (
-                      <tr
-                        key={t.id}
-                        style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer', background: '#ffffff', transition: 'background 0.15s ease' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff' }}
-                        onClick={() => setActiveTaskDrawer(t)}
-                      >
-                        <td style={{ padding: '0.75rem 1rem' }}>
-                          <div style={{ fontWeight: '800', color: '#1e293b' }}>{t.title}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem', fontSize: '0.72rem', color: '#64748b' }}>
-                            {t.projectId && <span style={{ color: '#c60016', fontWeight: '700' }}>Project #{t.projectId}</span>}
-                            {t.dealId && <span style={{ color: '#2563eb', fontWeight: '600' }}>Deal #{t.dealId}</span>}
-                            {t.accountId && <span style={{ color: '#7c3aed', fontWeight: '600' }}>Account #{t.accountId}</span>}
-                            {t.quotationId && <span style={{ color: '#059669', fontWeight: '600' }}>QT #{t.quotationId}</span>}
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem' }}>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
-                            {assignees.slice(0, 2).map((email) => (
-                              <UserEmailBadge key={email} email={email} size="small" showEmail />
-                            ))}
-                            {assignees.length > 2 && (
-                              <span style={{ fontSize: '0.7rem', fontWeight: '800', color: '#c60016', background: '#fef2f2', padding: '0.1rem 0.4rem', borderRadius: '8px' }}>
-                                +{assignees.length - 2} more
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <TaskStatusBadge value={t.priority} type="priority" />
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', color: '#475569' }}>
-                          {t.dueDate ? new Date(t.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '-'}
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', minWidth: '130px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: '#e2e8f0', overflow: 'hidden' }}>
-                              <div style={{ width: `${t.progress || 0}%`, height: '100%', background: '#c60016', borderRadius: '3px' }} />
-                            </div>
-                            <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#c60016' }}>{t.progress || 0}%</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
-                          <TaskStatusBadge value={t.status} type="status" />
-                        </td>
-                        <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                          <button
-                            type="button"
-                            className="ap-header-item-btn"
-                            style={{ padding: '0.35rem 0.65rem', minHeight: '1.9rem', fontSize: '0.75rem' }}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setActiveTaskDrawer(t)
-                            }}
-                          >
-                            Details
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </TaskCardShell>
+      {/* VIEW 2: CALENDAR VIEW MATCHING IMAGE 1 */}
+      {activeView === 'calendar' && (
+        <TaskCalendarView
+          tasks={filteredTasks}
+          onOpenTask={setActiveTaskDrawer}
+        />
+      )}
+
+      {/* VIEW 2: CARD VIEW (GRIDS WITH RELEVANT DETAILS) */}
+      {activeView === 'cards' && (
+        <div>
+          {filteredTasks.length === 0 ? (
+            <div style={{ padding: '2.5rem', textAlign: 'center', color: '#64748b', background: '#ffffff', borderRadius: '16px', border: '1.5px solid #e2e8f0' }}>
+              No tasks match the selected filters.
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '1rem',
+              }}
+            >
+              {filteredTasks.map((t, idx) => {
+                const assignees = Array.isArray(t.assignedToUserEmails) && t.assignedToUserEmails.length > 0
+                  ? t.assignedToUserEmails
+                  : (t.assignedTo ? [t.assignedTo] : [])
+
+                return (
+                  <div
+                    key={t.id}
+                    onClick={() => setActiveTaskDrawer(t)}
+                    style={{
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      borderRadius: '16px',
+                      padding: '1.15rem',
+                      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.75rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = '#c60016'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(198, 0, 22, 0.08)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = '#e2e8f0'
+                      e.currentTarget.style.transform = 'none'
+                      e.currentTarget.style.boxShadow = '0 4px 18px rgba(0, 0, 0, 0.03)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#fef2f2', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
+                          #{idx + 1}
+                        </span>
+                        <TaskStatusBadge value={t.priority} type="priority" />
+                      </div>
+                      <TaskStatusBadge value={t.status} type="status" />
+                    </div>
+
+                    <div style={{ minWidth: 0 }}>
+                      <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: '#1e293b', lineHeight: 1.35 }}>
+                        {t.title}
+                      </h4>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', fontSize: '0.7rem' }}>
+                        {t.projectId && <span style={{ color: '#c60016', fontWeight: '700', background: '#fef2f2', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>Project #{t.projectId}</span>}
+                        {t.dealId && <span style={{ color: '#2563eb', fontWeight: '600', background: '#eff6ff', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>Deal #{t.dealId}</span>}
+                        {t.accountId && <span style={{ color: '#7c3aed', fontWeight: '600', background: '#faf5ff', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>Account #{t.accountId}</span>}
+                        {t.quotationId && <span style={{ color: '#059669', fontWeight: '600', background: '#ecfdf5', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>QT #{t.quotationId}</span>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.72rem', color: '#64748b', marginBottom: '0.25rem' }}>
+                        <span>Checklist</span>
+                        <span style={{ fontWeight: '700', color: '#c60016' }}>{t.progress || 0}%</span>
+                      </div>
+                      <div style={{ height: '6px', borderRadius: '3px', background: '#e2e8f0', overflow: 'hidden' }}>
+                        <div style={{ width: `${t.progress || 0}%`, height: '100%', background: '#c60016', borderRadius: '3px' }} />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #f1f5f9', marginTop: 'auto' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', alignItems: 'center' }}>
+                        {assignees.slice(0, 2).map((email) => (
+                          <UserEmailBadge
+                            key={email}
+                            email={email}
+                            name={resolveAssigneeName(email)}
+                            size="small"
+                            showEmail={false}
+                          />
+                        ))}
+                        {assignees.length > 2 && (
+                          <span style={{ fontSize: '0.68rem', fontWeight: '800', color: '#c60016' }}>
+                            +{assignees.length - 2}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {t.dueDate && (
+                          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                            {new Date(t.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          className="ap-header-item-btn"
+                          style={{ padding: '0.25rem 0.6rem', minHeight: '1.8rem', fontSize: '0.72rem' }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveTaskDrawer(t)
+                          }}
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {/* VIEW 2: KANBAN BOARD WITH + ICON AND FULL DRAG-DROP */}
@@ -566,7 +737,12 @@ export const TasksWorkspacePage = () => {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.45rem', borderTop: '1px solid #f1f5f9' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                             {assignees.slice(0, 2).map((email) => (
-                              <UserEmailBadge key={email} email={email} size="small" />
+                              <UserEmailBadge
+                                key={email}
+                                email={email}
+                                name={resolveAssigneeName(email)}
+                                size="small"
+                              />
                             ))}
                             {assignees.length > 2 && (
                               <span style={{ fontSize: '0.66rem', fontWeight: '800', color: '#c60016' }}>
@@ -653,8 +829,7 @@ export const TasksWorkspacePage = () => {
                     boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
                   }}
                   onClick={() => {
-                    setEditingTask(activeTaskDrawer)
-                    setAddTaskOpen(true)
+                    navigate(isAdmin ? `/admin/tasks/edit/${activeTaskDrawer.id}` : `/tasks/edit/${activeTaskDrawer.id}`)
                   }}
                   title="Update Task"
                 >
@@ -712,7 +887,12 @@ export const TasksWorkspacePage = () => {
                     ? activeTaskDrawer.assignedToUserEmails
                     : (activeTaskDrawer.assignedTo ? [activeTaskDrawer.assignedTo] : [])
                   ).map((email) => (
-                    <UserEmailBadge key={email} email={email} showEmail />
+                    <UserEmailBadge
+                      key={email}
+                      email={email}
+                      name={resolveAssigneeName(email)}
+                      showEmail
+                    />
                   ))}
                 </div>
               </div>

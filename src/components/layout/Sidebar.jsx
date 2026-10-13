@@ -258,7 +258,6 @@ const Sidebar = ({ isAdmin = false }) => {
     { label: 'Projects', to: '/admin/tasks/projects' },
     { label: 'Workload', to: '/admin/tasks/workload' },
     { label: 'Approvals', to: '/admin/tasks/approvals' },
-    { label: 'Reminders', to: '/admin/tasks/reminders' },
     { label: 'Activity', to: '/admin/tasks/activity' },
   ]
 
@@ -413,7 +412,6 @@ const Sidebar = ({ isAdmin = false }) => {
               <SubLink to="/tasks/my-work" label="My Work" />
               <SubLink to="/tasks/all" label="My Tasks" />
               <SubLink to="/tasks/projects" label="Projects" />
-              <SubLink to="/tasks/reminders" label="Reminders" />
             </SidebarGroup>
 
             <SidebarGroup

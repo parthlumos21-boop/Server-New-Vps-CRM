@@ -8,9 +8,10 @@ export const TaskCardShell = ({
   children,
   className = '',
   headerClassName = '',
+  style = {},
 }) => {
   return (
-    <div className={`ap-dashboard-card ${className}`.trim()}>
+    <div className={`ap-dashboard-card ${className}`.trim()} style={{ borderRadius: '20px', overflow: 'hidden', ...style }}>
       {(title || action || icon) && (
         <div className={`ap-dashboard-card-header ${headerClassName}`.trim()} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>

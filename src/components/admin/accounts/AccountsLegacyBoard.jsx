@@ -185,7 +185,7 @@ const AccountsLegacyBoard = ({
     if (action.behavior === 'quotationGenerator' || action.key === 'generate-quotation') {
       const isAdminPortal = window.location.pathname.startsWith('/admin')
       navigate(isAdminPortal ? '/admin/quotations' : '/quotations', {
-        state: { openGenerator: true, preselectedAccountId: row.id, preselectedCustomer: row }
+        state: { openGenerator: true, preselectedAccountId: row.id, preselectedCustomer: row, quotationContext: 'account' }
       })
       return
     }

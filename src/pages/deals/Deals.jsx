@@ -138,7 +138,6 @@ const DEAL_TABLE_COLUMNS = [
   { key: 'dealType', label: 'Deal Type', placeholder: 'Search Deal Type', sourceField: 'deal_type' },
   { key: 'dealStatus', label: 'Deal Status', placeholder: 'Search Deal Status', sourceField: 'status' },
   { key: 'dealValue', label: 'Deal Value', placeholder: 'Search Deal Value', sourceField: 'deal_value' },
-  { key: 'convertToPo', label: 'Convert PO', placeholder: 'Search Convert PO', sourceField: 'convert_to_po' },
   { key: 'poValue', label: 'PO Value', placeholder: 'Search PO Value', sourceField: 'po_value' },
   { key: 'jobNo', label: 'Job No.', placeholder: 'Search Job No.', sourceField: 'job_no' },
   { key: 'quotationNumber', label: 'Quotation No.', placeholder: 'Search Quotation No.', sourceField: 'quotation_number' },
@@ -174,7 +173,6 @@ const SEARCH_DEAL_REQUIRED_GRID_KEYS = [
   'dealStatus',
   'projectName',
   'dealValue',
-  'convertToPo',
   'poValue',
   'jobNo',
   'quotationNumber',
@@ -1967,11 +1965,8 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
   ])
 
   const activeGridColumns = useMemo(() => {
-    if (!isSearchAdminView) {
-      return baseGridColumns
-    }
-
-    return DEAL_GRID_COLUMNS
+    const raw = !isSearchAdminView ? baseGridColumns : DEAL_GRID_COLUMNS
+    return raw.filter((col) => col.key !== 'convertToPo')
   }, [baseGridColumns, isSearchAdminView])
   const filteredGridRows = useMemo(() => {
     const currentUserId = String(user?.id || user?._id || user?.ownerCode || '')
@@ -2452,7 +2447,8 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
       ownerScopedColumns,
       nextColumnKeys
     )
-    return filteredColumns.length > 0 ? filteredColumns : ownerScopedColumns
+    const result = filteredColumns.length > 0 ? filteredColumns : ownerScopedColumns
+    return result.filter((col) => col.key !== 'convertToPo')
   }, [effectiveVariantKey, ownerScopedColumns, visibleGridColumnKeys])
   const fieldSelectorColumns = isOwnerScopedAdminView ? ownerScopedColumns : DEAL_SEARCH_FIELD_CATALOG
   const selectedFieldSelectorColumns = useMemo(
@@ -3245,6 +3241,7 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
         openGenerator: true,
         preselectedDeal: activeDeal,
         activeTab: 'deal',
+        quotationContext: 'deal',
       },
     })
   }
