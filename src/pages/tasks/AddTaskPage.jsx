@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   FaTasks,
@@ -22,6 +22,7 @@ import workManagementService from '../../services/workManagementService'
 import { leadApi } from '../../services/leadApi'
 import { dealApi } from '../../services/dealApi'
 import { quotationApi } from '../../services/quotationApi'
+import taskApi from '../../services/taskApi'
 import Modal from '../../components/common/Modal'
 
 const PRESET_TAGS = [
@@ -80,29 +81,51 @@ export const AddTaskPage = () => {
   const [quotationId, setQuotationId] = useState('')
   const [quotationTitle, setQuotationTitle] = useState('')
 
-  // Picker Modals state
-  const [pickerModalType, setPickerModalType] = useState(null) // 'deal' | 'account' | 'quotation'
-  const [pickerSearchQuery, setPickerSearchQuery] = useState('')
+  // Dropdown Picker state with integrated top search
+  const [activeDropdownField, setActiveDropdownField] = useState(null) // 'deal' | 'account' | 'quotation'
+  const [dropdownSearch, setDropdownSearch] = useState('')
+  const dropdownRef = useRef(null)
 
-  // Load directories and CRM data
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setActiveDropdownField(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [])
+
+  // Load directories and lightweight CRM data
   useEffect(() => {
     const loadAllData = async () => {
       try {
-        const [overview, projects, leads, deals, quotations] = await Promise.all([
+        const [overview, projects, workflowLinks] = await Promise.all([
           workManagementService.getOverview().catch(() => null),
           workManagementService.getProjects().catch(() => []),
-          leadApi.getLeads().catch(() => []),
-          dealApi.getDeals().catch(() => []),
-          quotationApi.getQuotations().catch(() => []),
+          taskApi.getCrmWorkflowLinks().catch(() => null),
         ])
 
         if (overview?.teamMembers) {
           setUsersList(overview.teamMembers)
         }
         setProjectsList(projects || [])
-        setAccountsList(Array.isArray(leads) ? leads : (Array.isArray(leads?.data) ? leads.data : []))
-        setDealsList(Array.isArray(deals) ? deals : (Array.isArray(deals?.data) ? deals.data : []))
-        setQuotationsList(Array.isArray(quotations) ? quotations : (Array.isArray(quotations?.data) ? quotations.data : []))
+
+        if (workflowLinks && workflowLinks.accounts) {
+          setAccountsList(workflowLinks.accounts || [])
+          setDealsList(workflowLinks.deals || [])
+          setQuotationsList(workflowLinks.quotations || [])
+        } else {
+          // Fallback to standard APIs if needed
+          const [leads, deals, quotations] = await Promise.all([
+            leadApi.getLeads().catch(() => []),
+            dealApi.getDeals().catch(() => []),
+            quotationApi.getQuotations().catch(() => []),
+          ])
+          setAccountsList(Array.isArray(leads) ? leads : (Array.isArray(leads?.data) ? leads.data : []))
+          setDealsList(Array.isArray(deals) ? deals : (Array.isArray(deals?.data) ? deals.data : []))
+          setQuotationsList(Array.isArray(quotations) ? quotations : (Array.isArray(quotations?.data) ? quotations.data : []))
+        }
       } catch (err) {
         console.error('Failed to load CRM data for AddTaskPage', err)
       }
@@ -133,37 +156,217 @@ export const AddTaskPage = () => {
     setTags((prev) => (prev.includes(tagName) ? prev.filter((t) => t !== tagName) : [...prev, tagName]))
   }
 
-  // Filtered lists for Picker Modals
-  const filteredDeals = useMemo(() => {
-    const q = pickerSearchQuery.trim().toLowerCase()
-    if (!q) return dealsList
-    return dealsList.filter((d) => {
-      const titleStr = String(d.title || d.dealName || d.name || '').toLowerCase()
-      const numStr = String(d.dealNumber || d.id || '').toLowerCase()
-      const accStr = String(d.accountName || '').toLowerCase()
-      return titleStr.includes(q) || numStr.includes(q) || accStr.includes(q)
+  // Pre-indexed lookup HashMaps for O(1) instant cross-referencing
+  const lookupMaps = useMemo(() => {
+    const accById = new Map()
+    const accByNum = new Map()
+    const dealByAccId = new Map()
+    const dealById = new Map()
+    const dealByNum = new Map()
+    const quoteByDealId = new Map()
+    const quoteByAccId = new Map()
+    const quoteById = new Map()
+    const quoteByNum = new Map()
+
+    accountsList.forEach((a) => {
+      const id = String(a.id || a.legacyId || '')
+      const num = String(a.accountNumber || a.accountNo || id || '')
+      if (id) accById.set(id, a)
+      if (num) accByNum.set(num.toLowerCase(), a)
     })
-  }, [dealsList, pickerSearchQuery])
+
+    dealsList.forEach((d) => {
+      const id = String(d.id || d.legacyId || '')
+      const num = String(d.dealNumber || id || '')
+      const accId = String(d.accountId || '')
+      if (id) dealById.set(id, d)
+      if (num) dealByNum.set(num.toLowerCase(), d)
+      if (accId) dealByAccId.set(accId, d)
+    })
+
+    quotationsList.forEach((q) => {
+      const id = String(q.id || q.legacyId || '')
+      const num = String(q.quotationNumber || q.quoteNumber || id || '')
+      const dId = String(q.dealId || '')
+      const aId = String(q.accountId || '')
+      if (id) quoteById.set(id, q)
+      if (num) quoteByNum.set(num.toLowerCase(), q)
+      if (dId) quoteByDealId.set(dId, q)
+      if (aId) quoteByAccId.set(aId, q)
+    })
+
+    return {
+      accById,
+      accByNum,
+      dealByAccId,
+      dealById,
+      dealByNum,
+      quoteByDealId,
+      quoteByAccId,
+      quoteById,
+      quoteByNum,
+    }
+  }, [accountsList, dealsList, quotationsList])
+
+  // Windowed filtered lists (capped to top 20 for 60 FPS performance)
+  const filteredDeals = useMemo(() => {
+    const q = dropdownSearch.trim().toLowerCase()
+    const list = dealsList.filter((d) => {
+      if (!q) return true
+      const titleStr = String(d.dealName || d.title || d.name || '').toLowerCase()
+      const numStr = String(d.dealNumber || d.id || '').toLowerCase()
+      return titleStr.includes(q) || numStr.includes(q)
+    })
+    return list.slice(0, 20)
+  }, [dealsList, dropdownSearch])
 
   const filteredAccounts = useMemo(() => {
-    const q = pickerSearchQuery.trim().toLowerCase()
-    if (!q) return accountsList
-    return accountsList.filter((a) => {
+    const q = dropdownSearch.trim().toLowerCase()
+    const list = accountsList.filter((a) => {
+      if (!q) return true
       const nameStr = String(a.accountName || a.companyName || a.name || '').toLowerCase()
       const numStr = String(a.accountNumber || a.accountNo || a.id || '').toLowerCase()
       return nameStr.includes(q) || numStr.includes(q)
     })
-  }, [accountsList, pickerSearchQuery])
+    return list.slice(0, 20)
+  }, [accountsList, dropdownSearch])
 
   const filteredQuotations = useMemo(() => {
-    const q = pickerSearchQuery.trim().toLowerCase()
-    if (!q) return quotationsList
-    return quotationsList.filter((qt) => {
+    const q = dropdownSearch.trim().toLowerCase()
+    const list = quotationsList.filter((qt) => {
+      if (!q) return true
       const noStr = String(qt.quotationNumber || qt.quoteNumber || qt.id || '').toLowerCase()
       const titleStr = String(qt.title || qt.customerName || qt.accountName || '').toLowerCase()
       return noStr.includes(q) || titleStr.includes(q)
     })
-  }, [quotationsList, pickerSearchQuery])
+    return list.slice(0, 20)
+  }, [quotationsList, dropdownSearch])
+
+  // Cross-fill handlers
+  const handleSelectAccount = (a) => {
+    const accId = String(a.id || a.legacyId || a.accountNumber || '')
+    const accNum = a.accountNumber || a.accountNo || accId
+    const accName = a.accountName || a.companyName || a.name || 'Untitled Account'
+    setAccountId(String(accNum || accId))
+    setAccountTitle(`[${accNum}] ${accName}`)
+
+    // Cross-fill deal in O(1)
+    const matchingDeal = lookupMaps.dealByAccId.get(accId)
+      || lookupMaps.dealByAccId.get(String(a.accountNumber || ''))
+      || dealsList.find((d) => String(d.accountId) === accId || String(d.accountId) === String(accNum))
+
+    if (matchingDeal) {
+      const dNum = matchingDeal.dealNumber || `DL${matchingDeal.id}`
+      const dTitle = matchingDeal.dealName || matchingDeal.title || matchingDeal.name || 'Untitled Deal'
+      setDealId(String(dNum || matchingDeal.id))
+      setDealTitle(`[${dNum}] ${dTitle}`)
+
+      // Cross-fill quotation in O(1)
+      const matchingQuote = lookupMaps.quoteByDealId.get(String(matchingDeal.id))
+        || lookupMaps.quoteByDealId.get(String(dNum))
+        || lookupMaps.quoteByAccId.get(accId)
+        || quotationsList.find((q) => String(q.dealId) === String(matchingDeal.id) || String(q.accountId) === accId)
+
+      if (matchingQuote) {
+        const qNum = matchingQuote.quotationNumber || matchingQuote.quoteNumber || `QT-${matchingQuote.id}`
+        const qTitle = matchingQuote.title || matchingQuote.customerName || dTitle || accName
+        setQuotationId(String(qNum))
+        setQuotationTitle(`[${qNum}] ${qTitle}`)
+      }
+    } else {
+      const matchingQuote = lookupMaps.quoteByAccId.get(accId)
+        || quotationsList.find((q) => String(q.accountId) === accId)
+      if (matchingQuote) {
+        const qNum = matchingQuote.quotationNumber || matchingQuote.quoteNumber || `QT-${matchingQuote.id}`
+        const qTitle = matchingQuote.title || matchingQuote.customerName || accName
+        setQuotationId(String(qNum))
+        setQuotationTitle(`[${qNum}] ${qTitle}`)
+      }
+    }
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
+
+  const handleSelectDeal = (d) => {
+    const dId = String(d.id || d.legacyId || '')
+    const dNum = d.dealNumber || `DL${dId}`
+    const dTitle = d.dealName || d.title || d.name || 'Untitled Deal'
+    setDealId(String(dNum || dId))
+    setDealTitle(`[${dNum}] ${dTitle}`)
+
+    // Cross-fill account in O(1)
+    const accId = String(d.accountId || '')
+    const matchingAccount = lookupMaps.accById.get(accId)
+      || lookupMaps.accByNum.get(accId.toLowerCase())
+      || accountsList.find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+
+    if (matchingAccount) {
+      const aNum = matchingAccount.accountNumber || matchingAccount.accountNo || matchingAccount.id
+      const aName = matchingAccount.accountName || matchingAccount.companyName || matchingAccount.name || ''
+      setAccountId(String(aNum))
+      setAccountTitle(`[${aNum}] ${aName}`)
+    }
+
+    // Cross-fill quotation in O(1)
+    const matchingQuote = lookupMaps.quoteByDealId.get(dId)
+      || lookupMaps.quoteByDealId.get(String(dNum))
+      || (accId ? lookupMaps.quoteByAccId.get(accId) : null)
+      || quotationsList.find((q) => String(q.dealId) === dId || (accId && String(q.accountId) === accId))
+
+    if (matchingQuote) {
+      const qNum = matchingQuote.quotationNumber || matchingQuote.quoteNumber || `QT-${matchingQuote.id}`
+      const qTitle = matchingQuote.title || matchingQuote.customerName || dTitle
+      setQuotationId(String(qNum))
+      setQuotationTitle(`[${qNum}] ${qTitle}`)
+    }
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
+
+  const handleSelectQuotation = (qt) => {
+    const qId = String(qt.id || qt.legacyId || '')
+    const qNum = qt.quotationNumber || qt.quoteNumber || `QT-${qId}`
+    const qTitle = qt.title || qt.customerName || ''
+    setQuotationId(String(qNum))
+    setQuotationTitle(`[${qNum}] ${qTitle}`)
+
+    // Cross-fill deal in O(1)
+    const dId = String(qt.dealId || '')
+    const matchingDeal = lookupMaps.dealById.get(dId)
+      || lookupMaps.dealByNum.get(dId.toLowerCase())
+      || dealsList.find((d) => String(d.id) === dId || String(d.dealNumber) === dId)
+
+    if (matchingDeal) {
+      const dNum = matchingDeal.dealNumber || `DL${matchingDeal.id}`
+      const dName = matchingDeal.dealName || matchingDeal.title || matchingDeal.name || ''
+      setDealId(String(dNum))
+      setDealTitle(`[${dNum}] ${dName}`)
+
+      const accId = String(matchingDeal.accountId || qt.accountId || '')
+      const matchingAccount = lookupMaps.accById.get(accId)
+        || lookupMaps.accByNum.get(accId.toLowerCase())
+        || accountsList.find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+      if (matchingAccount) {
+        const aNum = matchingAccount.accountNumber || matchingAccount.accountNo || matchingAccount.id
+        const aName = matchingAccount.accountName || matchingAccount.companyName || matchingAccount.name || ''
+        setAccountId(String(aNum))
+        setAccountTitle(`[${aNum}] ${aName}`)
+      }
+    } else if (qt.accountId) {
+      const accId = String(qt.accountId)
+      const matchingAccount = lookupMaps.accById.get(accId)
+        || lookupMaps.accByNum.get(accId.toLowerCase())
+        || accountsList.find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+      if (matchingAccount) {
+        const aNum = matchingAccount.accountNumber || matchingAccount.accountNo || matchingAccount.id
+        const aName = matchingAccount.accountName || matchingAccount.companyName || matchingAccount.name || ''
+        setAccountId(String(aNum))
+        setAccountTitle(`[${aNum}] ${aName}`)
+      }
+    }
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -551,154 +754,307 @@ export const AddTaskPage = () => {
                 </select>
               </div>
 
-              {/* 1. Project Name (formerly Deal Reference / ID) with Search Picker */}
-              <div>
+              {/* 1. Project Name */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'deal' ? dropdownRef : null}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.76rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
                   <FaHandshake style={{ color: '#2563eb' }} /> Project Name
                 </label>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <input
-                    type="text"
-                    value={dealTitle || dealId}
-                    onChange={(e) => {
-                      setDealId(e.target.value)
-                      setDealTitle(e.target.value)
-                    }}
-                    placeholder="e.g. DEAL-00128 or Deal title"
+                <input
+                  type="text"
+                  value={dealTitle || dealId}
+                  onClick={() => {
+                    setActiveDropdownField('deal')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Project Name"
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'deal' ? '1.5px solid #2563eb' : '1.5px solid #cbd5e1',
+                    fontSize: '0.82rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: dealTitle ? '700' : '400',
+                    color: dealTitle ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'deal' && (
+                  <div
                     style={{
-                      flex: 1,
-                      padding: '0.55rem 0.75rem',
-                      borderRadius: '8px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '0.82rem',
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
                       background: '#ffffff',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPickerModalType('deal')
-                      setPickerSearchQuery('')
-                    }}
-                    style={{
-                      background: '#2563eb',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '0 0.85rem',
-                      fontSize: '0.76rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
+                      flexDirection: 'column',
+                      maxHeight: '280px',
+                      overflow: 'hidden',
                     }}
                   >
-                    <FaSearch />
-                    <span>Search</span>
-                  </button>
-                </div>
+                    {/* Top Search Bar */}
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#2563eb', fontSize: '0.8rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Project / Deal Name..."
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          border: 'none',
+                          background: 'transparent',
+                          fontSize: '0.82rem',
+                          outline: 'none',
+                          padding: '0.2rem',
+                        }}
+                      />
+                    </div>
+                    {/* Items List */}
+                    <div style={{ overflowY: 'auto', maxHeight: '230px', padding: '0.3rem' }}>
+                      {filteredDeals.length === 0 ? (
+                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+                          No deals found.
+                        </div>
+                      ) : (
+                        filteredDeals.map((d) => {
+                          const dNum = d.dealNumber || `DL${d.id}`
+                          const dName = d.dealName || d.title || d.name || 'Untitled Deal'
+                          return (
+                            <div
+                              key={d.id || dNum}
+                              onClick={() => handleSelectDeal(d)}
+                              style={{
+                                padding: '0.5rem 0.65rem',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                borderBottom: '1px solid #f1f5f9',
+                                transition: 'background 0.15s ease',
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = '#eff6ff' }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <span style={{ fontWeight: '800', color: '#2563eb', marginRight: '0.35rem' }}>[{dNum}]</span>
+                              <span style={{ fontWeight: '600', color: '#1e293b' }}>{dName}</span>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* 2. Account (Lead) ID / Name with Search Picker */}
-              <div>
+              {/* 2. Account (Lead) ID / Name */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'account' ? dropdownRef : null}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.76rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
                   <FaBuilding style={{ color: '#7c3aed' }} /> Account (Lead) ID / Name
                 </label>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <input
-                    type="text"
-                    value={accountTitle || accountId}
-                    onChange={(e) => {
-                      setAccountId(e.target.value)
-                      setAccountTitle(e.target.value)
-                    }}
-                    placeholder="e.g. ACC-4082 or Account title"
+                <input
+                  type="text"
+                  value={accountTitle || accountId}
+                  onClick={() => {
+                    setActiveDropdownField('account')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Account"
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'account' ? '1.5px solid #7c3aed' : '1.5px solid #cbd5e1',
+                    fontSize: '0.82rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: accountTitle ? '700' : '400',
+                    color: accountTitle ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'account' && (
+                  <div
                     style={{
-                      flex: 1,
-                      padding: '0.55rem 0.75rem',
-                      borderRadius: '8px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '0.82rem',
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
                       background: '#ffffff',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPickerModalType('account')
-                      setPickerSearchQuery('')
-                    }}
-                    style={{
-                      background: '#7c3aed',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '0 0.85rem',
-                      fontSize: '0.76rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
+                      flexDirection: 'column',
+                      maxHeight: '280px',
+                      overflow: 'hidden',
                     }}
                   >
-                    <FaSearch />
-                    <span>Search</span>
-                  </button>
-                </div>
+                    {/* Top Search Bar */}
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#7c3aed', fontSize: '0.8rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Account / Lead..."
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          border: 'none',
+                          background: 'transparent',
+                          fontSize: '0.82rem',
+                          outline: 'none',
+                          padding: '0.2rem',
+                        }}
+                      />
+                    </div>
+                    {/* Items List */}
+                    <div style={{ overflowY: 'auto', maxHeight: '230px', padding: '0.3rem' }}>
+                      {filteredAccounts.length === 0 ? (
+                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+                          No accounts found.
+                        </div>
+                      ) : (
+                        filteredAccounts.map((a) => {
+                          const aNum = a.accountNumber || a.accountNo || a.id
+                          const aName = a.accountName || a.companyName || a.name || 'Untitled Account'
+                          return (
+                            <div
+                              key={a.id || aNum}
+                              onClick={() => handleSelectAccount(a)}
+                              style={{
+                                padding: '0.5rem 0.65rem',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                borderBottom: '1px solid #f1f5f9',
+                                transition: 'background 0.15s ease',
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = '#faf5ff' }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <span style={{ fontWeight: '800', color: '#7c3aed', marginRight: '0.35rem' }}>[{aNum}]</span>
+                              <span style={{ fontWeight: '600', color: '#1e293b' }}>{aName}</span>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* 3. Quotation No. with Search Picker */}
-              <div>
+              {/* 3. Quotation No. */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'quotation' ? dropdownRef : null}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.76rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
                   <FaFileInvoice style={{ color: '#c60016' }} /> Quotation No.
                 </label>
-                <div style={{ display: 'flex', gap: '0.4rem' }}>
-                  <input
-                    type="text"
-                    value={quotationTitle || quotationId}
-                    onChange={(e) => {
-                      setQuotationId(e.target.value)
-                      setQuotationTitle(e.target.value)
-                    }}
-                    placeholder="e.g. QT-00128"
+                <input
+                  type="text"
+                  value={quotationTitle || quotationId}
+                  onClick={() => {
+                    setActiveDropdownField('quotation')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Quotation"
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'quotation' ? '1.5px solid #c60016' : '1.5px solid #cbd5e1',
+                    fontSize: '0.82rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: quotationTitle ? '700' : '400',
+                    color: quotationTitle ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'quotation' && (
+                  <div
                     style={{
-                      flex: 1,
-                      padding: '0.55rem 0.75rem',
-                      borderRadius: '8px',
-                      border: '1.5px solid #cbd5e1',
-                      fontSize: '0.82rem',
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
                       background: '#ffffff',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPickerModalType('quotation')
-                      setPickerSearchQuery('')
-                    }}
-                    style={{
-                      background: '#c60016',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '0 0.85rem',
-                      fontSize: '0.76rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
                       display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
+                      flexDirection: 'column',
+                      maxHeight: '280px',
+                      overflow: 'hidden',
                     }}
                   >
-                    <FaSearch />
-                    <span>Search</span>
-                  </button>
-                </div>
+                    {/* Top Search Bar */}
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#c60016', fontSize: '0.8rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Quotation No. / Client..."
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          border: 'none',
+                          background: 'transparent',
+                          fontSize: '0.82rem',
+                          outline: 'none',
+                          padding: '0.2rem',
+                        }}
+                      />
+                    </div>
+                    {/* Items List */}
+                    <div style={{ overflowY: 'auto', maxHeight: '230px', padding: '0.3rem' }}>
+                      {filteredQuotations.length === 0 ? (
+                        <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+                          No quotations found.
+                        </div>
+                      ) : (
+                        filteredQuotations.map((qt) => {
+                          const qNum = qt.quotationNumber || qt.quoteNumber || `QT-${qt.id}`
+                          const qTitle = qt.title || qt.customerName || qt.accountName || 'Untitled Quotation'
+                          return (
+                            <div
+                              key={qt.id || qNum}
+                              onClick={() => handleSelectQuotation(qt)}
+                              style={{
+                                padding: '0.5rem 0.65rem',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '0.8rem',
+                                borderBottom: '1px solid #f1f5f9',
+                                transition: 'background 0.15s ease',
+                              }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = '#fef2f2' }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                            >
+                              <span style={{ fontWeight: '800', color: '#c60016', marginRight: '0.35rem' }}>[{qNum}]</span>
+                              <span style={{ fontWeight: '600', color: '#1e293b' }}>{qTitle}</span>
+                            </div>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -835,187 +1191,6 @@ export const AddTaskPage = () => {
           </div>
         </form>
       </div>
-
-      {/* CRM Search & Picker Modal */}
-      <Modal
-        isOpen={Boolean(pickerModalType)}
-        onClose={() => setPickerModalType(null)}
-        title={
-          pickerModalType === 'deal'
-            ? 'Select Project / Deal'
-            : pickerModalType === 'account'
-            ? 'Select Account (Lead)'
-            : 'Select Quotation'
-        }
-        size="large"
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {/* Top Search Input */}
-          <div style={{ position: 'relative' }}>
-            <FaSearch style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }} />
-            <input
-              type="text"
-              value={pickerSearchQuery}
-              onChange={(e) => setPickerSearchQuery(e.target.value)}
-              placeholder={
-                pickerModalType === 'deal'
-                  ? 'Search deals/leads by title, DEAL-XXXXX, account...'
-                  : pickerModalType === 'account'
-                  ? 'Search accounts by name, ACC-XXXXX, company...'
-                  : 'Search quotations by number (QT-XXXXX), client...'
-              }
-              style={{
-                width: '100%',
-                padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-                borderRadius: '8px',
-                border: '1.5px solid #cbd5e1',
-                fontSize: '0.86rem',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-              autoFocus
-            />
-          </div>
-
-          {/* List items */}
-          <div style={{ maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {pickerModalType === 'deal' && (
-              filteredDeals.length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>No deals found.</div>
-              ) : (
-                filteredDeals.map((d) => (
-                  <div
-                    key={d.id || d.dealNumber}
-                    onClick={() => {
-                      const display = d.dealNumber ? `[${d.dealNumber}] ${d.title || d.dealName || ''}` : (d.title || d.dealName || `Deal #${d.id}`)
-                      setDealId(String(d.dealNumber || d.id || ''))
-                      setDealTitle(display)
-                      setPickerModalType(null)
-                    }}
-                    style={{
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0',
-                      background: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff' }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#1e293b' }}>
-                        {d.dealNumber ? <span style={{ color: '#2563eb', marginRight: '0.4rem' }}>{d.dealNumber}</span> : null}
-                        {d.title || d.dealName || 'Untitled Deal'}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.15rem' }}>
-                        {d.accountName ? `Account: ${d.accountName}` : ''} {d.stage ? `• Stage: ${d.stage}` : ''}
-                      </div>
-                    </div>
-                    <button type="button" style={{ background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>
-                      Select
-                    </button>
-                  </div>
-                ))
-              )
-            )}
-
-            {pickerModalType === 'account' && (
-              filteredAccounts.length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>No accounts found.</div>
-              ) : (
-                filteredAccounts.map((a) => (
-                  <div
-                    key={a.id || a.accountNumber}
-                    onClick={() => {
-                      const display = a.accountNumber ? `[${a.accountNumber}] ${a.accountName || a.companyName || ''}` : (a.accountName || a.companyName || `Account #${a.id}`)
-                      setAccountId(String(a.accountNumber || a.id || ''))
-                      setAccountTitle(display)
-                      setPickerModalType(null)
-                    }}
-                    style={{
-                      padding: '0.65rem 0.85rem',
-                      borderRadius: '8px',
-                      border: '1px solid #e2e8f0',
-                      background: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'background 0.15s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff' }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#1e293b' }}>
-                        {a.accountNumber ? <span style={{ color: '#7c3aed', marginRight: '0.4rem' }}>{a.accountNumber}</span> : null}
-                        {a.accountName || a.companyName || 'Untitled Account'}
-                      </div>
-                      <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.15rem' }}>
-                        {a.customerName ? `Contact: ${a.customerName}` : ''} {a.phone ? `• Phone: ${a.phone}` : ''}
-                      </div>
-                    </div>
-                    <button type="button" style={{ background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>
-                      Select
-                    </button>
-                  </div>
-                ))
-              )
-            )}
-
-            {pickerModalType === 'quotation' && (
-              filteredQuotations.length === 0 ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>No quotations found.</div>
-              ) : (
-                filteredQuotations.map((qt) => {
-                  const qNum = qt.quotationNumber || qt.quoteNumber || `QT-${qt.id}`
-                  return (
-                    <div
-                      key={qt.id || qNum}
-                      onClick={() => {
-                        const display = `[${qNum}] ${qt.title || qt.customerName || qt.accountName || ''}`
-                        setQuotationId(String(qNum))
-                        setQuotationTitle(display)
-                        setPickerModalType(null)
-                      }}
-                      style={{
-                        padding: '0.65rem 0.85rem',
-                        borderRadius: '8px',
-                        border: '1px solid #e2e8f0',
-                        background: '#ffffff',
-                        cursor: 'pointer',
-                        transition: 'background 0.15s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#f8fafc' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = '#ffffff' }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: '700', fontSize: '0.85rem', color: '#1e293b' }}>
-                          <span style={{ color: '#c60016', marginRight: '0.4rem' }}>{qNum}</span>
-                          {qt.title || qt.customerName || qt.accountName || 'Untitled Quotation'}
-                        </div>
-                        <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '0.15rem' }}>
-                          {qt.totalAmount ? `Total: ₹${Number(qt.totalAmount).toLocaleString('en-IN')}` : ''}
-                        </div>
-                      </div>
-                      <button type="button" style={{ background: '#c60016', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>
-                        Select
-                      </button>
-                    </div>
-                  )
-                })
-              )
-            )}
-          </div>
-        </div>
-      </Modal>
     </TaskWorkspaceLayout>
   )
 }

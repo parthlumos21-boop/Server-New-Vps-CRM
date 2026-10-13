@@ -2189,6 +2189,21 @@
   background: linear-gradient(180deg, #4aa3d8 0%, #2476ad 100%);
 }
 
+.deals-crm-toolbar-icon-excel-btn,
+.deals-ownerwise-toolbar-icon-excel-btn,
+.deals-board-toolbar-icon-excel-btn {
+  background: linear-gradient(180deg, #107c41 0%, #0d5e31 100%) !important;
+  border-color: #0d5e31 !important;
+  color: #ffffff !important;
+}
+
+.deals-crm-toolbar-icon-excel-btn:hover:not(:disabled),
+.deals-ownerwise-toolbar-icon-excel-btn:hover:not(:disabled),
+.deals-board-toolbar-icon-excel-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #138d4b 0%, #107c41 100%) !important;
+  filter: brightness(1.08) !important;
+}
+
 .deals-crm-toolbar-icon-blue {
   border-color: var(--text-primary);
   background: linear-gradient(180deg, #6f8df0 0%, #365cc7 100%);

@@ -70,6 +70,22 @@ export const taskApi = {
     const response = await apiClient.delete(`/tasks/${encodeURIComponent(id)}`)
     return response?.data || response
   },
+
+  async getComments(taskId) {
+    const response = await apiClient.get(`/tasks/${encodeURIComponent(taskId)}/comments`)
+    const list = response?.data || response
+    return Array.isArray(list) ? list : []
+  },
+
+  async addComment(taskId, payload) {
+    const response = await apiClient.post(`/tasks/${encodeURIComponent(taskId)}/comments`, payload)
+    return response?.data || response
+  },
+
+  async getCrmWorkflowLinks() {
+    const response = await apiClient.get('/tasks/crm-workflow-links')
+    return response?.data || response
+  },
 }
 
 export default taskApi

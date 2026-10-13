@@ -10,6 +10,8 @@ import {
   FaPlay,
   FaCalendarAlt,
   FaExclamationCircle,
+  FaUsers,
+  FaArrowRight,
 } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
@@ -27,6 +29,7 @@ export const MyWorkPage = () => {
 
   const [loading, setLoading] = useState(true)
   const [overview, setOverview] = useState(null)
+  const [projects, setProjects] = useState([])
   const [addTaskOpen, setAddTaskOpen] = useState(false)
   const [addReminderOpen, setAddReminderOpen] = useState(false)
 
@@ -36,8 +39,12 @@ export const MyWorkPage = () => {
   const fetchOverview = async () => {
     try {
       setLoading(true)
-      const data = await workManagementService.getOverview()
-      setOverview(data)
+      const [overviewData, projsData] = await Promise.all([
+        workManagementService.getOverview().catch(() => null),
+        workManagementService.getProjects().catch(() => []),
+      ])
+      setOverview(overviewData)
+      setProjects(Array.isArray(projsData) ? projsData : (Array.isArray(projsData?.data) ? projsData.data : []))
     } catch (err) {
       console.error('Failed to load my work overview', err)
     } finally {
@@ -284,6 +291,278 @@ export const MyWorkPage = () => {
           </div>
         )}
       </TaskCardShell>
+
+      {/* Projects Section (Changes-7) */}
+      <div style={{ marginTop: '1.25rem' }}>
+        <TaskCardShell
+          title="Projects"
+          icon={<FaProjectDiagram />}
+          subtitle="Enterprise projects and delivery progress"
+          action={
+            <button
+              type="button"
+              className="ap-header-item-btn"
+              onClick={() => navigate('/tasks/projects')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                cursor: 'pointer',
+                fontWeight: '700',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '8px',
+                border: '1px solid #e2e8f0',
+                background: '#ffffff',
+                color: '#c60016',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+              }}
+              title="View all projects"
+            >
+              <span>View All</span>
+              <FaArrowRight style={{ fontSize: '0.72rem' }} />
+            </button>
+          }
+        >
+          {loading ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+              Loading projects...
+            </div>
+          ) : projects.length === 0 ? (
+            <div style={{ padding: '2.5rem', textAlign: 'center', color: '#64748b' }}>
+              <FaProjectDiagram style={{ fontSize: '2rem', color: '#cbd5e1', marginBottom: '0.5rem' }} />
+              <div style={{ fontWeight: '700', fontSize: '0.95rem', color: '#1e293b' }}>No projects available</div>
+              <p style={{ fontSize: '0.82rem', margin: '0.25rem 0' }}>Projects will appear here once created or auto-generated.</p>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                gap: '1.25rem',
+              }}
+            >
+              {projects.slice(0, 2).map((proj) => {
+                const completedMilestones = (proj.milestones || []).filter((m) => m.status === 'completed').length
+                const totalMilestones = (proj.milestones || []).length
+                const teamEmails = Array.isArray(proj.teamMemberEmails) ? proj.teamMemberEmails : []
+                const projectTasks = (tasks || []).filter((t) => String(t.projectId) === String(proj.id))
+                const openTasksCount = projectTasks.filter((t) => ['open', 'in_progress', 'review'].includes(String(t.status || '').toLowerCase())).length
+
+                return (
+                  <div
+                    key={proj.id}
+                    className="ap-dashboard-card"
+                    style={{
+                      background: '#ffffff',
+                      border: '1.5px solid #e2e8f0',
+                      borderRadius: '16px',
+                      padding: '1.35rem',
+                      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {/* Project Header - Strictly NO Active Status Badge */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span
+                            style={{
+                              fontSize: '0.72rem',
+                              fontWeight: '800',
+                              color: '#c60016',
+                              background: '#fef2f2',
+                              padding: '0.2rem 0.5rem',
+                              borderRadius: '6px',
+                              border: '1px solid #fee2e2',
+                            }}
+                          >
+                            {proj.projectCode}
+                          </span>
+                        </div>
+                        <h3 style={{ margin: '0.35rem 0 0', fontSize: '1.1rem', fontWeight: '800', color: '#1e293b', lineHeight: 1.3 }}>
+                          {proj.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    {proj.description && (
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.45 }}>
+                        {proj.description}
+                      </p>
+                    )}
+
+                    {/* Progress Bar */}
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem', fontSize: '0.76rem' }}>
+                        <span style={{ color: '#64748b', fontWeight: '600' }}>Overall Progress</span>
+                        <span style={{ fontWeight: '800', color: '#c60016' }}>{proj.progress}%</span>
+                      </div>
+                      <div style={{ height: '7px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            width: `${proj.progress}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, #c60016 0%, #e11d2e 100%)',
+                            borderRadius: '4px',
+                            transition: 'width 0.3s ease',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Milestones Stepper Mini */}
+                    <div>
+                      <span style={{ fontSize: '0.74rem', fontWeight: '700', color: '#64748b', display: 'block', marginBottom: '0.4rem' }}>
+                        Milestones ({completedMilestones} / {totalMilestones})
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                        {(proj.milestones || []).slice(0, 3).map((ms) => (
+                          <div
+                            key={ms.id || ms.name}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.45rem',
+                              fontSize: '0.76rem',
+                              color: ms.status === 'completed' ? '#15803d' : '#334155',
+                            }}
+                          >
+                            <FaCheckCircle style={{ color: ms.status === 'completed' ? '#15803d' : '#cbd5e1', fontSize: '0.75rem', flexShrink: 0 }} />
+                            <span style={{ flex: 1, textDecoration: ms.status === 'completed' ? 'line-through' : 'none' }}>
+                              {ms.name}
+                            </span>
+                            <span style={{ fontSize: '0.68rem', fontWeight: '700', textTransform: 'capitalize', color: ms.status === 'completed' ? '#15803d' : '#64748b' }}>
+                              {ms.status?.replace('_', ' ')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Team Allocation */}
+                    <div
+                      style={{
+                        background: '#f8fafc',
+                        padding: '0.75rem 0.85rem',
+                        borderRadius: '12px',
+                        border: '1px solid #edf2f7',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.76rem', fontWeight: '700', color: '#334155', marginBottom: '0.5rem' }}>
+                        <FaUsers style={{ color: '#c60016' }} />
+                        <span>Project Team ({teamEmails.length})</span>
+                      </div>
+                      {teamEmails.length === 0 ? (
+                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                          No team members assigned yet.
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                          {teamEmails.slice(0, 5).map((email) => {
+                            const displayName = email.split('@')[0]
+                            return (
+                              <div
+                                key={email}
+                                title={email}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.3rem',
+                                  background: '#ffffff',
+                                  border: '1px solid #e2e8f0',
+                                  borderRadius: '20px',
+                                  padding: '0.15rem 0.5rem',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '600',
+                                  color: '#334155',
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    width: '16px',
+                                    height: '16px',
+                                    borderRadius: '50%',
+                                    background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
+                                    color: '#ffffff',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.55rem',
+                                    fontWeight: '800',
+                                  }}
+                                >
+                                  {displayName.charAt(0).toUpperCase()}
+                                </span>
+                                <span>{displayName}</span>
+                              </div>
+                            )
+                          })}
+                          {teamEmails.length > 5 && (
+                            <span
+                              style={{
+                                fontSize: '0.7rem',
+                                fontWeight: '700',
+                                color: '#64748b',
+                                padding: '0.15rem 0.4rem',
+                                alignSelf: 'center',
+                              }}
+                            >
+                              +{teamEmails.length - 5} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tasks Summary */}
+                    <div
+                      style={{
+                        background: '#fef2f2',
+                        padding: '0.75rem 0.85rem',
+                        borderRadius: '12px',
+                        border: '1px solid #fee2e2',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.76rem', fontWeight: '700', color: '#991b1b' }}>
+                          <FaTasks style={{ color: '#c60016' }} />
+                          <span>
+                            Tasks: {projectTasks.length} ({openTasksCount} active)
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => navigate(user?.role === 'admin' ? `/admin/tasks/add?projectId=${proj.id}&projectName=${encodeURIComponent(proj.name)}` : `/tasks/add?projectId=${proj.id}&projectName=${encodeURIComponent(proj.name)}`)}
+                          style={{
+                            background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            padding: '0.28rem 0.6rem',
+                            fontSize: '0.72rem',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.3rem',
+                            boxShadow: '0 2px 6px rgba(198, 0, 22, 0.2)',
+                          }}
+                        >
+                          <FaPlus />
+                          <span>Add Task</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </TaskCardShell>
+      </div>
 
       {/* Professional Task Modal with multi-user assignees from MongoDB */}
       <ProfessionalTaskModal

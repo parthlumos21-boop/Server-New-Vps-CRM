@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   FaTasks,
@@ -12,6 +13,8 @@ import {
   FaEdit,
   FaCheck,
   FaUserCheck,
+  FaCommentDots,
+  FaPaperPlane,
 } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useData } from '../../context/DataContext'
@@ -22,6 +25,7 @@ import { TaskStatusBadge } from './components/common/TaskStatusBadge'
 import { UserEmailBadge } from './components/common/UserEmailBadge'
 import ProfessionalTaskModal from '../../components/common/ProfessionalTaskModal'
 import workManagementService from '../../services/workManagementService'
+import taskApi from '../../services/taskApi'
 
 export const TasksWorkspacePage = () => {
   const navigate = useNavigate()
@@ -40,9 +44,81 @@ export const TasksWorkspacePage = () => {
   const [editingTask, setEditingTask] = useState(null)
   const [activeTaskDrawer, setActiveTaskDrawer] = useState(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [comments, setComments] = useState([])
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [newComment, setNewComment] = useState('')
+  const [isPostingComment, setIsPostingComment] = useState(false)
 
   const isAdmin = ['admin', 'super_admin'].includes(user?.role)
   const currentUserEmail = String(user?.email || user?.username || '').trim().toLowerCase()
+
+  // Fetch comments when task drawer opens
+  useEffect(() => {
+    if (!activeTaskDrawer?.id) {
+      setComments([])
+      return
+    }
+    let isMounted = true
+    const fetchComments = async () => {
+      try {
+        setLoadingComments(true)
+        const list = await taskApi.getComments(activeTaskDrawer.id)
+        if (isMounted) {
+          setComments(Array.isArray(list) ? list : [])
+        }
+      } catch (err) {
+        console.error('Failed to fetch task comments', err)
+      } finally {
+        if (isMounted) setLoadingComments(false)
+      }
+    }
+    fetchComments()
+    return () => {
+      isMounted = false
+    }
+  }, [activeTaskDrawer?.id])
+
+  const handleAddComment = async (e) => {
+    if (e) e.preventDefault()
+    const trimmed = String(newComment || '').trim()
+    if (!trimmed || !activeTaskDrawer?.id || isPostingComment) return
+    try {
+      setIsPostingComment(true)
+      const actorName = user?.name || user?.username || currentUserEmail.split('@')[0] || 'User'
+      const payload = {
+        comment: trimmed,
+        projectId: activeTaskDrawer.projectId || null,
+        userEmail: currentUserEmail,
+        userName: actorName,
+        taskDetails: {
+          id: activeTaskDrawer.id,
+          title: activeTaskDrawer.title,
+          description: activeTaskDrawer.description,
+          status: activeTaskDrawer.status,
+          priority: activeTaskDrawer.priority,
+          assignedTo: activeTaskDrawer.assignedTo,
+          assignedToUserEmails: activeTaskDrawer.assignedToUserEmails,
+          progress: activeTaskDrawer.progress,
+          dueDate: activeTaskDrawer.dueDate,
+          dealId: activeTaskDrawer.dealId,
+          accountId: activeTaskDrawer.accountId,
+        },
+      }
+      const res = await taskApi.addComment(activeTaskDrawer.id, payload)
+      const created = res?.data || res
+      if (created && created.comment) {
+        setComments((prev) => [...prev, created])
+      } else {
+        const fresh = await taskApi.getComments(activeTaskDrawer.id)
+        setComments(Array.isArray(fresh) ? fresh : [])
+      }
+      setNewComment('')
+    } catch (err) {
+      console.error('Failed to post task comment', err)
+    } finally {
+      setIsPostingComment(false)
+    }
+  }
 
   // Fetch users directory from MongoDB
   useEffect(() => {
@@ -515,13 +591,18 @@ export const TasksWorkspacePage = () => {
       )}
 
       {/* TASK DETAIL DRAWER (SLIDE-OVER) WITH REAL-TIME OPEN, UPDATE, IN PROGRESS BUTTONS */}
-      {activeTaskDrawer && (
+      {activeTaskDrawer && createPortal(
         <div
           style={{
             position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.4)',
-            zIndex: 9999,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.45)',
+            zIndex: 99999,
             display: 'flex',
             justifyContent: 'flex-end',
           }}
@@ -531,33 +612,63 @@ export const TasksWorkspacePage = () => {
             style={{
               width: '100%',
               maxWidth: '540px',
-              height: '100%',
+              height: '100vh',
+              maxHeight: '100vh',
               background: '#ffffff',
               boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.15)',
               display: 'flex',
               flexDirection: 'column',
               overflowY: 'auto',
               padding: '1.5rem',
+              boxSizing: 'border-box',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drawer Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1.5px solid #e2e8f0' }}>
-              <div>
+            {/* Drawer Header with Update button on top right */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '1rem', borderBottom: '1.5px solid #e2e8f0', gap: '0.75rem' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', textTransform: 'uppercase' }}>
                   Task Details &bull; ID #{activeTaskDrawer.id}
                 </span>
-                <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#1e293b' }}>
+                <h3 style={{ margin: '0.2rem 0 0', fontSize: '1.15rem', fontWeight: '800', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {activeTaskDrawer.title}
                 </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => setActiveTaskDrawer(null)}
-                style={{ background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: '#64748b' }}
-              >
-                <FaTimes />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  disabled={isUpdating}
+                  style={{
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
+                    color: '#ffffff',
+                    fontWeight: '800',
+                    fontSize: '0.78rem',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
+                  }}
+                  onClick={() => {
+                    setEditingTask(activeTaskDrawer)
+                    setAddTaskOpen(true)
+                  }}
+                  title="Update Task"
+                >
+                  <FaEdit /> <span>Update</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTaskDrawer(null)}
+                  style={{ background: 'none', border: 'none', fontSize: '1.15rem', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center', padding: '0.2rem' }}
+                  title="Close Details"
+                >
+                  <FaTimes />
+                </button>
+              </div>
             </div>
 
             {/* Meta Tags & CRM Pills */}
@@ -662,96 +773,177 @@ export const TasksWorkspacePage = () => {
               )}
             </div>
 
-            {/* PROMINENT ACTION BUTTONS: OPEN, IN PROGRESS, AND UPDATE (REAL-TIME MONGODB PERSISTENCE) */}
-            <div style={{ marginTop: 'auto', paddingTop: '1.25rem', borderTop: '1.5px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase' }}>
-                Real-Time Actions (MongoDB Synchronized)
-              </span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                <button
-                  type="button"
-                  disabled={isUpdating}
-                  style={{
-                    padding: '0.55rem 0.5rem',
-                    borderRadius: '10px',
-                    border: activeTaskDrawer.status === 'open' ? '2px solid #2563eb' : '1px solid #cbd5e1',
-                    background: activeTaskDrawer.status === 'open' ? '#eff6ff' : '#ffffff',
-                    color: activeTaskDrawer.status === 'open' ? '#1d4ed8' : '#334155',
-                    fontWeight: '800',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem',
-                  }}
-                  onClick={async () => {
-                    setIsUpdating(true)
-                    await updateTask(activeTaskDrawer.id, { status: 'open' })
-                    setActiveTaskDrawer((prev) => prev ? { ...prev, status: 'open' } : null)
-                    setIsUpdating(false)
-                  }}
-                >
-                  <FaFolderOpen /> Open
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isUpdating}
-                  style={{
-                    padding: '0.55rem 0.5rem',
-                    borderRadius: '10px',
-                    border: activeTaskDrawer.status === 'in_progress' ? '2px solid #059669' : '1px solid #cbd5e1',
-                    background: activeTaskDrawer.status === 'in_progress' ? '#ecfdf5' : '#ffffff',
-                    color: activeTaskDrawer.status === 'in_progress' ? '#047857' : '#334155',
-                    fontWeight: '800',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem',
-                  }}
-                  onClick={async () => {
-                    setIsUpdating(true)
-                    const progress = activeTaskDrawer.progress || 50
-                    await updateTask(activeTaskDrawer.id, { status: 'in_progress', progress })
-                    setActiveTaskDrawer((prev) => prev ? { ...prev, status: 'in_progress', progress } : null)
-                    setIsUpdating(false)
-                  }}
-                >
-                  <FaPlay style={{ fontSize: '0.7rem' }} /> In Progress
-                </button>
-
-                <button
-                  type="button"
-                  disabled={isUpdating}
-                  style={{
-                    padding: '0.55rem 0.5rem',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: 'linear-gradient(135deg, #c60016 0%, #80000e 100%)',
-                    color: '#ffffff',
-                    fontWeight: '800',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.35rem',
-                    boxShadow: '0 2px 8px rgba(198, 0, 22, 0.25)',
-                  }}
-                  onClick={() => {
-                    setEditingTask(activeTaskDrawer)
-                    setAddTaskOpen(true)
-                  }}
-                >
-                  <FaEdit /> Update
-                </button>
+            {/* JIRA TICKET ACTIVITY & COMMENTS SYSTEM */}
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1.5px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: '800', color: '#475569', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <FaCommentDots style={{ color: '#c60016' }} /> Activity & Comments ({comments.length})
+                </span>
+                {activeTaskDrawer.projectId && (
+                  <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '600' }}>
+                    Project #{activeTaskDrawer.projectId}
+                  </span>
+                )}
               </div>
+
+              {/* Scrollable Comments History List */}
+              <div
+                style={{
+                  maxHeight: '260px',
+                  overflowY: 'auto',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.65rem',
+                  paddingRight: '0.25rem',
+                }}
+              >
+                {loadingComments ? (
+                  <div style={{ fontSize: '0.78rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.75rem 0' }}>
+                    Loading comments...
+                  </div>
+                ) : comments.length === 0 ? (
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', padding: '0.5rem 0' }}>
+                    No comments yet. Be the first to comment on this task.
+                  </div>
+                ) : (
+                  comments.map((cm, idx) => {
+                    const commenterName = cm.userName || (cm.userEmail ? cm.userEmail.split('@')[0] : 'User')
+                    const initials = commenterName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase() || 'U'
+                    const dateStr = cm.createdAt
+                      ? new Date(cm.createdAt).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : 'Recently'
+
+                    return (
+                      <div
+                        key={cm.id || idx}
+                        style={{
+                          display: 'flex',
+                          gap: '0.6rem',
+                          background: '#f8fafc',
+                          padding: '0.65rem 0.75rem',
+                          borderRadius: '10px',
+                          border: '1px solid #e2e8f0',
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: '#eff6ff',
+                            color: '#2563eb',
+                            fontWeight: '800',
+                            fontSize: '0.72rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            border: '1px solid #bfdbfe',
+                          }}
+                        >
+                          {initials}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: '800', fontSize: '0.8rem', color: '#1e293b' }}>
+                                {commenterName}
+                              </span>
+                              {cm.userEmail && (
+                                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
+                                  &lt;{cm.userEmail}&gt;
+                                </span>
+                              )}
+                            </div>
+                            <span style={{ fontSize: '0.68rem', color: '#94a3b8', flexShrink: 0 }}>
+                              {dateStr}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.82rem', color: '#334155', marginTop: '0.25rem', whiteSpace: 'pre-wrap', lineHeight: 1.45 }}>
+                            {cm.comment}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+
+              {/* Jira-style Comment Box */}
+              <form onSubmit={handleAddComment} style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add a comment... (Ctrl+Enter to post)"
+                  rows={2}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                      handleAddComment(e)
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.82rem',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                    fontFamily: 'inherit',
+                  }}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.45rem' }}>
+                  {newComment.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setNewComment('')}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#64748b',
+                        fontSize: '0.76rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        padding: '0.3rem 0.6rem',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim() || isPostingComment}
+                    style={{
+                      background: newComment.trim() ? '#2563eb' : '#94a3b8',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '0.4rem 0.85rem',
+                      fontSize: '0.78rem',
+                      fontWeight: '700',
+                      cursor: newComment.trim() && !isPostingComment ? 'pointer' : 'not-allowed',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      transition: 'background 0.15s ease',
+                    }}
+                  >
+                    <FaPaperPlane style={{ fontSize: '0.68rem' }} />
+                    <span>{isPostingComment ? 'Posting...' : 'Save Comment'}</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Professional Task Modal with Multi-User Checkboxes & CRM Linking */}

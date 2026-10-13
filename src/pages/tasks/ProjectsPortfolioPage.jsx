@@ -363,7 +363,6 @@ export const ProjectsPortfolioPage = () => {
                       {proj.name}
                     </h3>
                   </div>
-                  <TaskStatusBadge value={proj.status} />
                 </div>
 
                 {proj.description && (

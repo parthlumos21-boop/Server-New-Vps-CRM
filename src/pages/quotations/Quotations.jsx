@@ -3195,7 +3195,7 @@ const Quotations = ({ autoOpen = false, preselectedDeal = null, onClose = null }
                       <option value="ELECTRICAL PANEL">ELECTRICAL PANEL</option>
                     </select>
                   </label>
-                  {(quotationForm.productGroup === 'TTA' || quotationForm.productGroup === 'Non TTA') && (
+                  {quotationForm.productGroup === 'TTA' && (
                     <label className="quotation-builder-field">
                       <span>TTA Org</span>
                       <select

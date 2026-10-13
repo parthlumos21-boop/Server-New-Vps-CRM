@@ -13,12 +13,14 @@ import {
   FiUpload,
   FiUserCheck,
 } from 'react-icons/fi'
+import { FaFileExcel, FaSpinner } from 'react-icons/fa'
 import * as XLSX from 'xlsx'
 import { useClickOutside } from '../../../hooks'
 import { useAuth } from '../../../context/AuthContext'
 import { getCrmOwnerCode } from '../../../features/users/crmUserDirectory'
 import { leadApi } from '../../../services/leadApi'
 import { dealApi } from '../../../services/dealApi'
+import { exportAllAccountsAndDealsWorkbook } from '../../../utils/exportAllLeadsAndDeals'
 import './AccountBoardHeaderActions.css'
 
 const SHOW_BULK_ACTIONS = false
@@ -45,12 +47,31 @@ const AccountBoardHeaderActions = ({
   onBulkValidationError,
 }) => {
   const { user } = useAuth()
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
+  const isMyAccountsView =
+    view?.key === 'myAccounts' ||
+    view?.queryValue === 'my-accounts' ||
+    (typeof window !== 'undefined' && window.location.pathname.includes('/my-accounts'))
   const actions = view.titlebarActions || {}
   const [openMenu, setOpenMenu] = useState(null)
   const [pendingColumnKeys, setPendingColumnKeys] = useState(() => visibleColumns.map((column) => column.key))
   const [pendingSourceKeys, setPendingSourceKeys] = useState(() => visibleSourceStageKeys)
   const [bulkMenuPosition, setBulkMenuPosition] = useState(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [isExportingExcel, setIsExportingExcel] = useState(false)
+
+  const handleExportAllCollections = async () => {
+    if (isExportingExcel) return
+    setIsExportingExcel(true)
+    try {
+      await exportAllAccountsAndDealsWorkbook({ primary: 'accounts' })
+    } catch (error) {
+      console.error('Failed to export leads & deals workbook:', error)
+      alert('Failed to export data: ' + (error?.message || 'Unknown error'))
+    } finally {
+      setIsExportingExcel(false)
+    }
+  }
   const fileInputRef = useRef(null)
   const bulkTriggerRef = useRef(null)
   const closeMenu = useCallback(() => {
@@ -503,6 +524,23 @@ const AccountBoardHeaderActions = ({
             document.body
           ) : null}
         </div>
+      ) : null}
+
+      {isAdmin && !isMyAccountsView ? (
+        <button
+          type="button"
+          className="account-board-header-icon-btn account-board-header-icon-btn-excel"
+          title="Export All Leads & Deals to Excel"
+          aria-label="Export All Leads & Deals to Excel"
+          disabled={isExportingExcel}
+          onClick={handleExportAllCollections}
+        >
+          {isExportingExcel ? (
+            <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+          ) : (
+            <FaFileExcel />
+          )}
+        </button>
       ) : null}
 
       <button

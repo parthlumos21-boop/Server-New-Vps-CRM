@@ -9,6 +9,7 @@ import {
   FaEdit,
   FaEllipsisV,
   FaEnvelope,
+  FaFileExcel,
   FaFileImport,
   FaFileAlt,
   FaFilter,
@@ -20,6 +21,7 @@ import {
   FaPlus,
   FaSave,
   FaSearch,
+  FaSpinner,
   FaSyncAlt,
   FaTable,
   FaTimes,
@@ -57,6 +59,7 @@ import { calendarApi } from '../../services/calendarApi'
 import { exportCsvWorkbook, exportExcelWorkbook } from '../../utils/excelExport'
 import { capitalize, formatCurrency, formatDate, formatNumber, getStatusColor } from '../../utils/helpers'
 import { DEAL_STATUS } from '../../utils/constants'
+import { exportAllAccountsAndDealsWorkbook } from '../../utils/exportAllLeadsAndDeals'
 import Quotations from '../quotations/Quotations'
 import './Deals.css'
 
@@ -1122,6 +1125,29 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
     })
   }, [rawDeals])
   const { user } = useAuth()
+  const isEffectiveAdmin = Boolean(isAdmin || user?.role === 'admin' || user?.role === 'super_admin')
+  const [isExportingExcelAll, setIsExportingExcelAll] = useState(false)
+
+  const handleExportAllCollections = async () => {
+    if (isExportingExcelAll) return
+    setIsExportingExcelAll(true)
+    try {
+      await exportAllAccountsAndDealsWorkbook({ primary: 'deals' })
+      if (typeof addNotification === 'function') {
+        addNotification('success', 'Excel Export Complete', 'Downloaded all leads & deals from MongoDB.')
+      }
+    } catch (error) {
+      console.error('Failed to export leads & deals workbook:', error)
+      if (typeof addNotification === 'function') {
+        addNotification('error', 'Export Failed', error?.message || 'Failed to export data')
+      } else {
+        alert('Failed to export data: ' + (error?.message || 'Unknown error'))
+      }
+    } finally {
+      setIsExportingExcelAll(false)
+    }
+  }
+
   const dealFileInputRef = useRef(null)
   const [isImportingDeals, setIsImportingDeals] = useState(false)
   const [importPreviewDeals, setImportPreviewDeals] = useState(null)
@@ -5066,6 +5092,18 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
               >
                 <FaSyncAlt />
               </button>
+              {isEffectiveAdmin ? (
+                <button
+                  type="button"
+                  className="deals-ownerwise-toolbar-icon deals-ownerwise-toolbar-icon-excel-btn"
+                  onClick={handleExportAllCollections}
+                  disabled={isExportingExcelAll}
+                  aria-label="Export Leads and Deals to Excel"
+                  title="Export All Leads & Deals to Excel"
+                >
+                  {isExportingExcelAll ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaFileExcel />}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="deals-ownerwise-toolbar-icon deals-ownerwise-toolbar-icon-orange"
@@ -5345,6 +5383,18 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
                 <FaPlus />
                 <span>Add Deal</span>
               </button>
+              {isEffectiveAdmin ? (
+                <button
+                  type="button"
+                  className="deals-board-toolbar-icon deals-board-toolbar-icon-excel-btn"
+                  onClick={handleExportAllCollections}
+                  disabled={isExportingExcelAll}
+                  aria-label="Export Leads and Deals to Excel"
+                  title="Export All Leads & Deals to Excel"
+                >
+                  {isExportingExcelAll ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaFileExcel />}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="deals-board-toolbar-icon deals-board-toolbar-icon-panel"
@@ -5846,6 +5896,18 @@ const Deals = ({ isAdmin = false, variantKey = 'default', customViewDefinition =
               >
                 <FaSyncAlt />
               </button>
+              {isEffectiveAdmin ? (
+                <button
+                  type="button"
+                  className="deals-crm-toolbar-icon deals-crm-toolbar-icon-excel-btn"
+                  onClick={handleExportAllCollections}
+                  disabled={isExportingExcelAll}
+                  aria-label="Export Leads and Deals to Excel"
+                  title="Export All Leads & Deals to Excel"
+                >
+                  {isExportingExcelAll ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaFileExcel />}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="deals-crm-toolbar-icon deals-crm-toolbar-icon-orange"

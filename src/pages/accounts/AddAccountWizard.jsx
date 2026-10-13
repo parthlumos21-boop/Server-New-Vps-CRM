@@ -1082,7 +1082,7 @@ const AddAccountWizard = () => {
                       {dealRightFieldsWithOwners.map((field) => (
                         <React.Fragment key={field.name}>
                           {renderFieldGroup([field], { layout: 'inline' })}
-                          {field.name === 'productCategory' && (formData.productCategory === 'TTA' || formData.productCategory === 'LT/TTA' || String(formData.productCategory || '').includes('TTA')) && (
+                          {field.name === 'productCategory' && formData.productCategory === 'LT/TTA' && (
                             <div className="add-account-panel-assemblies">
                               <label className="add-account-panel-assemblies-title">
                                 Panel Assemblies

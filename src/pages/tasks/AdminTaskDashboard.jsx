@@ -22,6 +22,9 @@ export const AdminTaskDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
   const [selectedUserFilter, setSelectedUserFilter] = useState(null)
+  const [workloadPage, setWorkloadPage] = useState(1)
+  const [projectPage, setProjectPage] = useState(1)
+  const PAGE_SIZE = 10
 
   const fetchData = async () => {
     try {
@@ -64,6 +67,12 @@ export const AdminTaskDashboard = () => {
 
   const usersList = data?.userPerformanceSummary || []
   const projectsList = data?.projectSummary || []
+
+  const totalWorkloadPages = Math.ceil(usersList.length / PAGE_SIZE) || 1
+  const pagedUsers = usersList.slice((workloadPage - 1) * PAGE_SIZE, workloadPage * PAGE_SIZE)
+
+  const totalProjectPages = Math.ceil(projectsList.length / PAGE_SIZE) || 1
+  const pagedProjects = projectsList.slice((projectPage - 1) * PAGE_SIZE, projectPage * PAGE_SIZE)
 
   return (
     <TaskWorkspaceLayout activeTabKey="dashboard">
@@ -120,7 +129,7 @@ export const AdminTaskDashboard = () => {
 
       {/* LEVEL 2: USER PERFORMANCE SUMMARY TABLE (MONGODB USERS COLLECTION) */}
       <TaskCardShell
-        title="Team Workload & Execution Matrix (MongoDB Users Collection)"
+        title="Team Workload & Execution Matrix"
         icon={<FaUsers />}
         subtitle="Real-time employee task distribution, SLA compliance, and capacity utilization"
         action={
@@ -157,7 +166,7 @@ export const AdminTaskDashboard = () => {
                   </td>
                 </tr>
               ) : (
-                usersList.map((usr) => {
+                pagedUsers.map((usr) => {
                   const isOverloaded = usr.workloadPercent > 100
                   const isModerate = usr.workloadPercent >= 75 && usr.workloadPercent <= 100
                   const barColor = isOverloaded ? '#dc2626' : isModerate ? '#d97706' : '#15803d'
@@ -221,6 +230,78 @@ export const AdminTaskDashboard = () => {
             </tbody>
           </table>
         </div>
+
+        {usersList.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.75rem 1rem',
+              borderTop: '1.5px solid #e2e8f0',
+              background: '#f8fafc',
+              fontSize: '0.82rem',
+              color: '#64748b',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
+            <div>
+              Showing{' '}
+              <strong style={{ color: '#1e293b' }}>
+                {Math.min((workloadPage - 1) * PAGE_SIZE + 1, usersList.length)}
+              </strong>{' '}
+              to{' '}
+              <strong style={{ color: '#1e293b' }}>
+                {Math.min(workloadPage * PAGE_SIZE, usersList.length)}
+              </strong>{' '}
+              of <strong style={{ color: '#1e293b' }}>{usersList.length}</strong> members
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => setWorkloadPage(1)}
+                disabled={workloadPage === 1}
+                style={{
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  background: workloadPage === 1 ? '#f1f5f9' : '#ffffff',
+                  color: workloadPage === 1 ? '#94a3b8' : '#1e293b',
+                  cursor: workloadPage === 1 ? 'not-allowed' : 'pointer',
+                  fontWeight: '700',
+                  fontSize: '0.78rem',
+                  boxShadow: workloadPage === 1 ? 'none' : '0 1px 3px rgba(0,0,0,0.05)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                First
+              </button>
+              <span style={{ padding: '0 0.5rem', fontWeight: '700', color: '#475569' }}>
+                Page {workloadPage} of {totalWorkloadPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setWorkloadPage(totalWorkloadPages)}
+                disabled={workloadPage === totalWorkloadPages}
+                style={{
+                  padding: '0.35rem 0.85rem',
+                  borderRadius: '6px',
+                  border: '1px solid #cbd5e1',
+                  background: workloadPage === totalWorkloadPages ? '#f1f5f9' : '#ffffff',
+                  color: workloadPage === totalWorkloadPages ? '#94a3b8' : '#1e293b',
+                  cursor: workloadPage === totalWorkloadPages ? 'not-allowed' : 'pointer',
+                  fontWeight: '700',
+                  fontSize: '0.78rem',
+                  boxShadow: workloadPage === totalWorkloadPages ? 'none' : '0 1px 3px rgba(0,0,0,0.05)',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Last
+              </button>
+            </div>
+          </div>
+        )}
       </TaskCardShell>
 
       {/* LEVEL 3: PROJECT PORTFOLIO SUMMARY TABLE */}
@@ -259,7 +340,7 @@ export const AdminTaskDashboard = () => {
                     </td>
                   </tr>
                 ) : (
-                  projectsList.map((p) => (
+                  pagedProjects.map((p) => (
                     <tr
                       key={p.id}
                       style={{ borderBottom: '1px solid #f1f5f9' }}
@@ -306,6 +387,78 @@ export const AdminTaskDashboard = () => {
               </tbody>
             </table>
           </div>
+
+          {projectsList.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.75rem 1rem',
+                borderTop: '1.5px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: '0.82rem',
+                color: '#64748b',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+              }}
+            >
+              <div>
+                Showing{' '}
+                <strong style={{ color: '#1e293b' }}>
+                  {Math.min((projectPage - 1) * PAGE_SIZE + 1, projectsList.length)}
+                </strong>{' '}
+                to{' '}
+                <strong style={{ color: '#1e293b' }}>
+                  {Math.min(projectPage * PAGE_SIZE, projectsList.length)}
+                </strong>{' '}
+                of <strong style={{ color: '#1e293b' }}>{projectsList.length}</strong> projects
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setProjectPage(1)}
+                  disabled={projectPage === 1}
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    background: projectPage === 1 ? '#f1f5f9' : '#ffffff',
+                    color: projectPage === 1 ? '#94a3b8' : '#1e293b',
+                    cursor: projectPage === 1 ? 'not-allowed' : 'pointer',
+                    fontWeight: '700',
+                    fontSize: '0.78rem',
+                    boxShadow: projectPage === 1 ? 'none' : '0 1px 3px rgba(0,0,0,0.05)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  First
+                </button>
+                <span style={{ padding: '0 0.5rem', fontWeight: '700', color: '#475569' }}>
+                  Page {projectPage} of {totalProjectPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setProjectPage(totalProjectPages)}
+                  disabled={projectPage === totalProjectPages}
+                  style={{
+                    padding: '0.35rem 0.85rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    background: projectPage === totalProjectPages ? '#f1f5f9' : '#ffffff',
+                    color: projectPage === totalProjectPages ? '#94a3b8' : '#1e293b',
+                    cursor: projectPage === totalProjectPages ? 'not-allowed' : 'pointer',
+                    fontWeight: '700',
+                    fontSize: '0.78rem',
+                    boxShadow: projectPage === totalProjectPages ? 'none' : '0 1px 3px rgba(0,0,0,0.05)',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
         </TaskCardShell>
       </div>
     </TaskWorkspaceLayout>
