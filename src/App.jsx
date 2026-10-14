@@ -232,6 +232,9 @@ function App() {
                 <Route path="tasks/add" element={<AddTaskPage />} />
                 <Route path="tasks/edit/:taskId" element={<EditTaskPage />} />
                 <Route path="tasks/projects" element={<ProjectsPortfolioPage />} />
+                <Route path="tasks/workload" element={<TeamWorkloadPage />} />
+                <Route path="tasks/approvals" element={<ApprovalsHubPage />} />
+                <Route path="tasks/activity" element={<ActivityLogPage />} />
                 <Route path="tasks/reminders" element={<TaskRemindersPage />} />
                 <Route path="team-view" element={<TeamViewPage isAdminView={false} />} />
                 <Route path="communication-activities" element={<CommunicationActivitiesPage isAdmin={false} />} />

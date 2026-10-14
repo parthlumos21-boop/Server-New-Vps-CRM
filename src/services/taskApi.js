@@ -98,6 +98,21 @@ export const taskApi = {
     return response?.data || response
   },
 
+  async editComment(taskId, commentId, payload) {
+    const response = await apiClient.patch(
+      `/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`,
+      payload
+    )
+    return response?.data || response
+  },
+
+  async deleteComment(taskId, commentId) {
+    const response = await apiClient.delete(
+      `/tasks/${encodeURIComponent(taskId)}/comments/${encodeURIComponent(commentId)}`
+    )
+    return response?.data || response
+  },
+
   async getActivity(taskId) {
     const response = await apiClient.get(`/tasks/${encodeURIComponent(taskId)}/activity`)
     const list = response?.data || response

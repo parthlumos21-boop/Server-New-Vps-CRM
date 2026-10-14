@@ -447,7 +447,7 @@ export const TasksWorkspacePage = () => {
 
   // Drag and drop for Kanban board
   const handleDragStart = (e, taskItem) => {
-    e.dataTransfer.setData('text/plain', String(taskItem.id))
+    e.dataTransfer.setData('text/plain', String(taskItem.id || taskItem._id))
   }
 
   const handleDrop = async (e, targetStatus) => {
@@ -455,16 +455,21 @@ export const TasksWorkspacePage = () => {
     const taskId = e.dataTransfer.getData('text/plain')
     if (!taskId) return
 
-    const matchedTask = tasks.find((t) => String(t.id) === String(taskId))
-    if (!matchedTask || matchedTask.status === targetStatus) return
+    const matchedTask = tasks.find((t) => String(t.id) === String(taskId) || String(t._id) === String(taskId))
+    if (!matchedTask) return
+    const currentStatus = String(matchedTask.status || 'open').toLowerCase()
+    if (currentStatus === targetStatus) return
 
     try {
       setIsUpdating(true)
       const isComplete = targetStatus === 'completed'
+      const newProgress = isComplete
+        ? 100
+        : (matchedTask.progress || (targetStatus === 'in_progress' ? 50 : targetStatus === 'checking' ? 75 : 25))
       await updateTask(taskId, {
         ...matchedTask,
         status: targetStatus,
-        progress: isComplete ? 100 : (matchedTask.progress || (targetStatus === 'in_progress' ? 50 : 25)),
+        progress: newProgress,
       })
     } catch (err) {
       console.error('Failed to drag-drop update task status in MongoDB', err)
@@ -501,10 +506,11 @@ export const TasksWorkspacePage = () => {
   }
 
   const kanbanColumns = [
-    { key: 'open', label: 'Open', color: '#1d4ed8', bg: '#eff6ff' },
-    { key: 'in_progress', label: 'In Progress', color: '#047857', bg: '#ecfdf5' },
-    { key: 'review', label: 'Under Review', color: '#b45309', bg: '#fef3c7' },
-    { key: 'completed', label: 'Completed', color: '#15803d', bg: '#f0fdf4' },
+    { key: 'draft', label: 'Draft', color: '#64748b', bg: '#f1f5f9', matchStatuses: ['draft'] },
+    { key: 'open', label: 'Pending', color: '#b45309', bg: '#fef3c7', matchStatuses: ['open', 'pending'] },
+    { key: 'checking', label: 'Checking', color: '#b91c1c', bg: '#fee2e2', matchStatuses: ['checking'] },
+    { key: 'in_progress', label: 'Processing', color: '#6d28d9', bg: '#ede9fe', matchStatuses: ['in_progress', 'processing'] },
+    { key: 'completed', label: 'Completed', color: '#15803d', bg: '#dcfce7', matchStatuses: ['completed', 'closed', 'done'] },
   ]
 
   const handleOpenAddModal = (statusKey = 'open') => {
@@ -689,7 +695,7 @@ export const TasksWorkspacePage = () => {
             const colTasks = filteredTasks.filter((t) => {
               if (!t || !t.id || (!t.title && !t.description)) return false
               const st = String(t.status || 'open').toLowerCase()
-              return st === col.key
+              return (col.matchStatuses || [col.key]).includes(st)
             })
 
             return (

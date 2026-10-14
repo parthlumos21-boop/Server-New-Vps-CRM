@@ -47,21 +47,19 @@ export default function TaskChecklistSection({
           gap: '0.5rem',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span
-            style={{
-              fontSize: '0.72rem',
-              fontWeight: '800',
-              color: '#64748b',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
-            }}
-          >
-            CHECKLIST ({completedCount}/{checklist.length})
-          </span>
-        </div>
+        <span
+          style={{
+            fontSize: '0.72rem',
+            fontWeight: '800',
+            color: '#64748b',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+          }}
+        >
+          CHECKLIST ({completedCount}/{checklist.length})
+        </span>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <label
             style={{
               fontSize: '0.7rem',
@@ -81,6 +79,28 @@ export default function TaskChecklistSection({
             />
             <span>Mark as mandatory</span>
           </label>
+
+          {!showInput && (
+            <button
+              type="button"
+              onClick={() => setShowInput(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                background: 'none',
+                border: 'none',
+                color: '#c60016',
+                fontSize: '0.76rem',
+                fontWeight: '700',
+                cursor: 'pointer',
+                padding: '2px 0',
+              }}
+            >
+              <FaPlus style={{ fontSize: '0.65rem' }} />
+              <span>Add Checklist</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -180,7 +200,7 @@ export default function TaskChecklistSection({
       </div>
 
       {/* Inline Creation */}
-      {showInput ? (
+      {showInput && (
         <form
           onSubmit={handleCreate}
           style={{
@@ -238,27 +258,6 @@ export default function TaskChecklistSection({
             Cancel
           </button>
         </form>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setShowInput(true)}
-          style={{
-            alignSelf: 'flex-start',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            background: 'none',
-            border: 'none',
-            color: '#c60016',
-            fontSize: '0.76rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            padding: '2px 0',
-          }}
-        >
-          <FaPlus style={{ fontSize: '0.65rem' }} />
-          <span>Add Checklist</span>
-        </button>
       )}
     </div>
   )

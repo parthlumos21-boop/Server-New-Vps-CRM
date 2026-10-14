@@ -66,6 +66,27 @@ export default function TaskAttachmentsMiniList({
         >
           ATTACHMENT ({attachments.length})
         </span>
+
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            background: 'none',
+            border: 'none',
+            color: '#c60016',
+            fontSize: '0.76rem',
+            fontWeight: '700',
+            cursor: isUploading ? 'not-allowed' : 'pointer',
+            padding: '2px 0',
+          }}
+        >
+          <FaPlus style={{ fontSize: '0.65rem' }} />
+          <span>{isUploading ? 'Uploading...' : 'Upload Document'}</span>
+        </button>
       </div>
 
       {/* Attachments List */}
@@ -179,28 +200,6 @@ export default function TaskAttachmentsMiniList({
         style={{ display: 'none' }}
       />
 
-      {/* Upload Button */}
-      <button
-        type="button"
-        disabled={isUploading}
-        onClick={() => fileInputRef.current && fileInputRef.current.click()}
-        style={{
-          alignSelf: 'flex-start',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.35rem',
-          background: 'none',
-          border: 'none',
-          color: '#c60016',
-          fontSize: '0.76rem',
-          fontWeight: '700',
-          cursor: isUploading ? 'not-allowed' : 'pointer',
-          padding: '2px 0',
-        }}
-      >
-        <FaPlus style={{ fontSize: '0.65rem' }} />
-        <span>{isUploading ? 'Uploading...' : 'Upload Document'}</span>
-      </button>
     </div>
   )
 }

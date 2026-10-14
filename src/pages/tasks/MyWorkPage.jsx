@@ -170,37 +170,90 @@ export const MyWorkPage = () => {
         </div>
       </div>
 
-      {/* Top Micro-KPI Cards */}
+      {/* Top Micro-KPI Cards - 4-Card Single Row */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '0.85rem',
+          gridTemplateColumns: 'repeat(4, minmax(130px, 1fr))',
+          gap: '0.75rem',
           marginBottom: '1.25rem',
+          width: '100%',
         }}
       >
-        <div className="ap-dashboard-card" style={{ padding: '1rem', borderRadius: '16px', border: '1.5px solid #e2e8f0', background: '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>My Active Tasks</span>
-          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: '#1e293b', marginTop: '0.2rem' }}>{activeTasks.length}</div>
+        <div
+          className="ap-dashboard-card"
+          style={{
+            padding: '1.15rem 0.95rem',
+            minHeight: '115px',
+            borderRadius: '16px',
+            border: '1.5px solid #e2e8f0',
+            background: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em' }}>My Active Tasks</span>
+          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: '#1e293b', marginTop: '0.35rem' }}>{activeTasks.length}</div>
         </div>
 
-        <div className="ap-dashboard-card" style={{ padding: '1rem', borderRadius: '16px', border: '1.5px solid #e2e8f0', background: '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Overdue Attention</span>
-          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: overdueTasks.length > 0 ? '#dc2626' : '#15803d', marginTop: '0.2rem' }}>
+        <div
+          className="ap-dashboard-card"
+          style={{
+            padding: '1.15rem 0.95rem',
+            minHeight: '115px',
+            borderRadius: '16px',
+            border: '1.5px solid #e2e8f0',
+            background: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Overdue Attention</span>
+          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: overdueTasks.length > 0 ? '#dc2626' : '#15803d', marginTop: '0.35rem' }}>
             {overdueTasks.length}
           </div>
         </div>
 
-        <div className="ap-dashboard-card" style={{ padding: '1rem', borderRadius: '16px', border: '1.5px solid #e2e8f0', background: '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>SLA At Risk</span>
-          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: slaAtRisk.length > 0 ? '#d97706' : '#64748b', marginTop: '0.2rem' }}>
+        <div
+          className="ap-dashboard-card"
+          style={{
+            padding: '1.15rem 0.95rem',
+            minHeight: '115px',
+            borderRadius: '16px',
+            border: '1.5px solid #e2e8f0',
+            background: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em' }}>SLA At Risk</span>
+          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: slaAtRisk.length > 0 ? '#d97706' : '#64748b', marginTop: '0.35rem' }}>
             {slaAtRisk.length}
           </div>
         </div>
 
-        <div className="ap-dashboard-card" style={{ padding: '1rem', borderRadius: '16px', border: '1.5px solid #e2e8f0', background: '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>Completed</span>
-          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: '#15803d', marginTop: '0.2rem' }}>{completedToday.length}</div>
+        <div
+          className="ap-dashboard-card"
+          style={{
+            padding: '1.15rem 0.95rem',
+            minHeight: '115px',
+            borderRadius: '16px',
+            border: '1.5px solid #e2e8f0',
+            background: '#ffffff',
+            boxShadow: '0 4px 18px rgba(0, 0, 0, 0.03)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em' }}>Completed</span>
+          <div style={{ fontSize: '1.65rem', fontWeight: '800', color: '#15803d', marginTop: '0.35rem' }}>{completedToday.length}</div>
         </div>
       </div>
 

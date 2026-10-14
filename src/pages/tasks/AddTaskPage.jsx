@@ -64,7 +64,17 @@ export const AddTaskPage = () => {
   const [dueDate, setDueDate] = useState('')
   const [estimatedHours, setEstimatedHours] = useState(4)
   const [slaPolicy, setSlaPolicy] = useState('standard_24h')
+  const [repeatSchedule, setRepeatSchedule] = useState('none')
   const [tags, setTags] = useState([])
+
+  // Subtasks & Checklist State
+  const [subtasks, setSubtasks] = useState([])
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState('')
+  const [newSubtaskStatus, setNewSubtaskStatus] = useState('Assigned')
+  const [newSubtaskDueDate, setNewSubtaskDueDate] = useState('')
+
+  const [checklist, setChecklist] = useState([])
+  const [newChecklistTitle, setNewChecklistTitle] = useState('')
 
   // Assignees
   const [selectedUserEmails, setSelectedUserEmails] = useState(
@@ -397,6 +407,9 @@ export const AddTaskPage = () => {
         accountId: accountId || null,
         quotationId: quotationId || null,
         tags,
+        repeatSchedule: repeatSchedule !== 'none' ? repeatSchedule : null,
+        subtasks,
+        checklist,
       }
 
       const res = await createTask(payload)
@@ -1119,6 +1132,23 @@ export const AddTaskPage = () => {
                   <option value="extended_72h">Extended Scope (72 Hours)</option>
                 </select>
               </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
+                  Recurrence / Repeat
+                </label>
+                <select
+                  value={repeatSchedule}
+                  onChange={(e) => setRepeatSchedule(e.target.value)}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '0.82rem', background: '#ffffff', boxSizing: 'border-box' }}
+                >
+                  <option value="none">No Recurrence (One-time)</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
             </div>
 
             {/* Tags Chips */}
@@ -1149,6 +1179,250 @@ export const AddTaskPage = () => {
                     </button>
                   )
                 })}
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 5: Sub Tasks & Checklist (Optional Initial Deliverables) */}
+          <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Subtasks Builder */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#c60016', textTransform: 'uppercase' }}>
+                  5. Sub Tasks ({subtasks.length})
+                </span>
+              </div>
+
+              {/* Subtasks List */}
+              {subtasks.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
+                  {subtasks.map((st) => (
+                    <div
+                      key={st.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.4rem 0.65rem',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flex: 1, minWidth: 0 }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '2px', backgroundColor: '#f59e0b', flexShrink: 0 }} />
+                        <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {st.title}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                        <span style={{ fontSize: '0.68rem', fontWeight: '700', padding: '2px 8px', borderRadius: '6px', backgroundColor: '#e0f2fe', color: '#0369a1' }}>
+                          {st.status || 'Assigned'}
+                        </span>
+                        {st.dueDate && (
+                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
+                            {st.dueDate}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setSubtasks((prev) => prev.filter((item) => item.id !== st.id))}
+                          style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px' }}
+                          title="Remove subtask"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Subtask Input Row */}
+              <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  placeholder="Write subtask title..."
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  style={{
+                    flex: 2,
+                    minWidth: '180px',
+                    padding: '0.45rem 0.65rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                  }}
+                />
+                <select
+                  value={newSubtaskStatus}
+                  onChange={(e) => setNewSubtaskStatus(e.target.value)}
+                  style={{
+                    padding: '0.45rem 0.6rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    background: '#ffffff',
+                    color: '#475569',
+                  }}
+                >
+                  <option value="Assigned">Assigned</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Done">Done</option>
+                </select>
+                <input
+                  type="date"
+                  value={newSubtaskDueDate}
+                  onChange={(e) => setNewSubtaskDueDate(e.target.value)}
+                  style={{
+                    padding: '0.45rem 0.5rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    background: '#ffffff',
+                  }}
+                  title="Subtask Due Date"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const trimmed = newSubtaskTitle.trim()
+                    if (!trimmed) return
+                    setSubtasks((prev) => [
+                      ...prev,
+                      {
+                        id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        title: trimmed,
+                        status: newSubtaskStatus,
+                        dueDate: newSubtaskDueDate,
+                        completed: newSubtaskStatus === 'Done',
+                      },
+                    ])
+                    setNewSubtaskTitle('')
+                    setNewSubtaskDueDate('')
+                  }}
+                  disabled={!newSubtaskTitle.trim()}
+                  style={{
+                    padding: '0.45rem 0.95rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: newSubtaskTitle.trim() ? '#c60016' : '#cbd5e1',
+                    color: '#ffffff',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: newSubtaskTitle.trim() ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  Add Subtask
+                </button>
+              </div>
+            </div>
+
+            {/* Checklist Builder */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: '800', color: '#c60016', textTransform: 'uppercase' }}>
+                  Checklist Items ({checklist.length})
+                </span>
+              </div>
+
+              {/* Checklist List */}
+              {checklist.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
+                  {checklist.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.4rem 0.65rem',
+                        borderRadius: '8px',
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: '#1e293b' }}>
+                        {item.title}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setChecklist((prev) => prev.filter((i) => i.id !== item.id))}
+                        style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '2px' }}
+                        title="Remove checklist item"
+                      >
+                        <FaTimes />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Checklist Input Row */}
+              <div style={{ display: 'flex', gap: '0.45rem' }}>
+                <input
+                  type="text"
+                  placeholder="Add checklist item..."
+                  value={newChecklistTitle}
+                  onChange={(e) => setNewChecklistTitle(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '0.45rem 0.65rem',
+                    borderRadius: '8px',
+                    border: '1.5px solid #cbd5e1',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      const trimmed = newChecklistTitle.trim()
+                      if (!trimmed) return
+                      setChecklist((prev) => [
+                        ...prev,
+                        {
+                          id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                          title: trimmed,
+                          completed: false,
+                        },
+                      ])
+                      setNewChecklistTitle('')
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const trimmed = newChecklistTitle.trim()
+                    if (!trimmed) return
+                    setChecklist((prev) => [
+                      ...prev,
+                      {
+                        id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                        title: trimmed,
+                        completed: false,
+                      },
+                    ])
+                    setNewChecklistTitle('')
+                  }}
+                  disabled={!newChecklistTitle.trim()}
+                  style={{
+                    padding: '0.45rem 0.95rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: newChecklistTitle.trim() ? '#c60016' : '#cbd5e1',
+                    color: '#ffffff',
+                    fontSize: '0.78rem',
+                    fontWeight: '700',
+                    cursor: newChecklistTitle.trim() ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  Add Item
+                </button>
               </div>
             </div>
           </div>

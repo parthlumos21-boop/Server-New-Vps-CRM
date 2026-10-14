@@ -204,6 +204,11 @@ const COLLECTION_INDEXES = {
     { fields: { dueDate: 1 } },
     { fields: { updatedAt: -1 } },
   ],
+  task_comments: [
+    { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { taskId: 1, isDeleted: 1, createdAt: 1 } },
+    { fields: { userId: 1, createdAt: -1 } },
+  ],
   work_projects: [
     { fields: { legacyId: 1 }, options: { unique: true, sparse: true } },
     { fields: { companyId: 1, status: 1 } },
@@ -343,6 +348,11 @@ const COLLECTION_INDEXES = {
     { fields: { groupId: 1 } },
     { fields: { userId: 1 } },
     { fields: { status: 1 } },
+  ],
+  team_workload_settings: [
+    { fields: { userId: 1 }, options: { unique: true, sparse: true } },
+    { fields: { userEmail: 1 }, options: { unique: true, sparse: true } },
+    { fields: { department: 1 } },
   ],
 }
 

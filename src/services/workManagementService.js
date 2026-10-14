@@ -26,6 +26,26 @@ export const workManagementService = {
     return response.data || response
   },
 
+  getTeamWorkload: async () => {
+    const response = await apiClient.get('/tasks/work/workload')
+    return response.data || response
+  },
+
+  getUserWorkloadAnalytics: async (params = {}) => {
+    const response = await apiClient.get('/tasks/work/workload/user-analytics', { params })
+    return response.data || response
+  },
+
+  reassignTask: async (payload) => {
+    const response = await apiClient.post('/tasks/work/workload/reassign', payload)
+    return response.data || response
+  },
+
+  updateWorkloadSettings: async (userId, settings) => {
+    const response = await apiClient.put(`/tasks/work/workload/settings/${userId}`, settings)
+    return response.data || response
+  },
+
   getApprovals: async () => {
     const response = await apiClient.get('/tasks/work/approvals')
     return response.data || response

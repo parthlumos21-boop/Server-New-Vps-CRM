@@ -63,7 +63,6 @@ export const AdminTaskDashboard = () => {
     { label: 'Completed', value: kpis.completedTasks, icon: <FaCheckCircle />, color: '#15803d' },
     { label: 'In Progress', value: kpis.inProgressTasks, icon: <FaSyncAlt />, color: '#2563eb' },
     { label: 'Overdue Tasks', value: kpis.overdueTasks, icon: <FaExclamationTriangle />, color: '#dc2626' },
-    { label: 'SLA Breached', value: kpis.slaBreached, icon: <FaRegClock />, color: '#990011' },
     { label: 'Active Projects', value: kpis.activeProjects, icon: <FaProjectDiagram />, color: '#7c3aed' },
     { label: 'Team Workload', value: `${kpis.teamWorkloadAverage}%`, icon: <FaUsers />, color: kpis.teamWorkloadAverage > 100 ? '#dc2626' : '#d97706' },
   ]
@@ -79,13 +78,14 @@ export const AdminTaskDashboard = () => {
 
   return (
     <TaskWorkspaceLayout activeTabKey="dashboard">
-      {/* LEVEL 1: ORGANIZATION KPI OVERVIEW */}
+      {/* LEVEL 1: ORGANIZATION KPI OVERVIEW - SINGLE ROW */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '0.85rem',
+          gridTemplateColumns: 'repeat(6, minmax(130px, 1fr))',
+          gap: '0.75rem',
           marginBottom: '1.25rem',
+          width: '100%',
         }}
       >
         {kpiCards.map((kpi, idx) => (
@@ -93,7 +93,8 @@ export const AdminTaskDashboard = () => {
             key={idx}
             className="ap-dashboard-card"
             style={{
-              padding: '1rem',
+              padding: '1.1rem 0.85rem',
+              minHeight: '115px',
               borderRadius: '16px',
               border: '1.5px solid #e2e8f0',
               background: '#ffffff',
@@ -101,27 +102,29 @@ export const AdminTaskDashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
+              gap: '0.45rem',
             }}
           >
             <div>
-              <span style={{ fontSize: '0.78rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', display: 'block' }}>
                 {kpi.label}
               </span>
-              <div style={{ fontSize: '1.6rem', fontWeight: '800', color: kpi.color, marginTop: '0.2rem' }}>
+              <div style={{ fontSize: '1.6rem', fontWeight: '800', color: kpi.color, marginTop: '0.35rem' }}>
                 {kpi.value}
               </div>
             </div>
             <div
               style={{
-                width: '2.5rem',
-                height: '2.5rem',
+                width: '2.4rem',
+                height: '2.4rem',
                 borderRadius: '12px',
                 background: 'rgba(198, 0, 22, 0.06)',
                 color: '#c60016',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.15rem',
+                fontSize: '1.1rem',
+                flexShrink: 0,
               }}
             >
               {kpi.icon}
@@ -308,8 +311,8 @@ export const AdminTaskDashboard = () => {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#fef2f2', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
-                        #{(workloadPage - 1) * PAGE_SIZE + idx + 1}
+                      <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#ffffff', border: '1px solid #fecdd3', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
+                        {(workloadPage - 1) * PAGE_SIZE + idx + 1}
                       </span>
                       <TaskStatusBadge
                         value={usr.slaComplianceRate >= 90 ? 'compliant' : usr.slaComplianceRate >= 75 ? 'at_risk' : 'breached'}
@@ -506,7 +509,8 @@ export const AdminTaskDashboard = () => {
               </div>
               <button
                 type="button"
-                className="ap-tab-add"
+                className="ap-header-item-btn"
+                style={{ padding: '0.35rem 0.75rem', minHeight: '1.9rem', fontSize: '0.74rem' }}
                 onClick={() => navigate('/admin/tasks/projects')}
               >
                 <span>View All Projects</span>
@@ -608,7 +612,7 @@ export const AdminTaskDashboard = () => {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#fef2f2', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '800', color: '#c60016', background: '#ffffff', border: '1px solid #fecdd3', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
                         {(projectPage - 1) * PAGE_SIZE + idx + 1} &bull; {p.projectCode}
                       </span>
                       <TaskStatusBadge value={p.status} />

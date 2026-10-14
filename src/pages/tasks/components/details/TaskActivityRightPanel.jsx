@@ -10,6 +10,8 @@ export default function TaskActivityRightPanel({
   setActiveTab,
   comments = [],
   onAddComment,
+  onEditComment,
+  onDeleteComment,
   attachments = [],
   onUploadFile,
   onDeleteFile,
@@ -256,6 +258,8 @@ export default function TaskActivityRightPanel({
           <TaskCommentsTab
             comments={comments}
             onAddComment={onAddComment}
+            onEditComment={onEditComment}
+            onDeleteComment={onDeleteComment}
             currentUser={currentUser}
             isPosting={isPostingComment}
           />

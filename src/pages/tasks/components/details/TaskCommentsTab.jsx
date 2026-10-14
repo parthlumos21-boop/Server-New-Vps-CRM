@@ -1,13 +1,18 @@
 import React, { useState } from 'react'
-import { FaPaperPlane } from 'react-icons/fa'
+import { FaPaperPlane, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa'
 
 export default function TaskCommentsTab({
   comments = [],
   onAddComment,
+  onEditComment,
+  onDeleteComment,
   currentUser = {},
   isPosting = false,
 }) {
   const [commentText, setCommentText] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [editText, setEditText] = useState('')
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault()
@@ -22,6 +27,40 @@ export default function TaskCommentsTab({
       handleSubmit(e)
     }
   }
+
+  const startEdit = (cm) => {
+    setEditingId(cm.id || cm._id)
+    setEditText(cm.comment || '')
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+    setEditText('')
+  }
+
+  const saveEdit = async (commentId) => {
+    const trimmed = String(editText || '').trim()
+    if (!trimmed || !onEditComment) return
+    setIsUpdating(true)
+    try {
+      await onEditComment(commentId, trimmed)
+      setEditingId(null)
+      setEditText('')
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  const handleDelete = (commentId) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) return
+    if (onDeleteComment) {
+      onDeleteComment(commentId)
+    }
+  }
+
+  const actorEmail = String(currentUser?.email || '').toLowerCase()
+  const actorId = String(currentUser?.id || currentUser?.legacyId || '')
+  const isAdmin = ['admin', 'super_admin'].includes((currentUser?.role || '').toLowerCase())
 
   return (
     <div
@@ -59,6 +98,7 @@ export default function TaskCommentsTab({
           </div>
         ) : (
           comments.map((cm, idx) => {
+            const commentId = cm.id || cm._id || idx
             const author = cm.userName || (cm.userEmail ? cm.userEmail.split('@')[0] : 'User')
             const initials = author
               .split(' ')
@@ -77,9 +117,15 @@ export default function TaskCommentsTab({
                 })
               : 'Recently'
 
+            const isAuthor =
+              (cm.userEmail && String(cm.userEmail).toLowerCase() === actorEmail) ||
+              (cm.userId && String(cm.userId) === actorId)
+            const canManage = isAuthor || isAdmin
+            const isEditingThis = editingId === commentId
+
             return (
               <div
-                key={cm.id || idx}
+                key={commentId}
                 style={{
                   display: 'flex',
                   gap: '0.75rem',
@@ -111,38 +157,140 @@ export default function TaskCommentsTab({
                   <div
                     style={{
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '0.35rem',
-                      gap: '0.5rem',
-                      flexWrap: 'wrap',
+                      flexDirection: 'column',
+                      gap: '0.15rem',
+                      marginBottom: '0.45rem',
+                      width: '100%',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                      <span style={{ fontSize: '0.82rem', fontWeight: '800', color: '#1e293b' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#0f172a' }}>
                         {author}
                       </span>
-                      {cm.userEmail && (
-                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>
-                          &lt;{cm.userEmail}&gt;
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {cm.isEdited && (
+                          <span style={{ fontSize: '0.68rem', fontStyle: 'italic', color: '#94a3b8' }}>
+                            (edited)
+                          </span>
+                        )}
+                        <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                          {dateStr}
                         </span>
-                      )}
+                        {canManage && !isEditingThis && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.35rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => startEdit(cm)}
+                              title="Edit Comment"
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                color: '#64748b',
+                                padding: '2px 4px',
+                                fontSize: '0.72rem',
+                              }}
+                            >
+                              <FaEdit />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(commentId)}
+                              title="Delete Comment"
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                color: '#dc2626',
+                                padding: '2px 4px',
+                                fontSize: '0.72rem',
+                              }}
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-                      {dateStr}
-                    </span>
+                    {cm.userEmail && (
+                      <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '500' }}>
+                        {cm.userEmail}
+                      </div>
+                    )}
                   </div>
-                  <div
-                    style={{
-                      fontSize: '0.84rem',
-                      color: '#334155',
-                      lineHeight: '1.5',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {cm.comment}
-                  </div>
+
+                  {isEditingThis ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.35rem' }}>
+                      <textarea
+                        rows={2}
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.45rem',
+                          borderRadius: '8px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '0.82rem',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          fontFamily: 'inherit',
+                        }}
+                      />
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                        <button
+                          type="button"
+                          onClick={cancelEdit}
+                          style={{
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e1',
+                            background: '#ffffff',
+                            color: '#64748b',
+                            fontSize: '0.72rem',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <FaTimes style={{ marginRight: '3px' }} /> Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => saveEdit(commentId)}
+                          disabled={isUpdating || !editText.trim()}
+                          style={{
+                            padding: '3px 10px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#c60016',
+                            color: '#ffffff',
+                            fontSize: '0.72rem',
+                            fontWeight: '700',
+                            cursor: editText.trim() ? 'pointer' : 'not-allowed',
+                          }}
+                        >
+                          <FaCheck style={{ marginRight: '3px' }} /> {isUpdating ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: '0.84rem',
+                        color: '#334155',
+                        lineHeight: '1.5',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {cm.comment}
+                    </div>
+                  )}
                 </div>
               </div>
             )
@@ -214,10 +362,11 @@ export default function TaskCommentsTab({
             }}
           >
             <FaPaperPlane style={{ fontSize: '0.7rem' }} />
-            <span>{isPosting ? 'Posting...' : 'Save Comment'}</span>
+            <span>{isPosting ? 'Posting...' : 'Save'}</span>
           </button>
         </div>
       </form>
     </div>
   )
 }
+

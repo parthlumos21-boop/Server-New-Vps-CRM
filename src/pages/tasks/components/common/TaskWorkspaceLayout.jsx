@@ -21,11 +21,12 @@ import workManagementService from '../../../../services/workManagementService'
 import '../../../admin/AdminPanel.css'
 import '../../Tasks.css'
 
-export const TaskWorkspaceLayout = ({ children, activeTabKey }) => {
+export const TaskWorkspaceLayout = ({ children, activeTabKey, activeTab }) => {
   const { user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const isAdmin = ['admin', 'super_admin'].includes(user?.role)
+  const currentActiveKey = activeTabKey || activeTab
 
   const basePath = isAdmin ? '/admin/tasks' : '/tasks'
 
@@ -71,50 +72,89 @@ export const TaskWorkspaceLayout = ({ children, activeTabKey }) => {
 
   const tabs = isAdmin
     ? [
-        { key: 'dashboard', label: 'Dashboard', icon: <FaDesktop />, route: '/admin/tasks' },
-        { key: 'my-work', label: 'My Work', icon: <FaBriefcase />, route: '/admin/tasks/my-work' },
-        { key: 'all', label: 'All Tasks', icon: <FaTasks />, route: '/admin/tasks/all' },
+        { key: 'dashboard', label: 'Overview', icon: <FaDesktop />, route: '/admin/tasks' },
+        { key: 'all', label: 'Tasks Workspace', icon: <FaTasks />, route: '/admin/tasks/all' },
+        { key: 'workload', label: 'Team Workload', icon: <FaUsers />, route: '/admin/tasks/workload' },
         { key: 'projects', label: 'Projects', icon: <FaProjectDiagram />, route: '/admin/tasks/projects' },
-        { key: 'workload', label: 'Workload', icon: <FaUsers />, route: '/admin/tasks/workload' },
         { key: 'approvals', label: 'Approvals', icon: <FaCheckCircle />, route: '/admin/tasks/approvals' },
-        { key: 'activity', label: 'Activity', icon: <FaHistory />, route: '/admin/tasks/activity' },
+        { key: 'activity', label: 'Activity Log', icon: <FaHistory />, route: '/admin/tasks/activity' },
       ]
     : [
-        { key: 'my-work', label: 'My Work', icon: <FaBriefcase />, route: '/tasks/my-work' },
-        { key: 'all', label: 'My Tasks', icon: <FaTasks />, route: '/tasks/all' },
+        { key: 'dashboard', label: 'Overview', icon: <FaDesktop />, route: '/tasks/my-work' },
+        { key: 'all', label: 'Tasks Workspace', icon: <FaTasks />, route: '/tasks/all' },
+        { key: 'workload', label: 'Team Workload', icon: <FaUsers />, route: '/tasks/workload' },
         { key: 'projects', label: 'Projects', icon: <FaProjectDiagram />, route: '/tasks/projects' },
+        { key: 'approvals', label: 'Approvals', icon: <FaCheckCircle />, route: '/tasks/approvals' },
+        { key: 'activity', label: 'Activity Log', icon: <FaHistory />, route: '/tasks/activity' },
       ]
 
   return (
-    <div className="admin-panel tasks-workspace-root" style={{ padding: '0.5rem 1rem' }}>
+    <div className="admin-panel tasks-workspace-root" style={{ padding: '0.35rem 0.85rem' }}>
       {/* Top Navigation Tab Bar styled with Swati Maroon .ap-tabbar */}
-      <div className="ap-tabbar" style={{ marginBottom: '1rem', borderBottom: '2px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="ap-tabs" style={{ display: 'flex', gap: '0.35rem', overflowX: 'auto', paddingBottom: '2px' }}>
+      <div
+        className="ap-tabbar"
+        style={{
+          marginBottom: '0.85rem',
+          borderBottom: '2px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          width: '100%',
+          minHeight: 'auto',
+          padding: '0.2rem 0',
+        }}
+      >
+        <div
+          className="ap-tabs"
+          style={{
+            display: 'flex',
+            gap: '0.45rem',
+            overflowX: 'auto',
+            paddingBottom: '2px',
+            width: '100%',
+            alignItems: 'center',
+          }}
+        >
           {tabs.map((tab) => {
-            const isActive = activeTabKey === tab.key || location.pathname === tab.route
+            const isActive = currentActiveKey === tab.key || location.pathname === tab.route
             return (
               <button
                 key={tab.key}
                 type="button"
                 className={`ap-tab ${isActive ? 'ap-tab--active' : ''}`}
                 style={{
-                  borderRadius: '14px',
-                  padding: '0.45rem 0.95rem',
-                  fontSize: '0.82rem',
+                  borderRadius: '12px',
+                  padding: '0.4rem 0.9rem',
+                  minHeight: '2.2rem',
+                  fontSize: '0.81rem',
                   fontWeight: isActive ? '800' : '600',
                   color: isActive ? '#c60016' : '#475569',
                   background: isActive ? '#fef2f2' : '#ffffff',
                   border: isActive ? '1.5px solid #c60016' : '1px solid #e2e8f0',
-                  boxShadow: isActive ? '0 2px 8px rgba(198, 0, 22, 0.12)' : 'none',
+                  boxShadow: isActive ? '0 2px 6px rgba(198, 0, 22, 0.12)' : 'none',
                   cursor: 'pointer',
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.45rem',
                   transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap',
                 }}
                 onClick={() => navigate(tab.route)}
               >
-                <span className="ap-tab-icon" style={{ color: isActive ? '#c60016' : '#64748b' }}>{tab.icon}</span>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: isActive ? '#c60016' : '#64748b',
+                    fontSize: '0.86rem',
+                    opacity: 1,
+                    visibility: 'visible',
+                    lineHeight: 1,
+                  }}
+                >
+                  {tab.icon}
+                </span>
                 <span>{tab.label}</span>
               </button>
             )

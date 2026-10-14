@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   FaRegCircle,
   FaCheckCircle,
@@ -61,6 +61,11 @@ export default function TaskInfoLeftPanel({
     if (task.dueDate) setEditDueDate(String(task.dueDate).slice(0, 10))
   }, [task.startDate, task.dueDate])
 
+  useEffect(() => {
+    setTitleValue(task.title || '')
+    setDescValue(task.description || '')
+  }, [task.id, task.legacyId, task._id, task.title, task.description])
+
   const [showCrmModal, setShowCrmModal] = useState(false)
   const [crmLinks, setCrmLinks] = useState({ accounts: [], deals: [], quotations: [] })
   const [activeDropdownField, setActiveDropdownField] = useState(null)
@@ -77,12 +82,218 @@ export default function TaskInfoLeftPanel({
               accounts: data.accounts || [],
               deals: data.deals || [],
               quotations: data.quotations || [],
+              taskLinks: data.taskLinks || [],
             })
           }
         })
         .catch(() => {})
     }
   }, [showCrmModal, crmLinks.accounts.length])
+
+  // Pre-indexed lookup HashMaps for O(1) instant cross-referencing between CRM records
+  const lookupMaps = useMemo(() => {
+    const accById = new Map()
+    const accByNum = new Map()
+    const dealByAccId = new Map()
+    const dealById = new Map()
+    const dealByNum = new Map()
+    const quoteByDealId = new Map()
+    const quoteByAccId = new Map()
+    const quoteById = new Map()
+    const quoteByNum = new Map()
+
+    ;(crmLinks.accounts || []).forEach((a) => {
+      const id = String(a.id || a.legacyId || '')
+      const num = String(a.accountNumber || a.accountNo || id || '')
+      if (id) accById.set(id, a)
+      if (num) accByNum.set(num.toLowerCase(), a)
+    })
+
+    ;(crmLinks.deals || []).forEach((d) => {
+      const id = String(d.id || d.legacyId || '')
+      const num = String(d.dealNumber || id || '')
+      const accId = String(d.accountId || '')
+      if (id) dealById.set(id, d)
+      if (num) dealByNum.set(num.toLowerCase(), d)
+      if (accId) dealByAccId.set(accId, d)
+    })
+
+    ;(crmLinks.quotations || []).forEach((q) => {
+      const id = String(q.id || q.legacyId || '')
+      const num = String(q.quotationNumber || q.quoteNumber || id || '')
+      const dId = String(q.dealId || '')
+      const aId = String(q.accountId || '')
+      if (id) quoteById.set(id, q)
+      if (num) quoteByNum.set(num.toLowerCase(), q)
+      if (dId) quoteByDealId.set(dId, q)
+      if (aId) quoteByAccId.set(aId, q)
+    })
+
+    ;(crmLinks.taskLinks || []).forEach((tl) => {
+      if (tl.dealId && tl.accountId && !dealByAccId.has(tl.accountId)) {
+        dealByAccId.set(tl.accountId, {
+          id: tl.projectId,
+          dealNumber: tl.dealId,
+          dealName: tl.dealName,
+          accountId: tl.accountId,
+          accountName: tl.accountName,
+        })
+      }
+      if (tl.quotationNumber && tl.dealId && !quoteByDealId.has(tl.dealId)) {
+        quoteByDealId.set(tl.dealId, {
+          quotationNumber: tl.quotationNumber,
+          dealId: tl.dealId,
+          accountId: tl.accountId,
+          title: tl.dealName || tl.accountName,
+        })
+      }
+    })
+
+    return {
+      accById,
+      accByNum,
+      dealByAccId,
+      dealById,
+      dealByNum,
+      quoteByDealId,
+      quoteByAccId,
+      quoteById,
+      quoteByNum,
+    }
+  }, [crmLinks])
+
+  // Cross-fill handlers for real-time multi-field synchronization
+  const handleSelectDeal = (deal) => {
+    const updates = {
+      projectId: deal.id,
+      projectName: deal.dealName,
+      dealId: deal.dealNumber || deal.id,
+      dealName: deal.dealName,
+    }
+
+    // 1. Cross-fill Account (Lead)
+    const accId = String(deal.accountId || '')
+    const matchingAcc = lookupMaps.accById.get(accId)
+      || lookupMaps.accByNum.get(accId.toLowerCase())
+      || (crmLinks.accounts || []).find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+
+    if (matchingAcc) {
+      updates.accountId = matchingAcc.accountNumber || matchingAcc.id
+      updates.accountName = matchingAcc.accountName
+    } else if (deal.accountName) {
+      updates.accountId = deal.accountId || 'acc_linked'
+      updates.accountName = deal.accountName
+    }
+
+    // 2. Cross-fill Quotation
+    const dIdStr = String(deal.id)
+    const dNumStr = String(deal.dealNumber || '')
+    const matchingQuote = lookupMaps.quoteByDealId.get(dIdStr)
+      || lookupMaps.quoteByDealId.get(dNumStr)
+      || (crmLinks.quotations || []).find((q) => String(q.dealId) === dIdStr || String(q.dealId) === dNumStr)
+
+    if (matchingQuote) {
+      updates.quotationId = matchingQuote.quotationNumber || matchingQuote.id
+      updates.quotationNumber = matchingQuote.quotationNumber
+    }
+
+    onUpdateTaskField(updates)
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
+
+  const handleSelectAccount = (acc) => {
+    const accId = String(acc.id || acc.legacyId || acc.accountNumber || '')
+    const accNum = acc.accountNumber || acc.accountNo || accId
+    const updates = {
+      accountId: accNum,
+      accountName: acc.accountName,
+    }
+
+    // 1. Cross-fill Deal / Project
+    const matchingDeal = lookupMaps.dealByAccId.get(accId)
+      || lookupMaps.dealByAccId.get(String(accNum))
+      || (crmLinks.deals || []).find((d) => String(d.accountId) === accId || String(d.accountId) === String(accNum))
+
+    if (matchingDeal) {
+      updates.projectId = matchingDeal.id
+      updates.projectName = matchingDeal.dealName
+      updates.dealId = matchingDeal.dealNumber || matchingDeal.id
+      updates.dealName = matchingDeal.dealName
+
+      // Cross-fill Quotation for this deal
+      const matchingQuote = lookupMaps.quoteByDealId.get(String(matchingDeal.id))
+        || lookupMaps.quoteByDealId.get(String(matchingDeal.dealNumber || ''))
+        || lookupMaps.quoteByAccId.get(accId)
+        || (crmLinks.quotations || []).find((q) => String(q.dealId) === String(matchingDeal.id) || String(q.accountId) === accId)
+
+      if (matchingQuote) {
+        updates.quotationId = matchingQuote.quotationNumber || matchingQuote.id
+        updates.quotationNumber = matchingQuote.quotationNumber
+      }
+    } else {
+      const matchingQuote = lookupMaps.quoteByAccId.get(accId)
+        || (crmLinks.quotations || []).find((q) => String(q.accountId) === accId)
+      if (matchingQuote) {
+        updates.quotationId = matchingQuote.quotationNumber || matchingQuote.id
+        updates.quotationNumber = matchingQuote.quotationNumber
+      }
+    }
+
+    onUpdateTaskField(updates)
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
+
+  const handleSelectQuotation = (quote) => {
+    const updates = {
+      quotationId: quote.quotationNumber || quote.id,
+      quotationNumber: quote.quotationNumber,
+    }
+
+    // 1. Cross-fill Deal / Project
+    const dIdStr = String(quote.dealId || '')
+    const matchingDeal = lookupMaps.dealById.get(dIdStr)
+      || lookupMaps.dealByNum.get(dIdStr.toLowerCase())
+      || (crmLinks.deals || []).find((d) => String(d.id) === dIdStr || String(d.dealNumber) === dIdStr)
+
+    if (matchingDeal) {
+      updates.projectId = matchingDeal.id
+      updates.projectName = matchingDeal.dealName
+      updates.dealId = matchingDeal.dealNumber || matchingDeal.id
+      updates.dealName = matchingDeal.dealName
+
+      const accId = String(matchingDeal.accountId || quote.accountId || '')
+      const matchingAcc = lookupMaps.accById.get(accId)
+        || lookupMaps.accByNum.get(accId.toLowerCase())
+        || (crmLinks.accounts || []).find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+
+      if (matchingAcc) {
+        updates.accountId = matchingAcc.accountNumber || matchingAcc.id
+        updates.accountName = matchingAcc.accountName
+      } else if (matchingDeal.accountName || quote.accountName) {
+        updates.accountId = accId || 'acc_linked'
+        updates.accountName = matchingDeal.accountName || quote.accountName
+      }
+    } else if (quote.accountId) {
+      const accId = String(quote.accountId)
+      const matchingAcc = lookupMaps.accById.get(accId)
+        || lookupMaps.accByNum.get(accId.toLowerCase())
+        || (crmLinks.accounts || []).find((a) => String(a.id) === accId || String(a.accountNumber) === accId)
+
+      if (matchingAcc) {
+        updates.accountId = matchingAcc.accountNumber || matchingAcc.id
+        updates.accountName = matchingAcc.accountName
+      } else if (quote.accountName) {
+        updates.accountId = accId
+        updates.accountName = quote.accountName
+      }
+    }
+
+    onUpdateTaskField(updates)
+    setActiveDropdownField(null)
+    setDropdownSearch('')
+  }
 
   useEffect(() => {
     const handleOutside = (e) => {
@@ -223,157 +434,6 @@ export default function TaskInfoLeftPanel({
               backgroundColor: 'transparent',
             }}
           />
-        </div>
-
-        {/* Description Box */}
-        <div>
-          <textarea
-            rows={3}
-            value={descValue}
-            onChange={(e) => setDescValue(e.target.value)}
-            onBlur={handleDescBlur}
-            placeholder="The user interface (UI) is a critical part of any software product..."
-            style={{
-              width: '100%',
-              border: '1px solid #e2e8f0',
-              borderRadius: '10px',
-              padding: '0.75rem 0.9rem',
-              fontSize: '0.84rem',
-              color: '#334155',
-              backgroundColor: '#fafbfc',
-              outline: 'none',
-              resize: 'vertical',
-              lineHeight: '1.5',
-              fontFamily: 'inherit',
-            }}
-          />
-        </div>
-
-        {/* Dates & Recurrence */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.76rem', color: '#475569' }}>
-          <div
-            onClick={() => setShowDatePicker(!showDatePicker)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              cursor: 'pointer',
-              padding: '3px 8px',
-              borderRadius: '6px',
-              backgroundColor: showDatePicker ? '#fff1f2' : 'transparent',
-              border: showDatePicker ? '1px solid #fecdd3' : '1px solid transparent',
-              transition: 'all 0.15s ease',
-            }}
-            title="Click calendar icon to update Start Date and Target Due Date"
-          >
-            <FaCalendarAlt style={{ color: '#c60016' }} />
-            <span style={{ fontWeight: '600' }}>{dateRangeLabel}</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#c60016' }}>
-            <FaSyncAlt style={{ fontSize: '0.7rem' }} />
-            <span style={{ fontWeight: '600' }}>Yearly</span>
-          </div>
-
-          {/* Interactive Date Editor Popover */}
-          {showDatePicker && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                left: 0,
-                backgroundColor: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '10px',
-                boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
-                padding: '0.85rem',
-                zIndex: 100,
-                width: '260px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.65rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.35rem' }}>
-                <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#1e293b' }}>Update Task Dates</span>
-                <button
-                  type="button"
-                  onClick={() => setShowDatePicker(false)}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px' }}
-                >
-                  <FaTimes style={{ fontSize: '0.75rem' }} />
-                </button>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                  Start Date
-                </label>
-                <input
-                  type="date"
-                  value={editStartDate}
-                  onChange={(e) => setEditStartDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.35rem 0.5rem',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.78rem',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
-                  Target Due Date
-                </label>
-                <input
-                  type="date"
-                  value={editDueDate}
-                  onChange={(e) => setEditDueDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.35rem 0.5rem',
-                    borderRadius: '6px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.78rem',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.2rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowDatePicker(false)}
-                  style={{ padding: '3px 8px', fontSize: '0.72rem', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (editStartDate) onUpdateTaskField('startDate', editStartDate)
-                    if (editDueDate) onUpdateTaskField('dueDate', editDueDate)
-                    setShowDatePicker(false)
-                  }}
-                  style={{
-                    padding: '4px 10px',
-                    fontSize: '0.74rem',
-                    fontWeight: '700',
-                    backgroundColor: '#c60016',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Update
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* CRM Linked Records Badges & Searchable Dropdown Selector */}
@@ -591,13 +651,7 @@ export default function TaskInfoLeftPanel({
                         .map((deal) => (
                           <div
                             key={deal.id}
-                            onClick={() => {
-                              onUpdateTaskField('projectId', deal.id)
-                              onUpdateTaskField('projectName', deal.dealName)
-                              onUpdateTaskField('dealId', deal.dealNumber || deal.id)
-                              onUpdateTaskField('dealName', deal.dealName)
-                              setActiveDropdownField(null)
-                            }}
+                            onClick={() => handleSelectDeal(deal)}
                             style={{
                               padding: '0.45rem 0.6rem',
                               borderRadius: '6px',
@@ -680,11 +734,7 @@ export default function TaskInfoLeftPanel({
                         .map((acc) => (
                           <div
                             key={acc.id || acc.accountNumber}
-                            onClick={() => {
-                              onUpdateTaskField('accountId', acc.accountNumber || acc.id)
-                              onUpdateTaskField('accountName', acc.accountName)
-                              setActiveDropdownField(null)
-                            }}
+                            onClick={() => handleSelectAccount(acc)}
                             style={{
                               padding: '0.45rem 0.6rem',
                               borderRadius: '6px',
@@ -767,11 +817,7 @@ export default function TaskInfoLeftPanel({
                         .map((quote) => (
                           <div
                             key={quote.id || quote.quotationNumber}
-                            onClick={() => {
-                              onUpdateTaskField('quotationId', quote.quotationNumber || quote.id)
-                              onUpdateTaskField('quotationNumber', quote.quotationNumber)
-                              setActiveDropdownField(null)
-                            }}
+                            onClick={() => handleSelectQuotation(quote)}
                             style={{
                               padding: '0.45rem 0.6rem',
                               borderRadius: '6px',
@@ -794,6 +840,161 @@ export default function TaskInfoLeftPanel({
           )}
         </div>
 
+        {/* Description Box */}
+        <div>
+          <textarea
+            rows={3}
+            value={descValue}
+            onChange={(e) => setDescValue(e.target.value)}
+            onBlur={handleDescBlur}
+            placeholder="The user interface (UI) is a critical part of any software product..."
+            style={{
+              width: '100%',
+              border: '1px solid #e2e8f0',
+              borderRadius: '10px',
+              padding: '0.75rem 0.9rem',
+              fontSize: '0.84rem',
+              color: '#334155',
+              backgroundColor: '#fafbfc',
+              outline: 'none',
+              resize: 'vertical',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
+
+        {/* Dates & Recurrence */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.76rem', color: '#475569' }}>
+          <div
+            onClick={() => setShowDatePicker(!showDatePicker)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              cursor: 'pointer',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              backgroundColor: showDatePicker ? '#fff1f2' : 'transparent',
+              border: showDatePicker ? '1px solid #fecdd3' : '1px solid transparent',
+              transition: 'all 0.15s ease',
+            }}
+            title="Click calendar icon to update Start Date and Target Due Date"
+          >
+            <FaCalendarAlt style={{ color: '#c60016' }} />
+            <span style={{ fontWeight: '600' }}>{dateRangeLabel}</span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#c60016' }}>
+            <FaSyncAlt style={{ fontSize: '0.7rem' }} />
+            <span style={{ fontWeight: '600' }}>Yearly</span>
+          </div>
+
+          {/* Interactive Date Editor Popover */}
+          {showDatePicker && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                padding: '0.85rem',
+                zIndex: 100,
+                width: '260px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.65rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#1e293b' }}>Update Task Dates</span>
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(false)}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px' }}
+                >
+                  <FaTimes style={{ fontSize: '0.75rem' }} />
+                </button>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={editStartDate}
+                  onChange={(e) => setEditStartDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
+                  Target Due Date
+                </label>
+                <input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.2rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(false)}
+                  style={{ padding: '3px 8px', fontSize: '0.72rem', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const dateUpdates = {}
+                    if (editStartDate) dateUpdates.startDate = editStartDate
+                    if (editDueDate) dateUpdates.dueDate = editDueDate
+                    if (Object.keys(dateUpdates).length > 0) {
+                      onUpdateTaskField(dateUpdates)
+                    }
+                    setShowDatePicker(false)
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '0.74rem',
+                    fontWeight: '700',
+                    backgroundColor: '#c60016',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Assigned Team Members */}
         <TaskAssigneePills
           assignees={
@@ -809,6 +1010,7 @@ export default function TaskInfoLeftPanel({
         {/* Subtasks Section */}
         <TaskSubtasksSection
           subtasks={Array.isArray(task.subtasks) ? task.subtasks : []}
+          availableUsers={availableUsers}
           onAddSubtask={onAddSubtask}
           onToggleSubtask={onToggleSubtask}
           onDeleteSubtask={onDeleteSubtask}

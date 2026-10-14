@@ -124,68 +124,6 @@ export default function TaskHeaderMeta({
           </span>
         </div>
 
-        {/* Action Icons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          <button
-            type="button"
-            title="Time Tracker"
-            style={{
-              background: '#fff1f2',
-              border: '1px solid #fecdd3',
-              color: '#c60016',
-              borderRadius: '6px',
-              width: '26px',
-              height: '26px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.72rem',
-            }}
-          >
-            <FaRegClock />
-          </button>
-          <button
-            type="button"
-            title="Workflow Link"
-            style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              color: '#64748b',
-              borderRadius: '6px',
-              width: '26px',
-              height: '26px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.72rem',
-            }}
-          >
-            <FaProjectDiagram />
-          </button>
-          <button
-            type="button"
-            title="Copy Link"
-            onClick={onCopyLink}
-            style={{
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              color: '#64748b',
-              borderRadius: '6px',
-              width: '26px',
-              height: '26px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '0.72rem',
-            }}
-          >
-            <FaLink />
-          </button>
-        </div>
-
         {/* Status Dropdown Pill */}
         <div style={{ position: 'relative' }}>
           <button

@@ -116,7 +116,11 @@ export default function TaskDetailsWorkspaceModal({
   if (!isOpen || !activeTask) return null
 
   // Task Navigation (< Prev, Next >)
-  const currentIndex = allTasks.findIndex((t) => (t.id || t.legacyId) === taskId)
+  const currentIndex = allTasks.findIndex(
+    (t) =>
+      String(t.id || t.legacyId || t._id) === String(taskId) ||
+      (t._id && String(t._id) === String(taskId))
+  )
 
   const handlePrevTask = () => {
     if (currentIndex > 0) {
@@ -134,22 +138,32 @@ export default function TaskDetailsWorkspaceModal({
     }
   }
 
-  // Generic Task Field Update with Optimistic UI + MongoDB Persistence
-  const handleUpdateTaskField = async (field, value) => {
+  // Generic Task Field Update with Optimistic UI + MongoDB Persistence (supports single or multi-field atomic update)
+  const handleUpdateTaskField = async (fieldOrObject, value) => {
+    const updates = typeof fieldOrObject === 'object' && fieldOrObject !== null
+      ? fieldOrObject
+      : { [fieldOrObject]: value }
+
     const previous = { ...activeTask }
-    const updated = { ...activeTask, [field]: value }
+    const updated = { ...activeTask, ...updates }
 
     // Optimistic UI update
     setActiveTask(updated)
     onUpdateTask?.(updated)
 
     try {
-      await taskApi.updateTask(taskId, { [field]: value })
-      // Refresh activity timeline from MongoDB
-      const freshActivity = await taskApi.getActivity(taskId).catch(() => [])
+      await taskApi.updateTask(taskId, updates)
+      // Refresh activity timeline and details from MongoDB
+      const [freshActivity, freshDetails] = await Promise.all([
+        taskApi.getActivity(taskId).catch(() => []),
+        taskApi.getTaskDetails(taskId).catch(() => null),
+      ])
       setActivities(Array.isArray(freshActivity) ? freshActivity : [])
+      if (freshDetails && (freshDetails.id || freshDetails._id)) {
+        setActiveTask((prev) => ({ ...prev, ...freshDetails }))
+      }
     } catch (err) {
-      console.error(`Failed to update ${field} in MongoDB:`, err)
+      console.error('Failed to update task fields in MongoDB:', err)
       // Rollback
       setActiveTask(previous)
       onUpdateTask?.(previous)
@@ -330,6 +344,33 @@ export default function TaskDetailsWorkspaceModal({
     }
   }
 
+  // Edit Comment in MongoDB task_comments
+  const handleEditComment = async (commentId, newText) => {
+    try {
+      await taskApi.editComment(taskId, commentId, { comment: newText })
+      const freshList = await taskApi.getComments(taskId)
+      setComments(Array.isArray(freshList) ? freshList : [])
+
+      const freshActivity = await taskApi.getActivity(taskId).catch(() => [])
+      setActivities(Array.isArray(freshActivity) ? freshActivity : [])
+    } catch (err) {
+      console.error('Failed to edit comment in MongoDB:', err)
+    }
+  }
+
+  // Delete Comment in MongoDB task_comments
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await taskApi.deleteComment(taskId, commentId)
+      setComments((prev) => prev.filter((c) => (c._id || c.id) !== commentId))
+
+      const freshActivity = await taskApi.getActivity(taskId).catch(() => [])
+      setActivities(Array.isArray(freshActivity) ? freshActivity : [])
+    } catch (err) {
+      console.error('Failed to delete comment in MongoDB:', err)
+    }
+  }
+
   // File Upload to MongoDB Attachments
   const handleUploadFile = async (file) => {
     if (!file || isUploadingFile) return
@@ -471,6 +512,8 @@ export default function TaskDetailsWorkspaceModal({
             setActiveTab={setActiveTab}
             comments={comments}
             onAddComment={handleAddComment}
+            onEditComment={handleEditComment}
+            onDeleteComment={handleDeleteComment}
             attachments={attachments}
             onUploadFile={handleUploadFile}
             onDeleteFile={handleDeleteFile}

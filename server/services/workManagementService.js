@@ -160,6 +160,21 @@ const getOverviewData = async (actor) => {
       )
     }).length
 
+    const activeTasksList = userTasks
+      .filter((t) => !['completed', 'closed'].includes(String(t.status || '').toLowerCase()))
+      .map((t) => ({
+        id: t.legacyId || t.id || t._id,
+        _id: t._id,
+        title: t.title || 'Untitled Task',
+        priority: t.priority || 'medium',
+        dueDate: t.dueDate || null,
+        status: t.status || 'open',
+        estimatedMinutes: Number(t.estimatedMinutes) || 120,
+        projectName: t.projectName || (t.projectId ? `Project ${t.projectId}` : null),
+        dealName: t.dealName || (t.dealId ? `Deal ${t.dealId}` : null),
+        accountName: t.accountName || (t.accountId ? `Account ${t.accountId}` : null),
+      }))
+
     return {
       userId: u.legacyId || u.id,
       name: u.name || u.username || email,
@@ -176,6 +191,7 @@ const getOverviewData = async (actor) => {
       leadsCount: userLeadsCount,
       dealsCount: userDealsCount,
       slaComplianceRate: userTasks.length > 0 ? Math.round(((userTasks.length - userOverdue) / userTasks.length) * 100) : 100,
+      tasks: activeTasksList,
     }
   })
 
@@ -418,9 +434,368 @@ const logTimeEntry = async (actor, payload) => {
  * 4. Workload Capacity Matrix
  */
 const getTeamWorkload = async (actor) => {
+  const WorkloadSetting = getMongoModel('team_workload_settings')
   const overview = await getOverviewData(actor)
+  const settings = await WorkloadSetting.find({}).lean().catch(() => [])
+  const settingsMap = new Map()
+  settings.forEach((s) => {
+    if (s.userId) settingsMap.set(String(s.userId), s)
+    if (s.userEmail) settingsMap.set(String(s.userEmail).toLowerCase(), s)
+  })
+
+  const enrichedMembers = (overview.userPerformanceSummary || []).map((m) => {
+    const s = settingsMap.get(String(m.userId)) || settingsMap.get(String(m.email).toLowerCase())
+    const weeklyHours = s?.weeklyCapacityHours || 40
+    const workloadPercent = Math.min(Math.round(((m.estimatedHours || 0) / weeklyHours) * 100), 200)
+    const isOverloaded = workloadPercent > 100
+    const isOptimal = workloadPercent >= 50 && workloadPercent <= 100
+    return {
+      ...m,
+      weeklyCapacityHours: weeklyHours,
+      workloadPercent,
+      utilizationStatus: isOverloaded ? 'overloaded' : isOptimal ? 'optimal' : 'available',
+      skills: s?.skills || [],
+      isAvailable: s?.isAvailable !== false,
+      notes: s?.notes || '',
+    }
+  })
+
+  const departments = Array.from(new Set(enrichedMembers.map((m) => m.department).filter(Boolean)))
+
   return {
-    members: overview.userPerformanceSummary,
+    members: enrichedMembers,
+    departments,
+    totalMembers: enrichedMembers.length,
+    overloadedCount: enrichedMembers.filter((m) => m.utilizationStatus === 'overloaded').length,
+    optimalCount: enrichedMembers.filter((m) => m.utilizationStatus === 'optimal').length,
+    availableCount: enrichedMembers.filter((m) => m.utilizationStatus === 'available').length,
+  }
+}
+
+const reassignWorkloadTask = async (actor, payload) => {
+  const { taskId, targetUserEmail, targetUserId } = payload
+  if (!taskId || (!targetUserEmail && !targetUserId)) {
+    throw new Error('Task ID and target user are required.')
+  }
+
+  const numId = Number(taskId) || -1
+  const isOid = mongoose.Types.ObjectId.isValid(taskId)
+  const taskQuery = {
+    $or: [{ id: String(taskId) }, { legacyId: numId }, ...(isOid ? [{ _id: taskId }] : [])],
+  }
+
+  const existingTask = await Task.findOne(taskQuery)
+  if (!existingTask) {
+    throw new Error('Task not found')
+  }
+
+  const previousAssignee = existingTask.assignedTo || existingTask.assignedToUserEmails?.[0] || 'Unassigned'
+  const newEmail = String(targetUserEmail || '').toLowerCase().trim()
+
+  existingTask.assignedTo = newEmail || String(targetUserId)
+  existingTask.assignedToUserEmails = newEmail ? [newEmail] : []
+  existingTask.updatedAt = new Date()
+  await existingTask.save()
+
+  // Audit log
+  try {
+    const { getNextLegacyId } = require('../models/mongoModels')
+    await AuditLog.create({
+      legacyId: await getNextLegacyId('audit_log'),
+      entityType: 'task',
+      entityId: String(existingTask._id),
+      action: 'reassign',
+      actorId: actor?.id || actor?.legacyId,
+      actorName: actor?.name || actor?.username || 'Admin',
+      changes: {
+        before: { assignedTo: previousAssignee },
+        after: { assignedTo: newEmail || String(targetUserId) },
+      },
+      createdAt: new Date(),
+    })
+  } catch (_) {}
+
+  return { success: true, task: existingTask }
+}
+
+const updateWorkloadSetting = async (actor, userId, settingPayload) => {
+  const WorkloadSetting = getMongoModel('team_workload_settings')
+  const { weeklyCapacityHours, isAvailable, skills, notes, userEmail } = settingPayload
+
+  const updated = await WorkloadSetting.findOneAndUpdate(
+    { $or: [{ userId: String(userId) }, { userEmail: String(userEmail || '').toLowerCase() }] },
+    {
+      $set: {
+        userId: String(userId),
+        userEmail: String(userEmail || '').toLowerCase(),
+        weeklyCapacityHours: Number(weeklyCapacityHours) || 40,
+        isAvailable: isAvailable !== false,
+        skills: Array.isArray(skills) ? skills : [],
+        notes: String(notes || ''),
+        updatedAt: new Date(),
+      },
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  ).lean()
+
+  return updated
+}
+
+/**
+ * 4.1 Detailed User Workload & Performance Analytics
+ */
+const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month', customStart = null, customEnd = null) => {
+  const companyId = actor?.companyId || 1
+  const actorEmail = getUserEmail(actor)
+  const isAdmin = isPrivileged(actor)
+
+  let emailToInspect = targetUserEmail ? String(targetUserEmail).trim().toLowerCase() : actorEmail
+  if (!isAdmin) {
+    emailToInspect = actorEmail // non-admins can only view their own analytics
+  }
+
+  // Find user in users collection
+  const userDoc = await User.findOne({
+    $or: [
+      { email: { $regex: new RegExp(`^${emailToInspect}$`, 'i') } },
+      { username: emailToInspect },
+    ],
+  }).lean()
+
+  const userName = userDoc?.name || userDoc?.username || emailToInspect
+  const userRole = userDoc?.role || 'user'
+  const userDept = userDoc?.department || 'Operations'
+  const userLegacyId = userDoc?.legacyId || userDoc?.id
+
+  // Date boundaries based on period
+  const now = new Date()
+  let periodStart = null
+  let periodEnd = new Date()
+
+  if (period === 'today') {
+    periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+    periodEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+  } else if (period === 'yesterday') {
+    const y = new Date(now)
+    y.setDate(y.getDate() - 1)
+    periodStart = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 0, 0, 0, 0)
+    periodEnd = new Date(y.getFullYear(), y.getMonth(), y.getDate(), 23, 59, 59, 999)
+  } else if (period === 'week') {
+    const day = now.getDay()
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+    periodStart = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0, 0)
+    periodEnd = new Date(now.getFullYear(), now.getMonth(), diff + 6, 23, 59, 59, 999)
+  } else if (period === 'month') {
+    periodStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+    periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+  } else if (period === 'custom' && customStart) {
+    periodStart = new Date(customStart)
+    periodEnd = customEnd ? new Date(customEnd) : new Date()
+  }
+
+  const taskQuery = {
+    companyId,
+    frontendDeleted: { $ne: true },
+    $or: [
+      { assignedTo: { $regex: new RegExp(`^${emailToInspect}$`, 'i') } },
+      { assignedToUserEmails: { $in: [emailToInspect] } },
+      ...(userLegacyId ? [{ assignedTo: String(userLegacyId) }] : []),
+    ],
+  }
+
+  const userTasks = await Task.find(taskQuery).sort({ dueDate: 1, updatedAt: -1 }).lean()
+
+  const isCompletedStatus = (status) => ['completed', 'closed'].includes(String(status || '').toLowerCase().trim())
+
+  // Completed in period
+  const completedTasksList = userTasks.filter((t) => {
+    if (!isCompletedStatus(t.status)) return false
+    if (!periodStart) return true
+    const compDate = t.completedAt ? new Date(t.completedAt) : (t.updatedAt ? new Date(t.updatedAt) : null)
+    if (!compDate) return true
+    return compDate >= periodStart && compDate <= periodEnd
+  })
+
+  const incompleteTasksList = userTasks.filter((t) => !isCompletedStatus(t.status))
+
+  const overdueTasksList = incompleteTasksList.filter((t) => {
+    if (!t.dueDate) return false
+    return new Date(t.dueDate) < now
+  })
+
+  const totalTasksCount = userTasks.length
+  const completedTasksCount = completedTasksList.length
+  const incompleteTasksCount = incompleteTasksList.length
+  const overdueTasksCount = overdueTasksList.length
+
+  // Priority Distribution
+  let lowPriorityCount = 0
+  let mediumPriorityCount = 0
+  let highPriorityCount = 0
+
+  userTasks.forEach((t) => {
+    const prio = String(t.priority || '').toLowerCase().trim()
+    if (prio === 'low') lowPriorityCount++
+    else if (prio === 'medium') mediumPriorityCount++
+    else if (['high', 'urgent', 'critical'].includes(prio)) highPriorityCount++
+    else mediumPriorityCount++
+  })
+
+  // Performance Analysis
+  let beforeTimeCount = 0
+  let onTrackCount = 0
+  let delayedCount = 0
+
+  userTasks.forEach((t) => {
+    const completed = isCompletedStatus(t.status)
+    const dueDate = t.dueDate ? new Date(t.dueDate) : null
+    const compDate = t.completedAt ? new Date(t.completedAt) : (t.updatedAt ? new Date(t.updatedAt) : null)
+
+    if (completed) {
+      if (!dueDate) {
+        onTrackCount++
+      } else if (compDate && compDate < dueDate) {
+        beforeTimeCount++
+      } else if (compDate && compDate.toDateString() === dueDate.toDateString()) {
+        onTrackCount++
+      } else {
+        delayedCount++
+      }
+    } else {
+      if (!dueDate) {
+        onTrackCount++
+      } else if (dueDate < now) {
+        delayedCount++
+      } else {
+        onTrackCount++
+      }
+    }
+  })
+
+  const totalEvaluated = (beforeTimeCount + onTrackCount + delayedCount) || 1
+  const onTrackPercent = Math.round((onTrackCount / totalEvaluated) * 100)
+  const beforeTimePercent = Math.round((beforeTimeCount / totalEvaluated) * 100)
+  const delayedPercent = Math.round((delayedCount / totalEvaluated) * 100)
+
+  // Status Distribution for Incomplete Tasks
+  const statusCounts = {}
+  incompleteTasksList.forEach((t) => {
+    let s = String(t.status || 'open').toLowerCase().replace(/[\s-]+/g, '_')
+    let displayStatus = 'Pending'
+    if (s === 'open' || s === 'pending') displayStatus = 'Pending'
+    else if (s === 'in_progress' || s === 'processing') displayStatus = 'In Progress'
+    else if (s === 'review' || s === 'need_approval') displayStatus = 'Need Approval'
+    else if (s === 'client' || s === 'all_from_client') displayStatus = 'All From Client'
+    else if (s === 'blocked') displayStatus = 'Blocked'
+    else displayStatus = s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+
+    statusCounts[displayStatus] = (statusCounts[displayStatus] || 0) + 1
+  })
+
+  const defaultStatusKeys = ['Pending', 'In Progress', 'Need Approval', 'Blocked']
+  defaultStatusKeys.forEach((k) => {
+    if (!statusCounts[k]) statusCounts[k] = 0
+  })
+
+  const statusDistribution = Object.keys(statusCounts).map((k) => ({
+    status: k,
+    count: statusCounts[k],
+  }))
+
+  // Project Distribution
+  const projectCounts = {}
+  incompleteTasksList.forEach((t) => {
+    const pName = t.projectName || (t.projectId ? `Project ${t.projectId}` : 'General Tasks')
+    projectCounts[pName] = (projectCounts[pName] || 0) + 1
+  })
+  const projectDistribution = Object.keys(projectCounts).map((p) => ({
+    project: p,
+    count: projectCounts[p],
+  }))
+
+  // Capacity calculation from team_workload_settings
+  const WorkloadSetting = getMongoModel('team_workload_settings')
+  const setting = await WorkloadSetting.findOne({
+    $or: [{ userEmail: emailToInspect }, { userId: String(userLegacyId || -1) }],
+  }).lean().catch(() => null)
+
+  const weeklyCapacityHours = setting?.weeklyCapacityHours || 40
+  const estimatedHours = Math.round(
+    incompleteTasksList.reduce((sum, t) => sum + ((Number(t.estimatedMinutes) || 120) / 60), 0)
+  )
+  const actualHours = Math.round(
+    userTasks.reduce((sum, t) => sum + ((Number(t.actualMinutes) || 0) / 60), 0)
+  )
+  const utilizationPercent = Math.min(Math.round((estimatedHours / weeklyCapacityHours) * 100), 200)
+  const remainingHours = Math.max(0, weeklyCapacityHours - estimatedHours)
+  const isOverloaded = utilizationPercent > 100
+  const isOptimal = utilizationPercent >= 50 && utilizationPercent <= 100
+  const utilizationStatus = isOverloaded ? 'overloaded' : isOptimal ? 'optimal' : 'available'
+
+  const formattedTasks = userTasks.map((t) => ({
+    id: t.legacyId || t.id || t._id,
+    _id: t._id,
+    title: t.title || 'Untitled Task',
+    status: t.status || 'open',
+    priority: t.priority || 'medium',
+    dueDate: t.dueDate || null,
+    completedAt: t.completedAt || null,
+    estimatedMinutes: Number(t.estimatedMinutes) || 120,
+    actualMinutes: Number(t.actualMinutes) || 0,
+    projectName: t.projectName || (t.projectId ? `Project ${t.projectId}` : null),
+    dealName: t.dealName || (t.dealId ? `Deal ${t.dealId}` : null),
+    accountName: t.accountName || (t.accountId ? `Account ${t.accountId}` : null),
+    assignedTo: t.assignedTo,
+    assignedToUserEmails: t.assignedToUserEmails || [],
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  }))
+
+  return {
+    user: {
+      id: userLegacyId || userDoc?._id || emailToInspect,
+      name: userName,
+      email: emailToInspect,
+      role: userRole,
+      department: userDept,
+      ownerCode: userDoc?.ownerCode || null,
+      avatar: userDoc?.avatar || null,
+      weeklyCapacityHours,
+      slaComplianceRate: totalTasksCount > 0 ? Math.round(((totalTasksCount - overdueTasksCount) / totalTasksCount) * 100) : 100,
+    },
+    summary: {
+      completedTasks: completedTasksCount,
+      incompleteTasks: incompleteTasksCount,
+      overdueTasks: overdueTasksCount,
+      totalTasks: totalTasksCount,
+    },
+    priorityDistribution: {
+      low: lowPriorityCount,
+      medium: mediumPriorityCount,
+      high: highPriorityCount,
+      total: totalTasksCount,
+    },
+    performanceDistribution: {
+      onTrack: { count: onTrackCount, percent: onTrackPercent },
+      beforeTime: { count: beforeTimeCount, percent: beforeTimePercent },
+      delayed: { count: delayedCount, percent: delayedPercent },
+    },
+    statusDistribution,
+    projectDistribution,
+    capacity: {
+      weeklyCapacityHours,
+      estimatedHours,
+      actualHours,
+      utilizationPercent,
+      remainingHours,
+      utilizationStatus,
+    },
+    tasks: formattedTasks,
+    reportingPeriod: {
+      period,
+      from: periodStart ? periodStart.toISOString() : null,
+      to: periodEnd ? periodEnd.toISOString() : null,
+    },
   }
 }
 
@@ -557,6 +932,9 @@ module.exports = {
   getTimeEntries,
   logTimeEntry,
   getTeamWorkload,
+  getUserWorkloadAnalytics,
+  reassignWorkloadTask,
+  updateWorkloadSetting,
   getApprovals,
   decideApproval,
   getWorkflows,

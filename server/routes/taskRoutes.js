@@ -178,22 +178,34 @@ const extraRoutes = (router) => {
     }
   })
 
-  // Lightweight, fast CRM workflow linking lookup endpoint
+  // Lightweight, fast CRM workflow linking lookup endpoint with complete cross-referencing
   router.get('/crm-workflow-links', async (req, res, next) => {
     try {
-      const [leads, deals, quotations] = await Promise.all([
+      const [leads, deals, quotations, taskLinks] = await Promise.all([
         Lead.find({ frontendDeleted: { $ne: true } })
           .select({ legacyId: 1, accountNumber: 1, accountNo: 1, accountName: 1, customerName: 1, 'formData.accountName': 1, 'formData.accountNumber': 1 })
           .sort({ legacyId: -1 })
           .lean(),
         Deal.find({ frontendDeleted: { $ne: true } })
-          .select({ legacyId: 1, dealNumber: 1, title: 1, dealName: 1, name: 1, accountId: 1, customerId: 1, 'data.dealNumber': 1, 'data.accountId': 1, 'data.dealName': 1, 'data.title': 1 })
+          .select({ legacyId: 1, dealNumber: 1, title: 1, dealName: 1, name: 1, accountId: 1, customerId: 1, accountName: 1, customerName: 1, 'data.dealNumber': 1, 'data.accountId': 1, 'data.accountName': 1, 'data.dealName': 1, 'data.title': 1 })
           .sort({ legacyId: -1 })
           .lean(),
         Quotation.find({ frontendDeleted: { $ne: true } })
-          .select({ legacyId: 1, quotationNumber: 1, quoteNumber: 1, title: 1, dealId: 1, accountId: 1, customerName: 1, 'data.dealId': 1, 'data.accountId': 1, 'data.quotationNumber': 1, 'data.quoteNumber': 1, 'data.title': 1 })
+          .select({ legacyId: 1, quotationNumber: 1, quoteNumber: 1, title: 1, dealId: 1, accountId: 1, dealName: 1, accountName: 1, customerName: 1, 'data.dealId': 1, 'data.accountId': 1, 'data.dealName': 1, 'data.accountName': 1, 'data.quotationNumber': 1, 'data.quoteNumber': 1, 'data.title': 1 })
           .sort({ legacyId: -1 })
           .lean(),
+        Task.find({
+          $or: [
+            { dealId: { $exists: true, $ne: null } },
+            { projectId: { $exists: true, $ne: null } },
+            { quotationNumber: { $exists: true, $ne: null } },
+          ],
+        })
+          .select({ projectId: 1, projectName: 1, dealId: 1, dealName: 1, accountId: 1, accountName: 1, quotationId: 1, quotationNumber: 1 })
+          .sort({ legacyId: -1 })
+          .limit(100)
+          .lean()
+          .catch(() => []),
       ])
 
       const formattedLeads = leads.map((l) => {
@@ -203,12 +215,31 @@ const extraRoutes = (router) => {
         return { id: String(id), accountNumber: String(num), accountName: name }
       })
 
+      const leadByNumOrId = new Map()
+      formattedLeads.forEach((l) => {
+        leadByNumOrId.set(String(l.id), l)
+        leadByNumOrId.set(String(l.accountNumber).toLowerCase(), l)
+      })
+
       const formattedDeals = deals.map((d) => {
         const id = d.legacyId || d._id
         const num = d.dealNumber || d.data?.dealNumber || `DL${id}`
         const name = d.title || d.dealName || d.name || d.data?.dealName || d.data?.title || 'Untitled Deal'
         const accId = d.accountId || d.data?.accountId || null
-        return { id: String(id), dealNumber: String(num), dealName: name, accountId: accId ? String(accId) : null }
+        const accName = d.accountName || d.customerName || d.data?.accountName || (accId ? leadByNumOrId.get(String(accId))?.accountName : null) || ''
+        return {
+          id: String(id),
+          dealNumber: String(num),
+          dealName: name,
+          accountId: accId ? String(accId) : null,
+          accountName: accName || null,
+        }
+      })
+
+      const dealByNumOrId = new Map()
+      formattedDeals.forEach((d) => {
+        dealByNumOrId.set(String(d.id), d)
+        dealByNumOrId.set(String(d.dealNumber).toLowerCase(), d)
       })
 
       const formattedQuotations = quotations.map((q) => {
@@ -216,9 +247,33 @@ const extraRoutes = (router) => {
         const num = q.quotationNumber || q.quoteNumber || q.data?.quotationNumber || q.data?.quoteNumber || `QT-${id}`
         const title = q.title || q.data?.title || q.customerName || ''
         const dId = q.dealId || q.data?.dealId || null
-        const accId = q.accountId || q.data?.accountId || null
-        return { id: String(id), quotationNumber: String(num), title, dealId: dId ? String(dId) : null, accountId: accId ? String(accId) : null }
+        let accId = q.accountId || q.data?.accountId || null
+        let matchedDeal = dId ? dealByNumOrId.get(String(dId).toLowerCase()) || dealByNumOrId.get(String(dId)) : null
+        if (!accId && matchedDeal?.accountId) {
+          accId = matchedDeal.accountId
+        }
+        const accName = q.accountName || q.data?.accountName || (accId ? leadByNumOrId.get(String(accId))?.accountName : null) || matchedDeal?.accountName || ''
+        return {
+          id: String(id),
+          quotationNumber: String(num),
+          title,
+          dealId: dId ? String(dId) : null,
+          dealName: matchedDeal?.dealName || q.dealName || q.data?.dealName || null,
+          accountId: accId ? String(accId) : null,
+          accountName: accName || null,
+        }
       })
+
+      const cleanTaskLinks = (taskLinks || []).map((tl) => ({
+        projectId: tl.projectId ? String(tl.projectId) : null,
+        projectName: tl.projectName || null,
+        dealId: tl.dealId ? String(tl.dealId) : null,
+        dealName: tl.dealName || null,
+        accountId: tl.accountId ? String(tl.accountId) : null,
+        accountName: tl.accountName || null,
+        quotationId: tl.quotationId ? String(tl.quotationId) : null,
+        quotationNumber: tl.quotationNumber || null,
+      }))
 
       res.json({
         success: true,
@@ -226,6 +281,7 @@ const extraRoutes = (router) => {
           accounts: formattedLeads,
           deals: formattedDeals,
           quotations: formattedQuotations,
+          taskLinks: cleanTaskLinks,
         },
       })
     } catch (err) {
@@ -233,12 +289,33 @@ const extraRoutes = (router) => {
     }
   })
 
-  // Task Comments API (Jira ticket style MongoDB synchronized comments)
+  // Task Comments API (MongoDB task_comments collection - zero companyId dependency)
   router.get('/:id/comments', async (req, res, next) => {
     try {
       const taskId = String(req.params.id)
+      const numId = Number(taskId) || -1
+      const isOid = mongoose.Types.ObjectId.isValid(taskId)
+
+      const taskDoc = await Task.findOne({
+        $or: [
+          { id: taskId },
+          { legacyId: numId },
+          ...(isOid ? [{ _id: new mongoose.Types.ObjectId(taskId) }, { _id: taskId }] : []),
+        ],
+      }).lean().catch(() => null)
+
+      const idQueries = [{ taskId }, { taskId: numId }]
+      if (taskDoc) {
+        idQueries.push({ taskId: taskDoc._id }, { taskId: String(taskDoc._id) })
+        if (taskDoc.legacyId) idQueries.push({ taskId: taskDoc.legacyId }, { taskLegacyId: taskDoc.legacyId })
+      }
+      if (isOid) {
+        idQueries.push({ taskId: new mongoose.Types.ObjectId(taskId) })
+      }
+
       const comments = await TaskComment.find({
-        $or: [{ taskId }, { taskId: Number(taskId) || -1 }],
+        $or: idQueries,
+        isDeleted: { $ne: true },
       })
         .sort({ createdAt: 1 })
         .lean()
@@ -247,16 +324,16 @@ const extraRoutes = (router) => {
         success: true,
         data: comments.map((c) => ({
           id: c.legacyId || c._id,
+          _id: c._id,
           taskId: c.taskId,
-          projectId: c.projectId,
+          taskLegacyId: c.taskLegacyId,
           comment: c.comment,
           userEmail: c.userEmail,
           userName: c.userName,
           userId: c.userId,
-          taskDetails: c.taskDetails,
-          leadDetails: c.leadDetails,
-          dealDetails: c.dealDetails,
-          projectDetails: c.projectDetails,
+          parentCommentId: c.parentCommentId || null,
+          isEdited: Boolean(c.isEdited),
+          editedAt: c.editedAt || null,
           createdAt: c.createdAt,
           updatedAt: c.updatedAt,
         })),
@@ -269,11 +346,25 @@ const extraRoutes = (router) => {
   router.post('/:id/comments', async (req, res, next) => {
     try {
       const taskId = String(req.params.id)
-      const { comment, projectId, taskDetails: clientTaskDetails } = req.body || {}
+      const { comment, parentCommentId } = req.body || {}
       const trimmed = String(comment || '').trim()
       if (!trimmed) {
         return res.status(400).json({ success: false, message: 'Comment text is required.' })
       }
+
+      const isOid = mongoose.Types.ObjectId.isValid(taskId)
+      const taskDoc = await Task.findOne({
+        $or: [
+          { id: taskId },
+          { legacyId: Number(taskId) || -1 },
+          ...(isOid ? [{ _id: new mongoose.Types.ObjectId(taskId) }, { _id: taskId }] : []),
+        ],
+      }).lean()
+
+      if (!taskDoc) {
+        return res.status(404).json({ success: false, message: 'Task not found.' })
+      }
+
       const actor = req.user || {}
       const userEmail = String(actor.email || actor.username || req.body.userEmail || '').trim().toLowerCase()
       let userName = actor.name || actor.username || req.body.userName || (userEmail ? userEmail.split('@')[0] : 'User')
@@ -291,79 +382,49 @@ const extraRoutes = (router) => {
         }
       }
 
-      // Query MongoDB tasks collection for this task
-      const isOid = mongoose.Types.ObjectId.isValid(taskId)
-      const taskDoc = await Task.findOne({
-        $or: [
-          { id: taskId },
-          { legacyId: Number(taskId) || -1 },
-          ...(isOid ? [{ _id: taskId }] : []),
-        ],
-      }).lean()
-
-      const mergedTaskDetails = taskDoc || clientTaskDetails || null
-
-      const effectiveProjectId = projectId || mergedTaskDetails?.projectId || mergedTaskDetails?.data?.projectId || null
-      const effectiveDealId = mergedTaskDetails?.dealId || mergedTaskDetails?.data?.dealId || null
-      const effectiveAccountId = mergedTaskDetails?.accountId || mergedTaskDetails?.data?.accountId || mergedTaskDetails?.leadId || null
-
-      // Concurrently query leads, deals, and projects from MongoDB
-      const [leadDoc, dealDoc, projectDoc] = await Promise.all([
-        effectiveAccountId ? Lead.findOne({
-          $or: [
-            { id: String(effectiveAccountId) },
-            { legacyId: Number(effectiveAccountId) || -1 },
-            { accountNumber: String(effectiveAccountId) },
-            { accountNo: String(effectiveAccountId) },
-            ...(mongoose.Types.ObjectId.isValid(effectiveAccountId) ? [{ _id: effectiveAccountId }] : []),
-          ],
-        }).lean() : null,
-        effectiveDealId ? Deal.findOne({
-          $or: [
-            { id: String(effectiveDealId) },
-            { legacyId: Number(effectiveDealId) || -1 },
-            { dealNumber: String(effectiveDealId) },
-            ...(mongoose.Types.ObjectId.isValid(effectiveDealId) ? [{ _id: effectiveDealId }] : []),
-          ],
-        }).lean() : null,
-        effectiveProjectId ? Project.findOne({
-          $or: [
-            { id: String(effectiveProjectId) },
-            { legacyId: Number(effectiveProjectId) || -1 },
-            ...(mongoose.Types.ObjectId.isValid(effectiveProjectId) ? [{ _id: effectiveProjectId }] : []),
-          ],
-        }).lean() : null,
-      ])
-
       const doc = await TaskComment.create({
-        taskId,
-        projectId: effectiveProjectId,
+        taskId: taskDoc._id,
+        taskLegacyId: taskDoc.legacyId || null,
         comment: trimmed,
         userEmail,
         userName,
         userId,
-        taskDetails: mergedTaskDetails || null,
-        leadDetails: leadDoc || null,
-        dealDetails: dealDoc || null,
-        projectDetails: projectDoc || null,
+        parentCommentId: parentCommentId && mongoose.Types.ObjectId.isValid(parentCommentId) ? new mongoose.Types.ObjectId(parentCommentId) : null,
+        isEdited: false,
+        isDeleted: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
 
+      // Log in AuditLog so it appears in task activity timeline
+      try {
+        const { getNextLegacyId } = require('../models/mongoModels')
+        await AuditLog.create({
+          legacyId: await getNextLegacyId('audit_log'),
+          entityType: 'task',
+          entityId: String(taskDoc._id),
+          action: 'comment',
+          actorId: userId,
+          actorName: userName,
+          changes: { after: { comment: trimmed } },
+          createdAt: new Date(),
+        })
+      } catch (_) {}
+
       res.status(201).json({
         success: true,
+        message: 'Comment added successfully',
         data: {
           id: doc.legacyId || doc._id,
+          _id: doc._id,
           taskId: doc.taskId,
-          projectId: doc.projectId,
+          taskLegacyId: doc.taskLegacyId,
           comment: doc.comment,
           userEmail: doc.userEmail,
           userName: doc.userName,
           userId: doc.userId,
-          taskDetails: doc.taskDetails,
-          leadDetails: doc.leadDetails,
-          dealDetails: doc.dealDetails,
-          projectDetails: doc.projectDetails,
+          parentCommentId: doc.parentCommentId || null,
+          isEdited: false,
           createdAt: doc.createdAt,
           updatedAt: doc.updatedAt,
         },
@@ -373,6 +434,191 @@ const extraRoutes = (router) => {
     }
   })
 
+  router.patch('/:id/comments/:commentId', async (req, res, next) => {
+    try {
+      const { commentId } = req.params
+      const { comment } = req.body || {}
+      const trimmed = String(comment || '').trim()
+      if (!trimmed) {
+        return res.status(400).json({ success: false, message: 'Comment text is required.' })
+      }
+
+      const isOid = mongoose.Types.ObjectId.isValid(commentId)
+      const existing = await TaskComment.findOne({
+        $or: [
+          { id: commentId },
+          { legacyId: Number(commentId) || -1 },
+          ...(isOid ? [{ _id: new mongoose.Types.ObjectId(commentId) }, { _id: commentId }] : []),
+        ],
+        isDeleted: { $ne: true },
+      })
+
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Comment not found.' })
+      }
+
+      const actor = req.user || {}
+      const actorEmail = String(actor.email || actor.username || '').toLowerCase()
+      const actorId = String(actor.id || actor.legacyId || '')
+      const isOwner = (existing.userEmail && existing.userEmail.toLowerCase() === actorEmail) || (existing.userId && String(existing.userId) === actorId)
+      const isAdmin = ['admin', 'super_admin'].includes((actor.role || '').toLowerCase())
+
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'You can only edit your own comments.' })
+      }
+
+      existing.comment = trimmed
+      existing.isEdited = true
+      existing.editedAt = new Date()
+      existing.updatedAt = new Date()
+      await existing.save()
+
+      res.json({
+        success: true,
+        message: 'Comment updated successfully',
+        data: {
+          id: existing.legacyId || existing._id,
+          _id: existing._id,
+          taskId: existing.taskId,
+          taskLegacyId: existing.taskLegacyId,
+          comment: existing.comment,
+          userEmail: existing.userEmail,
+          userName: existing.userName,
+          userId: existing.userId,
+          isEdited: true,
+          editedAt: existing.editedAt,
+          createdAt: existing.createdAt,
+          updatedAt: existing.updatedAt,
+        },
+      })
+    } catch (err) {
+      next(err)
+    }
+  })
+
+  router.delete('/:id/comments/:commentId', async (req, res, next) => {
+    try {
+      const { commentId } = req.params
+      const isOid = mongoose.Types.ObjectId.isValid(commentId)
+      const existing = await TaskComment.findOne({
+        $or: [
+          { id: commentId },
+          { legacyId: Number(commentId) || -1 },
+          ...(isOid ? [{ _id: new mongoose.Types.ObjectId(commentId) }, { _id: commentId }] : []),
+        ],
+      })
+
+      if (!existing) {
+        return res.status(404).json({ success: false, message: 'Comment not found.' })
+      }
+
+      const actor = req.user || {}
+      const actorEmail = String(actor.email || actor.username || '').toLowerCase()
+      const actorId = String(actor.id || actor.legacyId || '')
+      const isOwner = (existing.userEmail && existing.userEmail.toLowerCase() === actorEmail) || (existing.userId && String(existing.userId) === actorId)
+      const isAdmin = ['admin', 'super_admin'].includes((actor.role || '').toLowerCase())
+
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json({ success: false, message: 'You can only delete your own comments.' })
+      }
+
+      existing.isDeleted = true
+      existing.deletedAt = new Date()
+      existing.deletedBy = actor.id || actor.legacyId || actorEmail
+      existing.updatedAt = new Date()
+      await existing.save()
+
+      res.json({ success: true, message: 'Comment deleted successfully.' })
+    } catch (err) {
+      next(err)
+    }
+  })
+
+  // Atomic Task Update Handler (Supports ObjectId, Dates & AuditLog)
+  const handleTaskUpdate = async (req, res, next) => {
+    try {
+      const taskId = String(req.params.id)
+      const numId = Number(taskId) || -1
+      const isOid = mongoose.Types.ObjectId.isValid(taskId)
+      const query = {
+        $or: [
+          { id: taskId },
+          { legacyId: numId },
+          ...(isOid ? [{ _id: new mongoose.Types.ObjectId(taskId) }, { _id: taskId }] : []),
+        ],
+      }
+
+      const taskDoc = await Task.findOne(query)
+      if (!taskDoc) {
+        return res.status(404).json({ success: false, message: 'Task not found.' })
+      }
+
+      const actor = req.user || {}
+      const actorName = actor.name || actor.username || actor.email || 'Team Member'
+      const beforeStartDate = taskDoc.startDate
+      const beforeDueDate = taskDoc.dueDate
+
+      const updateFields = { ...req.body, updatedAt: new Date() }
+      delete updateFields._id
+      delete updateFields.id
+
+      if (req.body.startDate !== undefined) {
+        updateFields.startDate = req.body.startDate ? new Date(req.body.startDate) : null
+      }
+      if (req.body.dueDate !== undefined) {
+        updateFields.dueDate = req.body.dueDate ? new Date(req.body.dueDate) : null
+      }
+
+      const updated = await Task.findOneAndUpdate(
+        query,
+        { $set: updateFields },
+        { new: true }
+      ).lean()
+
+      // Record AuditLog if dates changed
+      const startDateChanged = req.body.startDate !== undefined && String(req.body.startDate) !== String(beforeStartDate)
+      const dueDateChanged = req.body.dueDate !== undefined && String(req.body.dueDate) !== String(beforeDueDate)
+
+      if (startDateChanged || dueDateChanged) {
+        try {
+          const { getNextLegacyId } = require('../models/mongoModels')
+          await AuditLog.create({
+            legacyId: await getNextLegacyId('audit_log'),
+            entityType: 'task',
+            entityId: String(taskDoc._id),
+            action: 'update',
+            actorId: actor.id || actor.legacyId,
+            actorName,
+            changes: {
+              before: {
+                startDate: beforeStartDate ? new Date(beforeStartDate).toISOString().slice(0, 10) : null,
+                dueDate: beforeDueDate ? new Date(beforeDueDate).toISOString().slice(0, 10) : null,
+              },
+              after: {
+                startDate: req.body.startDate ? new Date(req.body.startDate).toISOString().slice(0, 10) : null,
+                dueDate: req.body.dueDate ? new Date(req.body.dueDate).toISOString().slice(0, 10) : null,
+              },
+            },
+            createdAt: new Date(),
+          })
+        } catch (_) {}
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: updated.legacyId || updated._id,
+          ...updated,
+        },
+      })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  router.put('/:id', handleTaskUpdate)
+  router.patch('/:id', handleTaskUpdate)
+
   // Task Activity Timeline API (Synthesized from MongoDB audit_log, task_comments, and attachments)
   router.get('/:id/activity', async (req, res, next) => {
     try {
@@ -380,42 +626,99 @@ const extraRoutes = (router) => {
       const numId = Number(taskId) || -1
       const isOid = mongoose.Types.ObjectId.isValid(taskId)
 
-      const [auditEntries, commentEntries, attachmentEntries, taskDoc, users] = await Promise.all([
-        AuditLog.find({
-          entityType: 'task',
-          $or: [
-            { entityId: taskId },
-            { entityId: numId },
-            { 'changes.after.id': taskId },
-            { 'changes.after.id': numId },
-          ],
-        }).sort({ createdAt: -1 }).limit(100).lean().catch(() => []),
-        TaskComment.find({
-          $or: [{ taskId }, { taskId: numId }],
-        }).sort({ createdAt: -1 }).limit(50).lean().catch(() => []),
-        Attachment.find({
-          entityType: 'task',
-          $or: [{ entityId: taskId }, { entityId: String(taskId) }],
-        }).sort({ createdAt: -1 }).limit(50).lean().catch(() => []),
-        Task.findOne({
-          $or: [{ id: taskId }, { legacyId: numId }, ...(isOid ? [{ _id: taskId }] : [])],
-        }).lean().catch(() => null),
-        User.find({ status: { $ne: 'inactive' } }).select({ id: 1, legacyId: 1, name: 1, email: 1, username: 1 }).lean().catch(() => []),
-      ])
+      // 1. Resolve task document first
+      const taskDoc = await Task.findOne({
+        $or: [{ id: taskId }, { legacyId: numId }, ...(isOid ? [{ _id: taskId }] : [])],
+      }).lean().catch(() => null)
+
+      // 2. Build complete list of ID variants for this task
+      const idVariants = Array.from(
+        new Set(
+          [
+            taskId,
+            numId > 0 ? numId : null,
+            taskDoc?._id,
+            taskDoc?._id ? String(taskDoc._id) : null,
+            taskDoc?.id,
+            taskDoc?.legacyId,
+          ].filter(Boolean)
+        )
+      )
+
+      // 3. Resolve users from MongoDB users collection for author/actor mapping
+      const users = await User.find({ status: { $ne: 'inactive' } })
+        .select({ id: 1, legacyId: 1, name: 1, email: 1, username: 1, firstName: 1, lastName: 1, _id: 1 })
+        .lean()
+        .catch(() => [])
 
       const userMap = new Map()
       users.forEach((u) => {
-        const name = u.name || u.username || u.email
-        if (u.email) userMap.set(String(u.email).toLowerCase(), name)
-        if (u.id) userMap.set(String(u.id), name)
-        if (u.legacyId) userMap.set(String(u.legacyId), name)
+        const fullName = (u.name || `${u.firstName || ''} ${u.lastName || ''}`).trim() || u.username || (u.email ? u.email.split('@')[0] : 'User')
+        if (u.email) userMap.set(String(u.email).toLowerCase(), fullName)
+        if (u.id) userMap.set(String(u.id), fullName)
+        if (u.legacyId) userMap.set(String(u.legacyId), fullName)
+        if (u._id) userMap.set(String(u._id), fullName)
       })
+
+      const resolveActorName = (actorId, actorEmail, fallbackName) => {
+        if (actorEmail && userMap.has(String(actorEmail).toLowerCase())) {
+          return userMap.get(String(actorEmail).toLowerCase())
+        }
+        if (actorId && userMap.has(String(actorId))) {
+          return userMap.get(String(actorId))
+        }
+        if (fallbackName && userMap.has(String(fallbackName).toLowerCase())) {
+          return userMap.get(String(fallbackName).toLowerCase())
+        }
+        if (fallbackName && !fallbackName.includes('@') && isNaN(fallbackName)) {
+          return fallbackName
+        }
+        if (actorEmail) {
+          const prefix = actorEmail.split('@')[0]
+          return prefix.charAt(0).toUpperCase() + prefix.slice(1)
+        }
+        return 'Team Member'
+      }
+
+      // 4. Query audit logs, task comments, and attachments using all ID variants
+      const [auditEntries, commentEntries, attachmentEntries] = await Promise.all([
+        AuditLog.find({
+          entityType: 'task',
+          $or: [
+            { entityId: { $in: idVariants } },
+            { 'changes.after.id': { $in: idVariants } },
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .limit(100)
+          .lean()
+          .catch(() => []),
+        TaskComment.find({
+          $or: [
+            { taskId: { $in: idVariants } },
+            { taskLegacyId: { $in: idVariants } },
+          ],
+          isDeleted: { $ne: true },
+        })
+          .sort({ createdAt: -1 })
+          .limit(50)
+          .lean()
+          .catch(() => []),
+        Attachment.find({
+          entityType: 'task',
+          entityId: { $in: idVariants.map(String) },
+        })
+          .sort({ createdAt: -1 })
+          .limit(50)
+          .lean()
+          .catch(() => []),
+      ])
 
       const activities = []
 
-      // 1. Audit log items
+      // Format audit log events
       auditEntries.forEach((entry) => {
-        const actorName = entry.actorName || userMap.get(String(entry.actorId)) || 'Team Member'
+        const actorName = resolveActorName(entry.actorId, entry.actorEmail, entry.actorName)
         const changes = entry.changes || {}
         const before = changes.before || {}
         const after = changes.after || {}
@@ -426,7 +729,7 @@ const extraRoutes = (router) => {
             type: 'created',
             actorName,
             actionText: 'created this task',
-            targetText: after.title || 'Task',
+            targetText: after.title || taskDoc?.title || 'Task',
             createdAt: entry.createdAt,
           })
         } else if (entry.action === 'update') {
@@ -446,7 +749,7 @@ const extraRoutes = (router) => {
               id: `audit-${entry.legacyId || entry._id}-progress`,
               type: 'progress',
               actorName,
-              actionText: `updated progress ${before.progress || 0}% to ${after.progress}%`,
+              actionText: `updated progress from ${before.progress || 0}% to ${after.progress}%`,
               createdAt: entry.createdAt,
             })
           }
@@ -493,24 +796,26 @@ const extraRoutes = (router) => {
         }
       })
 
-      // 2. Comments
+      // Format comment events
       commentEntries.forEach((cm) => {
+        const actorName = resolveActorName(cm.userId, cm.userEmail, cm.userName)
         activities.push({
           id: `cm-${cm.legacyId || cm._id}`,
           type: 'comment',
-          actorName: cm.userName || (cm.userEmail ? cm.userEmail.split('@')[0] : 'User'),
+          actorName,
           actionText: 'added a comment',
           snippet: cm.comment,
           createdAt: cm.createdAt,
         })
       })
 
-      // 3. Attachments
+      // Format attachment events
       attachmentEntries.forEach((att) => {
+        const actorName = resolveActorName(att.uploadedBy, null, null)
         activities.push({
           id: `att-${att.id || att._id}`,
           type: 'attachment',
-          actorName: userMap.get(String(att.uploadedBy)) || 'User',
+          actorName,
           actionText: 'attached',
           targetText: att.fileName,
           createdAt: att.createdAt,
@@ -519,10 +824,11 @@ const extraRoutes = (router) => {
 
       // Fallback: If no activity exists yet, display initial creation from task document
       if (activities.length === 0 && taskDoc) {
+        const creatorName = resolveActorName(taskDoc.createdBy, taskDoc.createdByEmail, taskDoc.createdByName)
         activities.push({
           id: `initial-create-${taskDoc.id || taskDoc._id}`,
           type: 'created',
-          actorName: taskDoc.createdByName || (taskDoc.createdByEmail ? taskDoc.createdByEmail.split('@')[0] : 'User'),
+          actorName: creatorName,
           actionText: 'created this task',
           targetText: taskDoc.title,
           createdAt: taskDoc.createdAt || new Date(),
@@ -540,28 +846,48 @@ const extraRoutes = (router) => {
     }
   })
 
-  // Task Time Entries API (Synced with MongoDB tasks_timelog and time_entries)
+  // Task Time Entries API (Deduplicated with MongoDB TaskTimelog as single source of truth)
   router.get('/:id/time-entries', async (req, res, next) => {
     try {
       const taskId = String(req.params.id)
       const numId = Number(taskId) || -1
+      const isOid = mongoose.Types.ObjectId.isValid(taskId)
+
+      const taskDoc = await Task.findOne({
+        $or: [{ id: taskId }, { legacyId: numId }, ...(isOid ? [{ _id: taskId }] : [])],
+      }).lean().catch(() => null)
+
+      const idVariants = Array.from(
+        new Set(
+          [
+            taskId,
+            numId > 0 ? numId : null,
+            taskDoc?._id,
+            taskDoc?._id ? String(taskDoc._id) : null,
+            taskDoc?.id,
+            taskDoc?.legacyId,
+          ].filter(Boolean)
+        )
+      )
 
       const [timelogs, legacyEntries] = await Promise.all([
-        TaskTimelog.find({
-          $or: [{ taskId }, { taskId: numId }],
-        }).sort({ createdAt: -1, date: -1 }).lean().catch(() => []),
-        TimeEntry.find({
-          $or: [{ taskId }, { taskId: numId }],
-        }).sort({ createdAt: -1, date: -1 }).lean().catch(() => []),
+        TaskTimelog.find({ taskId: { $in: idVariants } })
+          .sort({ createdAt: -1, date: -1 })
+          .lean()
+          .catch(() => []),
+        TimeEntry.find({ taskId: { $in: idVariants } })
+          .sort({ createdAt: -1, date: -1 })
+          .lean()
+          .catch(() => []),
       ])
 
-      const seenIds = new Set()
+      const seenSignatures = new Set()
       const combined = []
 
       timelogs.forEach((tl) => {
-        const idKey = String(tl.legacyId || tl.id || tl._id)
-        if (!seenIds.has(idKey)) {
-          seenIds.add(idKey)
+        const sig = `${tl.date || ''}_${tl.minutes}_${String(tl.description || '').trim()}`
+        if (!seenSignatures.has(sig)) {
+          seenSignatures.add(sig)
           combined.push({
             id: tl.legacyId || tl.id || tl._id,
             taskId: tl.taskId,
@@ -578,10 +904,11 @@ const extraRoutes = (router) => {
         }
       })
 
+      // Add legacy entries only if not already present from timelogs
       legacyEntries.forEach((e) => {
-        const idKey = String(e.legacyId || e.id || e._id)
-        if (!seenIds.has(idKey)) {
-          seenIds.add(idKey)
+        const sig = `${e.date || ''}_${e.minutes}_${String(e.description || '').trim()}`
+        if (!seenSignatures.has(sig)) {
+          seenSignatures.add(sig)
           combined.push({
             id: e.legacyId || e.id || e._id,
             taskId: e.taskId,
@@ -657,11 +984,13 @@ const extraRoutes = (router) => {
         updatedAt: new Date(),
       })
 
-      // Also trigger workManagementService.logTimeEntry to keep task actualMinutes updated
-      await workManagementService.logTimeEntry(req.user, {
-        ...req.body,
-        taskId,
-      }).catch(() => null)
+      // Update actualMinutes on the task atomically in MongoDB without creating duplicate time entry
+      if (taskDoc) {
+        await Task.updateOne(
+          { _id: taskDoc._id },
+          { $inc: { actualMinutes: minutes } }
+        ).catch(() => null)
+      }
 
       res.status(201).json({
         success: true,
@@ -749,6 +1078,10 @@ router.post('/work/projects', workController.createProject)
 router.put('/work/projects/:id', workController.updateProject)
 router.patch('/work/projects/:id', workController.updateProject)
 router.get('/work/workload', workController.getWorkload)
+router.get('/work/workload/user-analytics', workController.getUserWorkloadAnalytics)
+router.post('/work/workload/reassign', workController.reassignTask)
+router.put('/work/workload/settings/:userId', workController.updateWorkloadSettings)
+router.patch('/work/workload/settings/:userId', workController.updateWorkloadSettings)
 router.get('/work/approvals', workController.listApprovals)
 router.post('/work/approvals/:id/decide', workController.decideApproval)
 router.get('/work/workflows', workController.listWorkflows)

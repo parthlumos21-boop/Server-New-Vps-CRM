@@ -45,6 +45,43 @@ const getWorkload = async (req, res, next) => {
   }
 }
 
+const getUserWorkloadAnalytics = async (req, res, next) => {
+  try {
+    const targetUserEmail = req.query.userEmail || req.query.email || req.user?.email
+    const period = req.query.period || 'month'
+    const customStartDate = req.query.startDate || req.query.from
+    const customEndDate = req.query.endDate || req.query.to
+    const data = await workManagementService.getUserWorkloadAnalytics(
+      req.user,
+      targetUserEmail,
+      period,
+      customStartDate,
+      customEndDate
+    )
+    res.json({ success: true, data })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const reassignTask = async (req, res, next) => {
+  try {
+    const data = await workManagementService.reassignWorkloadTask(req.user, req.body)
+    res.json({ success: true, data })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updateWorkloadSettings = async (req, res, next) => {
+  try {
+    const data = await workManagementService.updateWorkloadSetting(req.user, req.params.userId, req.body)
+    res.json({ success: true, data })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const listApprovals = async (req, res, next) => {
   try {
     const data = await workManagementService.getApprovals(req.user)
@@ -92,6 +129,9 @@ module.exports = {
   createProject,
   updateProject,
   getWorkload,
+  getUserWorkloadAnalytics,
+  reassignTask,
+  updateWorkloadSettings,
   listApprovals,
   decideApproval,
   listWorkflows,

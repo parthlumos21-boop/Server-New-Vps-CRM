@@ -270,5 +270,27 @@ body:has(.tasks-workspace-root),
   color: #1e293b !important;
   border: 1px solid #cbd5e1 !important;
 }
+/* Workload User Directory Internal Scrollbar */
+.workload-user-scroll-list {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
 
+.workload-user-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workload-user-scroll-list::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.workload-user-scroll-list::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.workload-user-scroll-list::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
 
