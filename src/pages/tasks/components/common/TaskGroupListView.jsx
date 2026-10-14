@@ -149,7 +149,9 @@ export const TaskGroupListView = ({
               {/* Group Task Rows */}
               {!isCollapsed && (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {group.tasks.map((task) => {
+                  {group.tasks
+                    .filter((task) => task && (task.id || task.legacyId || task._id) && String(task.title || '').trim().length > 0)
+                    .map((task) => {
                     const isDone = ['completed', 'closed'].includes(
                       String(task.status || '').toLowerCase()
                     )

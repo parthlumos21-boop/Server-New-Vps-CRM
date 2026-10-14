@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FaBold, FaEdit, FaEye, FaImage, FaItalic, FaListUl, FaPlus, FaSave, FaTrash, FaUnderline } from 'react-icons/fa'
 import emailTemplateApi from '../../../services/emailTemplateApi'
+import { DEFAULT_COMPANY_SIGNATURE } from '../../../constants/defaultSignature'
 import './EmailTemplatesPage.css'
 
 const EMPTY_FORM = {
@@ -124,11 +125,21 @@ const EmailTemplatesPage = () => {
   const [uploadingSignature, setUploadingSignature] = useState(false)
   const [message, setMessage] = useState(null)
 
+  const [companySignature, setCompanySignature] = useState(DEFAULT_COMPANY_SIGNATURE)
+
   const load = async () => {
     setLoading(true)
     try {
-      const templateList = await emailTemplateApi.list()
+      const [templateList, settings] = await Promise.all([
+        emailTemplateApi.list(),
+        emailTemplateApi.settings().catch(() => null),
+      ])
       setTemplates(Array.isArray(templateList) ? templateList : [])
+      if (settings?.signature?.images && settings.signature.images.length > 0) {
+        setCompanySignature(settings.signature.images[0])
+      } else {
+        setCompanySignature(DEFAULT_COMPANY_SIGNATURE)
+      }
     } catch (error) {
       setMessage({ type: 'error', text: error?.response?.data?.message || 'Unable to load email templates.' })
     } finally {
@@ -280,11 +291,15 @@ const EmailTemplatesPage = () => {
           await load()
           setMessage({ type: 'success', text: 'Template signature image saved.' })
         } else {
+          try {
+            await emailTemplateApi.uploadSignatureImage(imagePayload)
+          } catch (_) {}
           setForm((current) => ({
             ...current,
             signatureImage: imagePayload,
           }))
-          setMessage({ type: 'success', text: 'Signature image ready. Press Save to store it with this template.' })
+          setCompanySignature(imagePayload)
+          setMessage({ type: 'success', text: 'Company signature image saved and attached to new template.' })
         }
       } catch (error) {
         setMessage({ type: 'error', text: error?.response?.data?.message || 'Unable to upload signature image.' })
@@ -295,7 +310,7 @@ const EmailTemplatesPage = () => {
     reader.readAsDataURL(file)
   }
 
-  const signatureImage = form.signatureImage || null
+  const signatureImage = form.signatureImage || companySignature || null
 
   return (
     <section className="email-templates-page">

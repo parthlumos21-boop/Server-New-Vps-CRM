@@ -130,9 +130,9 @@ export default function TaskHeaderMeta({
             type="button"
             title="Time Tracker"
             style={{
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              color: '#2563eb',
+              background: '#fff1f2',
+              border: '1px solid #fecdd3',
+              color: '#c60016',
               borderRadius: '6px',
               width: '26px',
               height: '26px',

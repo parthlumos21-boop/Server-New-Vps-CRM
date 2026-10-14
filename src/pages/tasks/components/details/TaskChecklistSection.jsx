@@ -77,7 +77,7 @@ export default function TaskChecklistSection({
               type="checkbox"
               checked={Boolean(isMandatory)}
               readOnly
-              style={{ accentColor: '#2563eb' }}
+              style={{ accentColor: '#c60016' }}
             />
             <span>Mark as mandatory</span>
           </label>
@@ -215,7 +215,7 @@ export default function TaskChecklistSection({
               padding: '3px 10px',
               fontSize: '0.72rem',
               fontWeight: '700',
-              backgroundColor: '#2563eb',
+              backgroundColor: '#c60016',
               color: '#ffffff',
               border: 'none',
               borderRadius: '6px',
@@ -249,7 +249,7 @@ export default function TaskChecklistSection({
             gap: '0.35rem',
             background: 'none',
             border: 'none',
-            color: '#2563eb',
+            color: '#c60016',
             fontSize: '0.76rem',
             fontWeight: '700',
             cursor: 'pointer',

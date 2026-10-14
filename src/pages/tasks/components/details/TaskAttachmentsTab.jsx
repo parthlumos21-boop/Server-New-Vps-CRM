@@ -65,11 +65,11 @@ export default function TaskAttachmentsTab({
         onDrop={handleFileDrop}
         onClick={() => fileInputRef.current && fileInputRef.current.click()}
         style={{
-          border: isDragOver ? '2px dashed #2563eb' : '2px dashed #cbd5e1',
+          border: isDragOver ? '2px dashed #c60016' : '2px dashed #cbd5e1',
           borderRadius: '12px',
           padding: '1.5rem',
           textAlign: 'center',
-          backgroundColor: isDragOver ? '#eff6ff' : '#fafbfc',
+          backgroundColor: isDragOver ? '#fff1f2' : '#fafbfc',
           cursor: isUploading ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s ease',
         }}
@@ -84,7 +84,7 @@ export default function TaskAttachmentsTab({
           }}
           style={{ display: 'none' }}
         />
-        <FaCloudUploadAlt style={{ fontSize: '2rem', color: isDragOver ? '#2563eb' : '#94a3b8', marginBottom: '0.5rem' }} />
+        <FaCloudUploadAlt style={{ fontSize: '2rem', color: isDragOver ? '#c60016' : '#94a3b8', marginBottom: '0.5rem' }} />
         <div style={{ fontSize: '0.84rem', fontWeight: '700', color: '#1e293b' }}>
           {isUploading ? 'Uploading document...' : 'Click or drag files here to attach'}
         </div>
@@ -114,6 +114,8 @@ export default function TaskAttachmentsTab({
                   year: 'numeric',
                 })
               : 'Recently'
+            const uploaderName = file.uploadedByName || file.uploadedByUserName || 'User'
+            const uploaderMail = file.uploadByMail || file.uploadedByMail || ''
 
             return (
               <div
@@ -137,7 +139,7 @@ export default function TaskAttachmentsTab({
                       style={{
                         fontSize: '0.84rem',
                         fontWeight: '700',
-                        color: '#2563eb',
+                        color: '#c60016',
                         cursor: 'pointer',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -148,7 +150,7 @@ export default function TaskAttachmentsTab({
                       {name}
                     </div>
                     <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '0.15rem' }}>
-                      {size} &bull; Uploaded on {dateStr}
+                      {size} &bull; Uploaded by <strong style={{ color: '#1e293b' }}>{uploaderName}</strong>{uploaderMail ? ` (${uploaderMail})` : ''} on {dateStr}
                     </div>
                   </div>
                 </div>

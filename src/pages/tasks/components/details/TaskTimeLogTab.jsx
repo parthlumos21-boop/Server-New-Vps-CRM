@@ -216,7 +216,7 @@ export default function TaskTimeLogTab({
               gap: '0.35rem',
               background: 'none',
               border: 'none',
-              color: '#2563eb',
+              color: '#c60016',
               fontSize: '0.76rem',
               fontWeight: '700',
               cursor: 'pointer',
@@ -283,7 +283,7 @@ export default function TaskTimeLogTab({
                   type="checkbox"
                   checked={isBillable}
                   onChange={(e) => setIsBillable(e.target.checked)}
-                  style={{ accentColor: '#2563eb' }}
+                  style={{ accentColor: '#c60016' }}
                 />
                 <span>Billable entry</span>
               </label>
@@ -298,7 +298,7 @@ export default function TaskTimeLogTab({
                 <button
                   type="submit"
                   disabled={!manualMinutes || isLogging}
-                  style={{ padding: '4px 12px', fontSize: '0.74rem', fontWeight: '700', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+                  style={{ padding: '4px 12px', fontSize: '0.74rem', fontWeight: '700', backgroundColor: '#c60016', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                 >
                   Save Entry
                 </button>
@@ -344,7 +344,7 @@ export default function TaskTimeLogTab({
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {te.isBillable && (
-                      <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', backgroundColor: '#eff6ff', color: '#2563eb', fontWeight: '700' }}>
+                      <span style={{ fontSize: '0.65rem', padding: '1px 6px', borderRadius: '4px', backgroundColor: '#fff1f2', color: '#c60016', fontWeight: '700' }}>
                         Billable
                       </span>
                     )}

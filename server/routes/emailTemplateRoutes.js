@@ -4,6 +4,9 @@ const { requireAuth } = require('../middleware/authMiddleware')
 
 const router = express.Router()
 
+router.get('/public/signature-image', controller.getPublicSignatureImage)
+router.get('/public/signature-image/:id', controller.getPublicSignatureImage)
+
 router.use(requireAuth)
 
 router.get('/available', controller.available)

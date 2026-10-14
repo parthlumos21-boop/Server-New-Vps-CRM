@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FaProjectDiagram,
@@ -61,6 +61,21 @@ export const ProjectsPortfolioPage = () => {
     startDate: new Date().toISOString().slice(0, 10),
     endDate: '',
   })
+
+  // Create Project modal dropdown search states
+  const [activeProjectModalDropdown, setActiveProjectModalDropdown] = useState(null)
+  const [projectModalSearch, setProjectModalSearch] = useState('')
+  const modalDropdownRef = useRef(null)
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (modalDropdownRef.current && !modalDropdownRef.current.contains(e.target)) {
+        setActiveProjectModalDropdown(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
 
   // Team allocation ("Add People") modal state
   const [teamModalProject, setTeamModalProject] = useState(null)
@@ -842,64 +857,225 @@ export const ProjectsPortfolioPage = () => {
       >
         <form onSubmit={handleCreateProject} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
           {/* CRM Account & Deal Association Pickers */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-            <div>
+          {/* CRM Account & Deal Association Pickers */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }} ref={modalDropdownRef}>
+            {/* 1. Account */}
+            <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: '#334155', marginBottom: '0.25rem' }}>
-                Account (From Leads)
+                Account
               </label>
-              <select
-                value={formData.accountId}
-                onChange={(e) => {
-                  const selAcc = accountsList.find((a) => String(a.id || a._id) === String(e.target.value))
-                  setFormData({
-                    ...formData,
-                    accountId: e.target.value,
-                    accountName: selAcc ? (selAcc.accountName || selAcc.companyName || selAcc.name || '') : '',
-                  })
+              <input
+                type="text"
+                readOnly
+                value={formData.accountName || (formData.accountId ? `Account ${formData.accountId}` : '')}
+                onClick={() => {
+                  setActiveProjectModalDropdown(activeProjectModalDropdown === 'account' ? null : 'account')
+                  setProjectModalSearch('')
                 }}
-                style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
-              >
-                <option value="">Select Account (Optional)</option>
-                {accountsList.map((acc) => {
-                  const id = acc.id || acc._id
-                  const name = acc.accountName || acc.companyName || acc.name || `Account #${id}`
-                  return (
-                    <option key={id} value={id}>
-                      {name}
-                    </option>
-                  )
-                })}
-              </select>
+                placeholder="Click to select Account"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '10px',
+                  border: activeProjectModalDropdown === 'account' ? '1.5px solid #c60016' : '1px solid #cbd5e1',
+                  fontSize: '0.84rem',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer',
+                  backgroundColor: '#ffffff',
+                  fontWeight: formData.accountId ? '700' : '400',
+                  color: formData.accountId ? '#1e293b' : '#64748b',
+                }}
+              />
+
+              {activeProjectModalDropdown === 'account' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    left: 0,
+                    right: 0,
+                    background: '#ffffff',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                    border: '1.5px solid #cbd5e1',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    maxHeight: '230px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FaSearch style={{ color: '#c60016', fontSize: '0.75rem', flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      value={projectModalSearch}
+                      onChange={(e) => setProjectModalSearch(e.target.value)}
+                      placeholder="Search Account..."
+                      autoFocus
+                      style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '0.8rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div style={{ overflowY: 'auto', maxHeight: '180px', padding: '0.25rem' }}>
+                    <div
+                      onClick={() => {
+                        setFormData({ ...formData, accountId: '', accountName: '' })
+                        setActiveProjectModalDropdown(null)
+                      }}
+                      style={{ padding: '0.45rem 0.6rem', fontSize: '0.78rem', color: '#64748b', cursor: 'pointer', fontStyle: 'italic', borderBottom: '1px solid #f1f5f9' }}
+                    >
+                      None (No Account)
+                    </div>
+                    {accountsList
+                      .filter((a) => {
+                        if (!projectModalSearch.trim()) return true
+                        const q = projectModalSearch.toLowerCase()
+                        const name = a.accountName || a.companyName || a.name || ''
+                        const id = a.accountNumber || a.id || a._id || ''
+                        return String(name).toLowerCase().includes(q) || String(id).toLowerCase().includes(q)
+                      })
+                      .map((acc) => {
+                        const id = acc.id || acc._id || acc.accountNumber
+                        const name = acc.accountName || acc.companyName || acc.name || `Account ${id}`
+                        return (
+                          <div
+                            key={id}
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                accountId: id,
+                                accountName: name,
+                              })
+                              setActiveProjectModalDropdown(null)
+                            }}
+                            style={{
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              borderBottom: '1px solid #f1f5f9',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontWeight: '700', color: '#c60016', marginRight: '0.35rem' }}>[{id}]</span>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{name}</span>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
-            <div>
+
+            {/* 2. Project/Deal */}
+            <div style={{ position: 'relative' }}>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: '700', color: '#334155', marginBottom: '0.25rem' }}>
-                Project / Deal (From Deals)
+                Project/Deal
               </label>
-              <select
-                value={formData.dealId}
-                onChange={(e) => {
-                  const selDeal = dealsList.find((d) => String(d.id || d._id) === String(e.target.value))
-                  const dName = selDeal ? (selDeal.dealName || selDeal.title || selDeal.name || '') : ''
-                  setFormData({
-                    ...formData,
-                    dealId: e.target.value,
-                    dealName: dName,
-                    name: (!formData.name && dName) ? dName : formData.name,
-                  })
+              <input
+                type="text"
+                readOnly
+                value={formData.dealName || (formData.dealId ? `Deal ${formData.dealId}` : '')}
+                onClick={() => {
+                  setActiveProjectModalDropdown(activeProjectModalDropdown === 'deal' ? null : 'deal')
+                  setProjectModalSearch('')
                 }}
-                style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.84rem', boxSizing: 'border-box' }}
-              >
-                <option value="">Select Deal / Project (Optional)</option>
-                {dealsList.map((deal) => {
-                  const id = deal.id || deal._id
-                  const title = deal.dealName || deal.title || deal.name || `Deal #${id}`
-                  return (
-                    <option key={id} value={id}>
-                      {title}
-                    </option>
-                  )
-                })}
-              </select>
+                placeholder="Click to select Project/Deal"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '10px',
+                  border: activeProjectModalDropdown === 'deal' ? '1.5px solid #c60016' : '1px solid #cbd5e1',
+                  fontSize: '0.84rem',
+                  boxSizing: 'border-box',
+                  cursor: 'pointer',
+                  backgroundColor: '#ffffff',
+                  fontWeight: formData.dealId ? '700' : '400',
+                  color: formData.dealId ? '#1e293b' : '#64748b',
+                }}
+              />
+
+              {activeProjectModalDropdown === 'deal' && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    left: 0,
+                    right: 0,
+                    background: '#ffffff',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                    border: '1.5px solid #cbd5e1',
+                    zIndex: 1000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    maxHeight: '230px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <FaSearch style={{ color: '#c60016', fontSize: '0.75rem', flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      value={projectModalSearch}
+                      onChange={(e) => setProjectModalSearch(e.target.value)}
+                      placeholder="Search Project/Deal..."
+                      autoFocus
+                      style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '0.8rem', outline: 'none' }}
+                    />
+                  </div>
+                  <div style={{ overflowY: 'auto', maxHeight: '180px', padding: '0.25rem' }}>
+                    <div
+                      onClick={() => {
+                        setFormData({ ...formData, dealId: '', dealName: '' })
+                        setActiveProjectModalDropdown(null)
+                      }}
+                      style={{ padding: '0.45rem 0.6rem', fontSize: '0.78rem', color: '#64748b', cursor: 'pointer', fontStyle: 'italic', borderBottom: '1px solid #f1f5f9' }}
+                    >
+                      None (No Deal/Project)
+                    </div>
+                    {dealsList
+                      .filter((d) => {
+                        if (!projectModalSearch.trim()) return true
+                        const q = projectModalSearch.toLowerCase()
+                        const title = d.dealName || d.title || d.name || ''
+                        const id = d.id || d._id || d.dealNumber || ''
+                        return String(title).toLowerCase().includes(q) || String(id).toLowerCase().includes(q)
+                      })
+                      .map((deal) => {
+                        const id = deal.id || deal._id
+                        const title = deal.dealName || deal.title || deal.name || `Deal ${id}`
+                        return (
+                          <div
+                            key={id}
+                            onClick={() => {
+                              setFormData({
+                                ...formData,
+                                dealId: id,
+                                dealName: title,
+                                name: (!formData.name && title) ? title : formData.name,
+                              })
+                              setActiveProjectModalDropdown(null)
+                            }}
+                            style={{
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              borderBottom: '1px solid #f1f5f9',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontWeight: '700', color: '#c60016', marginRight: '0.35rem' }}>[{id}]</span>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{title}</span>
+                          </div>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -930,9 +1106,10 @@ export const ProjectsPortfolioPage = () => {
                 <option value="">Select Manager</option>
                 {userList.map((u) => {
                   const email = String(u.email || '').trim().toLowerCase()
+                  const displayName = u.name || (email ? email.split('@')[0] : 'User')
                   return (
                     <option key={email} value={email}>
-                      {u.name || email} ({email})
+                      {displayName}
                     </option>
                   )
                 })}

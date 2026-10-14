@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   FaRegCircle,
   FaCheckCircle,
@@ -10,8 +10,14 @@ import {
   FaCheck,
   FaBriefcase,
   FaBuilding,
+  FaSearch,
+  FaHandshake,
+  FaFileInvoice,
+  FaTimes,
+  FaEdit,
 } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import taskApi from '../../../../services/taskApi'
 import TaskHeaderMeta from './TaskHeaderMeta'
 import TaskAssigneePills from './TaskAssigneePills'
 import TaskSubtasksSection from './TaskSubtasksSection'
@@ -45,6 +51,48 @@ export default function TaskInfoLeftPanel({
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [titleValue, setTitleValue] = useState(task.title || '')
   const [descValue, setDescValue] = useState(task.description || '')
+
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [editStartDate, setEditStartDate] = useState(() => (task.startDate ? String(task.startDate).slice(0, 10) : '2026-10-14'))
+  const [editDueDate, setEditDueDate] = useState(() => (task.dueDate ? String(task.dueDate).slice(0, 10) : ''))
+
+  useEffect(() => {
+    if (task.startDate) setEditStartDate(String(task.startDate).slice(0, 10))
+    if (task.dueDate) setEditDueDate(String(task.dueDate).slice(0, 10))
+  }, [task.startDate, task.dueDate])
+
+  const [showCrmModal, setShowCrmModal] = useState(false)
+  const [crmLinks, setCrmLinks] = useState({ accounts: [], deals: [], quotations: [] })
+  const [activeDropdownField, setActiveDropdownField] = useState(null)
+  const [dropdownSearch, setDropdownSearch] = useState('')
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    if (showCrmModal && crmLinks.accounts.length === 0) {
+      taskApi
+        .getCrmWorkflowLinks()
+        .then((data) => {
+          if (data) {
+            setCrmLinks({
+              accounts: data.accounts || [],
+              deals: data.deals || [],
+              quotations: data.quotations || [],
+            })
+          }
+        })
+        .catch(() => {})
+    }
+  }, [showCrmModal, crmLinks.accounts.length])
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setActiveDropdownField(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
 
   const handleTitleBlur = () => {
     setIsEditingTitle(false)
@@ -202,43 +250,161 @@ export default function TaskInfoLeftPanel({
         </div>
 
         {/* Dates & Recurrence */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.76rem', color: '#475569' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <FaCalendarAlt style={{ color: '#94a3b8' }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.76rem', color: '#475569' }}>
+          <div
+            onClick={() => setShowDatePicker(!showDatePicker)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              cursor: 'pointer',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              backgroundColor: showDatePicker ? '#fff1f2' : 'transparent',
+              border: showDatePicker ? '1px solid #fecdd3' : '1px solid transparent',
+              transition: 'all 0.15s ease',
+            }}
+            title="Click calendar icon to update Start Date and Target Due Date"
+          >
+            <FaCalendarAlt style={{ color: '#c60016' }} />
             <span style={{ fontWeight: '600' }}>{dateRangeLabel}</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#2563eb' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#c60016' }}>
             <FaSyncAlt style={{ fontSize: '0.7rem' }} />
             <span style={{ fontWeight: '600' }}>Yearly</span>
           </div>
+
+          {/* Interactive Date Editor Popover */}
+          {showDatePicker && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                left: 0,
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                padding: '0.85rem',
+                zIndex: 100,
+                width: '260px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.65rem',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: '800', color: '#1e293b' }}>Update Task Dates</span>
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(false)}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px' }}
+                >
+                  <FaTimes style={{ fontSize: '0.75rem' }} />
+                </button>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={editStartDate}
+                  onChange={(e) => setEditStartDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: '#475569', marginBottom: '2px' }}>
+                  Target Due Date
+                </label>
+                <input
+                  type="date"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.35rem 0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid #cbd5e1',
+                    fontSize: '0.78rem',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.4rem', marginTop: '0.2rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowDatePicker(false)}
+                  style={{ padding: '3px 8px', fontSize: '0.72rem', border: 'none', background: 'none', color: '#64748b', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editStartDate) onUpdateTaskField('startDate', editStartDate)
+                    if (editDueDate) onUpdateTaskField('dueDate', editDueDate)
+                    setShowDatePicker(false)
+                  }}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '0.74rem',
+                    fontWeight: '700',
+                    backgroundColor: '#c60016',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* CRM Linked Records Badges */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {/* CRM Linked Records Badges & Searchable Dropdown Selector */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           {task.projectId ? (
             <button
               type="button"
-              onClick={() => navigate(isAdmin ? `/admin/tasks/projects` : `/tasks/projects`)}
+              onClick={() => setShowCrmModal(!showCrmModal)}
+              title="Click to change linked Project, Deal, or Account"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.35rem',
                 padding: '3px 9px',
                 borderRadius: '6px',
-                backgroundColor: '#eff6ff',
-                color: '#2563eb',
+                backgroundColor: '#fff1f2',
+                color: '#c60016',
                 fontSize: '0.74rem',
                 fontWeight: '700',
-                border: '1px solid #dbeafe',
+                border: '1px solid #fecdd3',
                 cursor: 'pointer',
               }}
             >
               <FaFolder style={{ fontSize: '0.7rem' }} />
-              <span>Project #{task.projectId}</span>
+              <span>Project {task.projectId}</span>
             </button>
           ) : (
-            <span
+            <button
+              type="button"
+              onClick={() => setShowCrmModal(!showCrmModal)}
+              title="Click to link CRM Project, Deal, or Account"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -250,17 +416,19 @@ export default function TaskInfoLeftPanel({
                 fontSize: '0.74rem',
                 fontWeight: '700',
                 border: '1px solid #e2e8f0',
+                cursor: 'pointer',
               }}
             >
               <FaFolder style={{ fontSize: '0.7rem' }} />
               <span>General Task</span>
-            </span>
+            </button>
           )}
 
           {task.dealId && (
             <button
               type="button"
-              onClick={() => navigate(isAdmin ? `/admin/deals/view/${task.dealId}` : `/deals/view/${task.dealId}`)}
+              onClick={() => setShowCrmModal(!showCrmModal)}
+              title="Click to change linked Project, Deal, or Account"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -276,14 +444,15 @@ export default function TaskInfoLeftPanel({
               }}
             >
               <FaBriefcase style={{ fontSize: '0.7rem' }} />
-              <span>Deal #{task.dealId}</span>
+              <span>Deal {task.dealId}</span>
             </button>
           )}
 
           {task.accountId && (
             <button
               type="button"
-              onClick={() => navigate(isAdmin ? `/admin/accounts/my-accounts?accountId=${task.accountId}` : `/accounts/my-accounts?accountId=${task.accountId}`)}
+              onClick={() => setShowCrmModal(!showCrmModal)}
+              title="Click to change linked Project, Deal, or Account"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -299,8 +468,329 @@ export default function TaskInfoLeftPanel({
               }}
             >
               <FaBuilding style={{ fontSize: '0.7rem' }} />
-              <span>Account #{task.accountId}</span>
+              <span>Account {task.accountId}</span>
             </button>
+          )}
+
+          {/* Edit CRM Links Trigger Button */}
+          <button
+            type="button"
+            onClick={() => setShowCrmModal(!showCrmModal)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              padding: '3px 7px',
+              borderRadius: '6px',
+              border: '1px dashed #cbd5e1',
+              backgroundColor: '#ffffff',
+              color: '#64748b',
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+            title="Edit CRM Links"
+          >
+            <FaEdit style={{ fontSize: '0.65rem' }} />
+            <span>Link CRM</span>
+          </button>
+
+          {/* Searchable Dropdowns Selector Popup matching AddTaskPage */}
+          {showCrmModal && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 0,
+                right: 0,
+                backgroundColor: '#ffffff',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '12px',
+                boxShadow: '0 12px 32px rgba(0,0,0,0.16)',
+                padding: '1rem',
+                zIndex: 200,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.85rem',
+                minWidth: '320px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: '800', color: '#0f172a' }}>
+                  Link CRM Records
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowCrmModal(false)}
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: '2px' }}
+                >
+                  <FaTimes style={{ fontSize: '0.8rem' }} />
+                </button>
+              </div>
+
+              {/* 1. Project Name */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'project' ? dropdownRef : null}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.74rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
+                  <FaHandshake style={{ color: '#c60016' }} /> Project Name
+                </label>
+                <input
+                  type="text"
+                  value={task.projectName || task.dealName || (task.projectId ? `Project ${task.projectId}` : '')}
+                  onClick={() => {
+                    setActiveDropdownField('project')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Project Name"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.65rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'project' ? '1.5px solid #c60016' : '1.5px solid #cbd5e1',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: task.projectId ? '700' : '400',
+                    color: task.projectId ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'project' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
+                      background: '#ffffff',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      maxHeight: '240px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#c60016', fontSize: '0.75rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Project / Deal Name..."
+                        autoFocus
+                        style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ overflowY: 'auto', maxHeight: '200px', padding: '0.3rem' }}>
+                      {(crmLinks.deals || [])
+                        .filter((d) => !dropdownSearch.trim() || String(d.dealName || '').toLowerCase().includes(dropdownSearch.toLowerCase()) || String(d.dealNumber || '').toLowerCase().includes(dropdownSearch.toLowerCase()))
+                        .map((deal) => (
+                          <div
+                            key={deal.id}
+                            onClick={() => {
+                              onUpdateTaskField('projectId', deal.id)
+                              onUpdateTaskField('projectName', deal.dealName)
+                              onUpdateTaskField('dealId', deal.dealNumber || deal.id)
+                              onUpdateTaskField('dealName', deal.dealName)
+                              setActiveDropdownField(null)
+                            }}
+                            style={{
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              borderBottom: '1px solid #f1f5f9',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontWeight: '700', color: '#c60016', marginRight: '0.35rem' }}>[{deal.dealNumber || deal.id}]</span>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{deal.dealName}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Account (Lead) ID / Name */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'account' ? dropdownRef : null}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.74rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
+                  <FaBuilding style={{ color: '#7c3aed' }} /> Account (Lead) ID / Name
+                </label>
+                <input
+                  type="text"
+                  value={task.accountName || (task.accountId ? `Account ${task.accountId}` : '')}
+                  onClick={() => {
+                    setActiveDropdownField('account')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Account"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.65rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'account' ? '1.5px solid #7c3aed' : '1.5px solid #cbd5e1',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: task.accountId ? '700' : '400',
+                    color: task.accountId ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'account' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
+                      background: '#ffffff',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      maxHeight: '240px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#7c3aed', fontSize: '0.75rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Account / Lead..."
+                        autoFocus
+                        style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ overflowY: 'auto', maxHeight: '200px', padding: '0.3rem' }}>
+                      {(crmLinks.accounts || [])
+                        .filter((a) => !dropdownSearch.trim() || String(a.accountName || '').toLowerCase().includes(dropdownSearch.toLowerCase()) || String(a.accountNumber || '').toLowerCase().includes(dropdownSearch.toLowerCase()))
+                        .map((acc) => (
+                          <div
+                            key={acc.id || acc.accountNumber}
+                            onClick={() => {
+                              onUpdateTaskField('accountId', acc.accountNumber || acc.id)
+                              onUpdateTaskField('accountName', acc.accountName)
+                              setActiveDropdownField(null)
+                            }}
+                            style={{
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              borderBottom: '1px solid #f1f5f9',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#faf5ff' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontWeight: '700', color: '#7c3aed', marginRight: '0.35rem' }}>[{acc.accountNumber || acc.id}]</span>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{acc.accountName}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Quotation No. */}
+              <div style={{ position: 'relative' }} ref={activeDropdownField === 'quotation' ? dropdownRef : null}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.74rem', fontWeight: '700', color: '#475569', marginBottom: '0.25rem' }}>
+                  <FaFileInvoice style={{ color: '#c60016' }} /> Quotation No.
+                </label>
+                <input
+                  type="text"
+                  value={task.quotationNumber || task.quotationId || ''}
+                  onClick={() => {
+                    setActiveDropdownField('quotation')
+                    setDropdownSearch('')
+                  }}
+                  readOnly
+                  placeholder="Click to select Quotation"
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem 0.65rem',
+                    borderRadius: '8px',
+                    border: activeDropdownField === 'quotation' ? '1.5px solid #c60016' : '1.5px solid #cbd5e1',
+                    fontSize: '0.8rem',
+                    background: '#ffffff',
+                    boxSizing: 'border-box',
+                    cursor: 'pointer',
+                    fontWeight: (task.quotationNumber || task.quotationId) ? '700' : '400',
+                    color: (task.quotationNumber || task.quotationId) ? '#1e293b' : '#64748b',
+                  }}
+                />
+
+                {activeDropdownField === 'quotation' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
+                      background: '#ffffff',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 28px rgba(0, 0, 0, 0.15)',
+                      border: '1.5px solid #cbd5e1',
+                      zIndex: 1000,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      maxHeight: '240px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div style={{ padding: '0.45rem 0.65rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <FaSearch style={{ color: '#c60016', fontSize: '0.75rem', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        value={dropdownSearch}
+                        onChange={(e) => setDropdownSearch(e.target.value)}
+                        placeholder="Search Quotation Number..."
+                        autoFocus
+                        style={{ flex: 1, border: 'none', background: 'transparent', fontSize: '0.8rem', outline: 'none' }}
+                      />
+                    </div>
+                    <div style={{ overflowY: 'auto', maxHeight: '200px', padding: '0.3rem' }}>
+                      {(crmLinks.quotations || [])
+                        .filter((q) => !dropdownSearch.trim() || String(q.quotationNumber || '').toLowerCase().includes(dropdownSearch.toLowerCase()) || String(q.title || '').toLowerCase().includes(dropdownSearch.toLowerCase()))
+                        .map((quote) => (
+                          <div
+                            key={quote.id || quote.quotationNumber}
+                            onClick={() => {
+                              onUpdateTaskField('quotationId', quote.quotationNumber || quote.id)
+                              onUpdateTaskField('quotationNumber', quote.quotationNumber)
+                              setActiveDropdownField(null)
+                            }}
+                            style={{
+                              padding: '0.45rem 0.6rem',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.78rem',
+                              borderBottom: '1px solid #f1f5f9',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = '#fff1f2' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                          >
+                            <span style={{ fontWeight: '700', color: '#c60016', marginRight: '0.35rem' }}>[{quote.quotationNumber}]</span>
+                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{quote.title || 'Quotation'}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -388,7 +878,7 @@ export default function TaskInfoLeftPanel({
               border: 'none',
               fontSize: '0.8rem',
               fontWeight: '700',
-              color: '#2563eb',
+              color: '#c60016',
               cursor: 'pointer',
             }}
           >
@@ -405,12 +895,12 @@ export default function TaskInfoLeftPanel({
             padding: '0.5rem 1.4rem',
             borderRadius: '8px',
             border: 'none',
-            backgroundColor: '#2563eb',
+            backgroundColor: '#c60016',
             color: '#ffffff',
             fontSize: '0.84rem',
             fontWeight: '700',
             cursor: isSaving ? 'not-allowed' : 'pointer',
-            boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+            boxShadow: '0 2px 6px rgba(198, 0, 22, 0.25)',
           }}
         >
           {isSaving ? 'Saving...' : 'Submit'}

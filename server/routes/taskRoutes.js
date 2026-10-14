@@ -12,6 +12,7 @@ const Quotation = getMongoModel('quotations')
 const Project = getMongoModel('projects')
 const AuditLog = getMongoModel('audit_log')
 const TimeEntry = getMongoModel('time_entries')
+const TaskTimelog = getMongoModel('tasks_timelog')
 const User = getMongoModel('users')
 const Attachment = getMongoModel('attachments')
 const workManagementService = require('../services/workManagementService')
@@ -275,8 +276,20 @@ const extraRoutes = (router) => {
       }
       const actor = req.user || {}
       const userEmail = String(actor.email || actor.username || req.body.userEmail || '').trim().toLowerCase()
-      const userName = actor.name || actor.username || req.body.userName || (userEmail ? userEmail.split('@')[0] : 'User')
+      let userName = actor.name || actor.username || req.body.userName || (userEmail ? userEmail.split('@')[0] : 'User')
       const userId = actor.id || actor.legacyId || null
+
+      if (userId || userEmail) {
+        const commenterDoc = await User.findOne({
+          $or: [
+            ...(userId ? [{ id: userId }, { legacyId: Number(userId) || -1 }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        }).lean().catch(() => null)
+        if (commenterDoc) {
+          userName = commenterDoc.name || commenterDoc.username || commenterDoc.email || userName
+        }
+      }
 
       // Query MongoDB tasks collection for this task
       const isOid = mongoose.Types.ObjectId.isValid(taskId)
@@ -527,28 +540,65 @@ const extraRoutes = (router) => {
     }
   })
 
-  // Task Time Entries API (Synced with MongoDB time_entries)
+  // Task Time Entries API (Synced with MongoDB tasks_timelog and time_entries)
   router.get('/:id/time-entries', async (req, res, next) => {
     try {
       const taskId = String(req.params.id)
       const numId = Number(taskId) || -1
-      const entries = await TimeEntry.find({
-        $or: [{ taskId }, { taskId: numId }],
-      }).sort({ createdAt: -1, date: -1 }).lean()
+
+      const [timelogs, legacyEntries] = await Promise.all([
+        TaskTimelog.find({
+          $or: [{ taskId }, { taskId: numId }],
+        }).sort({ createdAt: -1, date: -1 }).lean().catch(() => []),
+        TimeEntry.find({
+          $or: [{ taskId }, { taskId: numId }],
+        }).sort({ createdAt: -1, date: -1 }).lean().catch(() => []),
+      ])
+
+      const seenIds = new Set()
+      const combined = []
+
+      timelogs.forEach((tl) => {
+        const idKey = String(tl.legacyId || tl.id || tl._id)
+        if (!seenIds.has(idKey)) {
+          seenIds.add(idKey)
+          combined.push({
+            id: tl.legacyId || tl.id || tl._id,
+            taskId: tl.taskId,
+            userId: tl.userId,
+            userEmail: tl.userEmail,
+            userName: tl.userName || (tl.userEmail ? tl.userEmail.split('@')[0] : 'User'),
+            minutes: Number(tl.minutes || 0),
+            description: tl.description || '',
+            taskDetails: tl.taskDetails || null,
+            date: tl.date || '',
+            isBillable: Boolean(tl.isBillable ?? true),
+            createdAt: tl.createdAt,
+          })
+        }
+      })
+
+      legacyEntries.forEach((e) => {
+        const idKey = String(e.legacyId || e.id || e._id)
+        if (!seenIds.has(idKey)) {
+          seenIds.add(idKey)
+          combined.push({
+            id: e.legacyId || e.id || e._id,
+            taskId: e.taskId,
+            userEmail: e.userEmail,
+            userName: e.userEmail ? e.userEmail.split('@')[0] : 'User',
+            minutes: Number(e.minutes || 0),
+            description: e.description || '',
+            date: e.date || '',
+            isBillable: Boolean(e.isBillable ?? true),
+            createdAt: e.createdAt,
+          })
+        }
+      })
 
       res.json({
         success: true,
-        data: entries.map((e) => ({
-          id: e.legacyId || e.id || e._id,
-          taskId: e.taskId,
-          userEmail: e.userEmail,
-          userName: e.userEmail ? e.userEmail.split('@')[0] : 'User',
-          minutes: Number(e.minutes || 0),
-          description: e.description || '',
-          date: e.date || '',
-          isBillable: Boolean(e.isBillable ?? true),
-          createdAt: e.createdAt,
-        })),
+        data: combined,
       })
     } catch (err) {
       next(err)
@@ -558,11 +608,77 @@ const extraRoutes = (router) => {
   router.post('/:id/time-entries', async (req, res, next) => {
     try {
       const taskId = String(req.params.id)
-      const result = await workManagementService.logTimeEntry(req.user, {
+      const isOid = mongoose.Types.ObjectId.isValid(taskId)
+      const numId = Number(taskId) || -1
+
+      const actor = req.user || {}
+      const actorEmail = String(actor.email || actor.username || req.body.userEmail || '').trim().toLowerCase()
+      const actorId = actor.id || actor.legacyId || null
+
+      const [taskDoc, userDoc] = await Promise.all([
+        Task.findOne({
+          $or: [{ id: taskId }, { legacyId: numId }, ...(isOid ? [{ _id: taskId }] : [])],
+        }).lean().catch(() => null),
+        User.findOne({
+          $or: [
+            ...(actorId ? [{ id: actorId }, { legacyId: Number(actorId) || -1 }] : []),
+            ...(actorEmail ? [{ email: actorEmail }] : []),
+          ],
+        }).lean().catch(() => null),
+      ])
+
+      const resolvedUserName = userDoc?.name || userDoc?.username || actor.name || actor.username || (actorEmail ? actorEmail.split('@')[0] : 'User')
+      const minutes = Number(req.body.minutes || 0)
+      const description = String(req.body.description || req.body.work || '').trim()
+      const date = req.body.date || new Date().toISOString().slice(0, 10)
+      const isBillable = Boolean(req.body.isBillable ?? true)
+
+      const taskDetails = taskDoc ? {
+        id: taskDoc.id || taskDoc.legacyId || taskDoc._id,
+        title: taskDoc.title,
+        status: taskDoc.status,
+        priority: taskDoc.priority,
+        projectId: taskDoc.projectId,
+        dealId: taskDoc.dealId,
+        accountId: taskDoc.accountId,
+      } : { id: taskId }
+
+      const logDoc = await TaskTimelog.create({
+        taskId,
+        userId: actorId || userDoc?.id || null,
+        userName: resolvedUserName,
+        userEmail: actorEmail,
+        minutes,
+        description,
+        taskDetails,
+        date,
+        isBillable,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      // Also trigger workManagementService.logTimeEntry to keep task actualMinutes updated
+      await workManagementService.logTimeEntry(req.user, {
         ...req.body,
         taskId,
+      }).catch(() => null)
+
+      res.status(201).json({
+        success: true,
+        data: {
+          id: logDoc.legacyId || logDoc._id,
+          taskId: logDoc.taskId,
+          userId: logDoc.userId,
+          userName: logDoc.userName,
+          userEmail: logDoc.userEmail,
+          minutes: logDoc.minutes,
+          description: logDoc.description,
+          taskDetails: logDoc.taskDetails,
+          date: logDoc.date,
+          isBillable: logDoc.isBillable,
+          createdAt: logDoc.createdAt,
+        },
       })
-      res.status(201).json({ success: true, data: result })
     } catch (err) {
       next(err)
     }

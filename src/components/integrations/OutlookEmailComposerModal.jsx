@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FaPaperclip, FaPaperPlane, FaTimes, FaEnvelope } from 'react-icons/fa'
 import integrationApi from '../../services/integrationApi'
 import emailTemplateApi from '../../services/emailTemplateApi'
+import { DEFAULT_COMPANY_SIGNATURE } from '../../constants/defaultSignature'
 import './OutlookEmailComposerModal.css'
 
 const escapeHtml = (value) => String(value || '')
@@ -68,12 +69,27 @@ const buildBodyHtml = (value) => {
   return `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.5;color:#111827;">${pTags.join('')}</div>`
 }
 
-const buildSignatureHtml = (signatureImage, contentIdOrSrc) => {
-  if (!signatureImage || !contentIdOrSrc) return ''
-  const src = String(contentIdOrSrc).startsWith('cid:')
-    ? contentIdOrSrc
-    : `data:${signatureImage.contentType};base64,${signatureImage.contentBytes}`
-  return `<div style="margin-top:12px;"><img src="${escapeHtml(src)}" alt="Email Signature" style="max-width:560px;width:100%;height:auto;display:block;border:0;" /></div>`
+const CRM_DOMAIN = 'https://swaticrm.com'
+
+const resolveCompanyLinkUrl = () => {
+  if (typeof window === 'undefined') return 'https://swaticrm.com'
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  return isLocal ? window.location.origin : 'https://swaticrm.com'
+}
+
+const getPublicSignatureUrl = (templateId) => {
+  const isLocal = typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  const baseDomain = isLocal ? CRM_DOMAIN : (window.location.origin || CRM_DOMAIN)
+  return templateId
+    ? `${baseDomain}/api/email-templates/public/signature-image/${templateId}`
+    : `${baseDomain}/api/email-templates/public/signature-image`
+}
+
+const buildSignatureHtml = (signatureImage, srcUrl) => {
+  if (!signatureImage || !srcUrl) return ''
+  const companyUrl = resolveCompanyLinkUrl()
+  return `<div style="margin-top:16px;"><a href="${companyUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;border:0;outline:none;"><img src="${escapeHtml(srcUrl)}" alt="Email Signature" style="max-width:560px;width:100%;height:auto;display:block;border:0;" /></a></div>`
 }
 
 const buildEmailHtml = (message, signatureImage, signatureSrc) => (
@@ -82,8 +98,12 @@ const buildEmailHtml = (message, signatureImage, signatureSrc) => (
 
 const renderComposerPreview = (value, signatureImage) => {
   const hasBody = Boolean(String(value || ''))
-  const previewHtml = buildEmailHtml(value, signatureImage, 'preview')
-  if (!hasBody && !signatureImage) return <div className="oec-message-preview-text">No message body</div>
+  const sig = signatureImage || DEFAULT_COMPANY_SIGNATURE
+  const previewSrc = sig && sig.contentBytes
+    ? `data:${sig.contentType || 'image/png'};base64,${sig.contentBytes}`
+    : ''
+  const previewHtml = buildEmailHtml(value, sig, previewSrc)
+  if (!hasBody && !sig) return <div className="oec-message-preview-text">No message body</div>
   return <div className="oec-message-preview-html" dangerouslySetInnerHTML={{ __html: previewHtml }} />
 }
 
@@ -105,7 +125,7 @@ const OutlookEmailComposerModal = ({
   const [templates, setTemplates] = useState([])
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState(null)
-  const [signatureImage, setSignatureImage] = useState(null)
+  const [signatureImage, setSignatureImage] = useState(DEFAULT_COMPANY_SIGNATURE)
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [statusMessage, setStatusMessage] = useState(null)
@@ -141,14 +161,36 @@ const OutlookEmailComposerModal = ({
         }
         setSelectedTemplateId('')
         setSelectedTemplate(null)
-        setSignatureImage(null)
+        setSignatureImage(DEFAULT_COMPANY_SIGNATURE)
         return null
       })
-      .then((resolved) => {
-        if (!alive || !resolved) return
-        setSubject(resolved.subject || defaultSubject)
-        setMessage(htmlToPlainText(resolved.bodyHtml || defaultMessage))
-        setSignatureImage(resolved.signatureImage || null)
+      .then(async (resolved) => {
+        if (!alive) return
+        if (resolved) {
+          setSubject(resolved.subject || defaultSubject)
+          setMessage(htmlToPlainText(resolved.bodyHtml || defaultMessage))
+          let sig = resolved.signatureImage || null
+          if (!sig) {
+            try {
+              const settings = await emailTemplateApi.settings()
+              if (settings?.signature?.images && settings.signature.images.length > 0) {
+                sig = settings.signature.images[0]
+              }
+            } catch (_) {}
+          }
+          if (alive) setSignatureImage(sig || DEFAULT_COMPANY_SIGNATURE)
+        } else {
+          try {
+            const settings = await emailTemplateApi.settings()
+            if (alive && settings?.signature?.images && settings.signature.images.length > 0) {
+              setSignatureImage(settings.signature.images[0])
+            } else if (alive) {
+              setSignatureImage(DEFAULT_COMPANY_SIGNATURE)
+            }
+          } catch (_) {
+            if (alive) setSignatureImage(DEFAULT_COMPANY_SIGNATURE)
+          }
+        }
       })
       .catch(() => {
         if (alive) setTemplates([])
@@ -167,7 +209,14 @@ const OutlookEmailComposerModal = ({
     const template = templates.find((entry) => entry.id === templateId) || null
     setSelectedTemplate(template)
     if (!templateId) {
-      setSignatureImage(null)
+      try {
+        const settings = await emailTemplateApi.settings()
+        if (settings?.signature?.images && settings.signature.images.length > 0) {
+          setSignatureImage(settings.signature.images[0])
+          return
+        }
+      } catch (_) {}
+      setSignatureImage(DEFAULT_COMPANY_SIGNATURE)
       return
     }
     setIsLoadingTemplates(true)
@@ -180,7 +229,16 @@ const OutlookEmailComposerModal = ({
       })
       setSubject(resolved.subject || '')
       setMessage(htmlToPlainText(resolved.bodyHtml || ''))
-      setSignatureImage(resolved.signatureImage || null)
+      let sig = resolved.signatureImage || null
+      if (!sig) {
+        try {
+          const settings = await emailTemplateApi.settings()
+          if (settings?.signature?.images && settings.signature.images.length > 0) {
+            sig = settings.signature.images[0]
+          }
+        } catch (_) {}
+      }
+      setSignatureImage(sig || DEFAULT_COMPANY_SIGNATURE)
     } catch (error) {
       setStatusMessage({ type: 'error', text: error?.response?.data?.message || 'Unable to apply selected template.' })
     } finally {
@@ -235,25 +293,27 @@ const OutlookEmailComposerModal = ({
     setStatusMessage(null)
 
     try {
-      const inlineImage = signatureImage
-      const signatureContentId = inlineImage ? `template-signature-${selectedTemplate?.id || 'image'}` : ''
+      const inlineImage = signatureImage || DEFAULT_COMPANY_SIGNATURE
+
       const outgoingMessage = buildEmailHtml(
         message || '',
         inlineImage,
-        inlineImage ? `cid:${signatureContentId}` : ''
+        'cid:email-signature-img'
       )
       const outgoingAttachments = attachments.map((att) => ({
         name: att.name,
         contentType: att.contentType,
-        contentBytes: att.contentBytes,
+        contentBytes: String(att.contentBytes || '').replace(/^data:[^;]+;base64,/, ''),
+        isInline: false,
       }))
-      if (inlineImage) {
+
+      if (inlineImage && inlineImage.contentBytes) {
         outgoingAttachments.push({
-          name: inlineImage.fileName || 'signature-image',
-          contentType: inlineImage.contentType,
-          contentBytes: inlineImage.contentBytes,
+          name: 'email-signature-img',
+          contentType: inlineImage.contentType || 'image/png',
+          contentBytes: String(inlineImage.contentBytes).replace(/^data:[^;]+;base64,/, ''),
           isInline: true,
-          contentId: signatureContentId,
+          contentId: 'email-signature-img',
         })
       }
 

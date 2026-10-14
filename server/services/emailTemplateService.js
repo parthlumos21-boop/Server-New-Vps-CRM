@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { getMongoModel } = require('../models/mongoModels')
 const { AppError } = require('../utils/appError')
 const { isPrivilegedRole } = require('../security/accessScope')
+const { DEFAULT_COMPANY_SIGNATURE } = require('../constants/defaultSignature')
 
 const EmailTemplate = getMongoModel('email_templates')
 const EmailSetting = getMongoModel('email_settings')
@@ -362,22 +363,48 @@ class EmailTemplateService {
         bodyHtml: payload.bodyHtml || '',
       }
     const context = await loadEntityContext(actor, payload.entityType || payload.targetType || template.category, payload.entityId || payload.targetId)
+    let signatureImage = template.signatureImage || null
+    if (!signatureImage) {
+      try {
+        const settings = await this.getSettings(actor)
+        signatureImage = settings?.signature?.images?.[0] || DEFAULT_COMPANY_SIGNATURE
+      } catch (_) {
+        signatureImage = DEFAULT_COMPANY_SIGNATURE
+      }
+    }
     return {
       templateId: template.id || '',
       templateName: template.name || '',
       subject: replaceVariables(template.subject, context),
       bodyHtml: replaceVariables(template.bodyHtml, context),
-      signatureImage: template.signatureImage || null,
+      signatureImage,
     }
   }
 
   async getSettings(actor) {
-    const doc = await EmailSetting.findOne({ companyId: actor.companyId || 1 }).lean()
-    return doc || {
-      companyId: actor.companyId || 1,
-      provider: 'outlook',
-      signature: { enabled: false, html: '', images: [], appendAutomatically: false },
+    let doc = await EmailSetting.findOne({ companyId: actor.companyId || 1 }).lean()
+    if (!doc) {
+      doc = {
+        companyId: actor.companyId || 1,
+        provider: 'outlook',
+        signature: {
+          enabled: true,
+          html: '<div style="margin-top:16px;"><a href="https://swaticrm.com" target="_blank" rel="noopener noreferrer"><img src="cid:email-signature-img" alt="Email Signature" style="max-width:560px;width:100%;height:auto;display:block;border:0;" /></a></div>',
+          images: [DEFAULT_COMPANY_SIGNATURE],
+          appendAutomatically: true,
+        },
+      }
+    } else if (!doc.signature?.images || doc.signature.images.length === 0) {
+      doc = {
+        ...doc,
+        signature: {
+          ...doc.signature,
+          enabled: doc.signature?.enabled ?? true,
+          images: [DEFAULT_COMPANY_SIGNATURE],
+        },
+      }
     }
+    return doc
   }
 
   async saveSignatureImage(actor, payload = {}) {

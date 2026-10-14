@@ -109,7 +109,7 @@ export default function TaskAttachmentsMiniList({
                     style={{
                       fontSize: '0.8rem',
                       fontWeight: '600',
-                      color: '#2563eb',
+                      color: '#c60016',
                       cursor: 'pointer',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -191,7 +191,7 @@ export default function TaskAttachmentsMiniList({
           gap: '0.35rem',
           background: 'none',
           border: 'none',
-          color: '#2563eb',
+          color: '#c60016',
           fontSize: '0.76rem',
           fontWeight: '700',
           cursor: isUploading ? 'not-allowed' : 'pointer',

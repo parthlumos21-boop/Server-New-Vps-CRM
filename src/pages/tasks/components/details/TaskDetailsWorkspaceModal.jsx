@@ -5,6 +5,7 @@ import TaskInfoLeftPanel from './TaskInfoLeftPanel'
 import TaskActivityRightPanel from './TaskActivityRightPanel'
 import { styles } from './taskDetailsStyles'
 import taskApi from '../../../../services/taskApi'
+import { userApi } from '../../../../services/userApi'
 
 export default function TaskDetailsWorkspaceModal({
   isOpen = false,
@@ -19,6 +20,20 @@ export default function TaskDetailsWorkspaceModal({
 }) {
   const [activeTask, setActiveTask] = useState(task)
   const [activeTab, setActiveTab] = useState(initialTab || 'comments')
+  const [resolvedUsers, setResolvedUsers] = useState(availableUsers || [])
+
+  useEffect(() => {
+    if (Array.isArray(availableUsers) && availableUsers.length > 0) {
+      setResolvedUsers(availableUsers)
+    } else {
+      userApi
+        .listDirectory()
+        .then((users) => {
+          if (Array.isArray(users)) setResolvedUsers(users)
+        })
+        .catch(() => {})
+    }
+  }, [availableUsers])
 
   useEffect(() => {
     if (isOpen) {
@@ -423,7 +438,7 @@ export default function TaskDetailsWorkspaceModal({
         <div style={styles.leftPanel}>
           <TaskInfoLeftPanel
             task={activeTask}
-            availableUsers={availableUsers}
+            availableUsers={resolvedUsers}
             onUpdateTaskField={handleUpdateTaskField}
             onAddAssignee={handleAddAssignee}
             onRemoveAssignee={handleRemoveAssignee}
@@ -446,12 +461,8 @@ export default function TaskDetailsWorkspaceModal({
           />
         </div>
 
-        {/* Middle Divider with "Custom Field" tab (matching Image 1) */}
-        <div style={styles.middleDivider}>
-          <div style={styles.customFieldTab}>
-            Custom Field
-          </div>
-        </div>
+        {/* Middle Divider */}
+        <div style={styles.middleDivider} />
 
         {/* Right Panel (56% width - Collaboration & History) */}
         <div style={styles.rightPanel}>

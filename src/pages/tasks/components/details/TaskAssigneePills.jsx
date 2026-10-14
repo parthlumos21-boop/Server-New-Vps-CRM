@@ -121,7 +121,7 @@ export default function TaskAssigneePills({
               fontWeight: '600',
             }}
           >
-            <FaPlus style={{ fontSize: '0.6rem', color: '#2563eb' }} />
+            <FaPlus style={{ fontSize: '0.6rem', color: '#c60016' }} />
             <span>Assignee</span>
           </button>
 

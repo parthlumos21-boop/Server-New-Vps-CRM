@@ -259,6 +259,11 @@ export const TasksWorkspacePage = () => {
   // Filter tasks based on role, star filter, status multi-chip, date preset, and dynamic rules
   const filteredTasks = useMemo(() => {
     return (tasks || []).filter((t) => {
+      // Eliminate empty, null, or uninitialized dummy tasks (prevent "U — U Pending")
+      if (!t || (!t.id && !t.legacyId && !t._id) || !String(t.title || '').trim()) {
+        return false
+      }
+
       // Role scope: If not admin, restrict to tasks where user email is assignedTo, in assignedToUserEmails, createdBy, or follower
       if (!isAdmin) {
         const assigned = String(t.assignedTo || '').trim().toLowerCase()

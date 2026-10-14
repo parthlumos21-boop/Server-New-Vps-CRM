@@ -1,4 +1,5 @@
 const emailTemplateService = require('../services/emailTemplateService')
+const { DEFAULT_COMPANY_SIGNATURE } = require('../constants/defaultSignature')
 
 class EmailTemplateController {
   async list(req, res, next) {
@@ -88,6 +89,50 @@ class EmailTemplateController {
       next(error)
     }
   }
+
+  async getPublicSignatureImage(req, res, next) {
+    try {
+      const { getMongoModel } = require('../models/mongoModels')
+      const EmailSetting = getMongoModel('email_settings')
+      const EmailTemplate = getMongoModel('email_templates')
+
+      let signatureImage = null
+      const templateId = req.params.id
+      if (templateId) {
+        try {
+          const mongoose = require('mongoose')
+          if (mongoose.Types.ObjectId.isValid(templateId)) {
+            const template = await EmailTemplate.findOne({ _id: new mongoose.Types.ObjectId(templateId), deletedAt: null }).lean()
+            signatureImage = template?.signatureImage
+          }
+        } catch (_) {}
+      }
+
+      if (!signatureImage) {
+        const settings = await EmailSetting.findOne().lean()
+        signatureImage = settings?.signature?.images?.[0]
+      }
+
+      if (!signatureImage || !signatureImage.contentBytes) {
+        signatureImage = DEFAULT_COMPANY_SIGNATURE
+      }
+
+      if (!signatureImage || !signatureImage.contentBytes) {
+        return res.status(404).send('Signature image not found')
+      }
+
+      const cleanBase64 = String(signatureImage.contentBytes).replace(/^data:[^;]+;base64,/, '')
+      const imgBuffer = Buffer.from(cleanBase64, 'base64')
+
+      res.set('Content-Type', signatureImage.contentType || 'image/png')
+      res.set('Cache-Control', 'public, max-age=31536000, immutable')
+      res.set('Access-Control-Allow-Origin', '*')
+      return res.send(imgBuffer)
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 module.exports = new EmailTemplateController()
+

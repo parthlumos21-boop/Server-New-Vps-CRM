@@ -123,9 +123,9 @@ export default function TaskActivityTimelineTab({
                           width: '8px',
                           height: '8px',
                           borderRadius: '50%',
-                          backgroundColor: '#2563eb',
+                          backgroundColor: '#c60016',
                           border: '2px solid #ffffff',
-                          boxShadow: '0 0 0 1px #93c5fd',
+                          boxShadow: '0 0 0 1px #fecdd3',
                         }}
                       />
 

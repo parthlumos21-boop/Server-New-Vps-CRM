@@ -203,7 +203,7 @@ export default function TaskCommentsTab({
               padding: '0.45rem 1rem',
               borderRadius: '8px',
               border: 'none',
-              backgroundColor: commentText.trim() ? '#2563eb' : '#94a3b8',
+              backgroundColor: commentText.trim() ? '#c60016' : '#94a3b8',
               color: '#ffffff',
               fontSize: '0.78rem',
               fontWeight: '700',
