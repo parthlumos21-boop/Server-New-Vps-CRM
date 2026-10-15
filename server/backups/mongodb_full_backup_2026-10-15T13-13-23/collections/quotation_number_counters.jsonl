@@ -1,0 +1,2 @@
+{"_id":{"$oid":"6ac62bcdad4f9ad142f872b3"},"financialYear":{"$numberInt":"2026"},"__v":{"$numberInt":"0"},"createdAt":{"$date":{"$numberLong":"1791372237000"}},"sequence":{"$numberInt":"47"},"updatedAt":{"$date":{"$numberLong":"1792043194379"}}}
+{"_id":{"$oid":"6ac62c02ad4f9ad142f872b4"},"financialYear":{"$numberInt":"2027"},"__v":{"$numberInt":"0"},"createdAt":{"$date":{"$numberLong":"1791372290917"}},"sequence":{"$numberInt":"1"},"updatedAt":{"$date":{"$numberLong":"1791372290917"}}}

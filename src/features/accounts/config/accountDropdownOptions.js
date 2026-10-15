@@ -43,6 +43,16 @@ export const CUSTOMER_TYPE_LABELS = [
 
 export const CUSTOMER_TYPE_OPTIONS = CUSTOMER_TYPE_LABELS.map(toOption)
 
+export const sanitizeCustomerType = (val) => {
+  if (!val || typeof val !== 'string') return ''
+  const trimmed = val.trim()
+  if (!trimmed) return ''
+  const lower = trimmed.toLowerCase()
+  if (lower === 'marketing swati' || lower === 'swati' || lower === 'prospect') return ''
+  const match = CUSTOMER_TYPE_LABELS.find((label) => label.toLowerCase() === lower)
+  return match || ''
+}
+
 export const INDUSTRY_TYPE_LABELS = [
   'AUTOMATION',
   'AGRICULTURE & FOOD',

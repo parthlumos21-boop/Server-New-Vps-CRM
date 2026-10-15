@@ -184,6 +184,7 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     : (existingLead?.reasonForLost || existingLead?.reasonForLostOrder || existingLead?.formData?.reasonForLost || existingLead?.formData?.reasonForLostOrder || '')
 
   const isQuotationSentPayload = sanitizedPayload.stage === 'quotation_sent' || sanitizedPayload.status === 'quotation_sent' || sanitizedPayload.accountStatus === 'Quotation Sent' || sanitizedPayload.accountStatus === 'quotation_sent' || sanitizedPayload.accountState === 'Quotation Sent' || sanitizedPayload.accountState === 'quotation_sent'
+  const isRejectedStage = sanitizedPayload.stage === 'rejected' || sanitizedPayload.status === 'rejected' || sanitizedPayload.accountStatus === 'Rejected' || sanitizedPayload.accountStatus === 'rejected' || Boolean(sanitizedPayload.reasonForLost) || Boolean(sanitizedPayload.reasonForLostOrder)
   const isOnlyPoValueUpdate = Boolean(sanitizedPayload.isOnlyPoValueUpdate)
   const shouldPreserveStatus = Boolean(sanitizedPayload.preserveStatus) || isOnlyPoValueUpdate
   const targetStatus = shouldPreserveStatus
@@ -196,7 +197,9 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
                 ? 'quotation_sent'
                 : (isPoConvertedStage
                     ? 'convert_to_po'
-                    : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending')))))
+                    : (isRejectedStage
+                        ? 'rejected'
+                        : (sanitizedPayload.accountState || sanitizedPayload.status || existingLead?.status || 'pending'))))))
   const targetAccountStatus = shouldPreserveStatus
     ? (existingLead?.accountStatus || sanitizedPayload.accountStatus || existingLead?.formData?.accountStatus || 'Pending')
     : (isExistingSourceProject
@@ -207,7 +210,9 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
                 ? 'Quotation Sent'
                 : (isPoConvertedStage
                     ? 'convert_to_po'
-                    : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending')))))
+                    : (isRejectedStage
+                        ? 'Rejected'
+                        : (sanitizedPayload.accountStatus || existingLead?.accountStatus || existingLead?.formData?.accountStatus || 'Pending'))))))
   const targetAccountState = shouldPreserveStatus
     ? (existingLead?.accountState || sanitizedPayload.accountState || existingLead?.formData?.accountState || 'Pending')
     : (isExistingSourceProject
@@ -217,8 +222,10 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
             : (isQuotationSentPayload
                 ? 'Quotation Sent'
                 : (isPoConvertedStage
-                    ? 'convert_to_po'
-                    : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending')))))
+                    ? (sanitizedPayload.accountState || 'convert_to_po')
+                    : (isRejectedStage
+                        ? 'rejected'
+                        : (sanitizedPayload.accountState || existingLead?.accountState || existingLead?.formData?.accountState || 'Pending'))))))
   const targetStage = shouldPreserveStatus
     ? (existingLead?.stage || 'new')
     : (isExistingSourceProject
@@ -229,7 +236,9 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
                 ? 'quotation_sent'
                 : (isPoConvertedStage
                     ? 'convert_to_po'
-                    : (sanitizedPayload.stage || existingLead?.stage || 'new')))))
+                    : (isRejectedStage
+                        ? 'rejected'
+                        : (sanitizedPayload.stage || existingLead?.stage || 'new'))))))
   const resolvedPanelAssemblies = sanitizedPayload.panelAssemblies !== undefined
     ? sanitizedPayload.panelAssemblies
     : (existingLead?.panelAssemblies || existingLead?.formData?.panelAssemblies || [])
@@ -243,6 +252,32 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
             : (existingLead?.dealValue !== undefined
                 ? existingLead?.dealValue
                 : (existingLead?.formData?.poValue !== undefined ? existingLead?.formData?.poValue : null))))
+
+  const nowIso = new Date().toISOString()
+  const actualAccountStatus = isPoConvertedStage
+    ? 'Won'
+    : (isRejectedStage
+        ? 'Lost'
+        : (sanitizedPayload.actualAccountStatus || existingLead?.actualAccountStatus || existingLead?.formData?.actualAccountStatus || null))
+  const actualDealStatus = isPoConvertedStage
+    ? 'Won'
+    : (isRejectedStage
+        ? 'Lost'
+        : (sanitizedPayload.actualDealStatus || existingLead?.actualDealStatus || existingLead?.formData?.actualDealStatus || null))
+  const projectStatus = isPoConvertedStage
+    ? 'Won'
+    : (isRejectedStage
+        ? 'Lost'
+        : (sanitizedPayload.projectStatus || existingLead?.projectStatus || existingLead?.formData?.projectStatus || null))
+  const lostDate = isRejectedStage
+    ? (sanitizedPayload.lostDate || existingLead?.lostDate || nowIso)
+    : (sanitizedPayload.lostDate || existingLead?.lostDate || existingLead?.formData?.lostDate || null)
+  const wonDate = isPoConvertedStage
+    ? (sanitizedPayload.wonDate || existingLead?.wonDate || nowIso)
+    : (sanitizedPayload.wonDate || existingLead?.wonDate || existingLead?.formData?.wonDate || null)
+  const statusDate = (isPoConvertedStage || isRejectedStage)
+    ? (sanitizedPayload.statusDate || nowIso)
+    : (sanitizedPayload.statusDate || existingLead?.statusDate || existingLead?.formData?.statusDate || null)
 
   const normalizedPayload = applyOwnershipMetadata(actor, {
     ...sanitizedPayload,
@@ -260,6 +295,14 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
     panelAssemblies: resolvedPanelAssemblies,
     accountStatus: targetAccountStatus,
     accountState: targetAccountState,
+    actualAccountStatus,
+    actualDealStatus,
+    projectStatus,
+    lostDate,
+    wonDate,
+    statusDate,
+    actualAccountStatusDate: (isPoConvertedStage || isRejectedStage) ? nowIso : (sanitizedPayload.actualAccountStatusDate || existingLead?.actualAccountStatusDate || null),
+    actualDealStatusDate: (isPoConvertedStage || isRejectedStage) ? nowIso : (sanitizedPayload.actualDealStatusDate || existingLead?.actualDealStatusDate || null),
     reasonForLost: resolvedReasonForLost,
     reasonForLostOrder: resolvedReasonForLost,
     assignedTo: assignedUser?.id || existingLead?.assignedTo || null,
@@ -302,6 +345,14 @@ const buildLeadPayload = async (payload = {}, actor, existingLead = null) => {
       panelAssemblies: resolvedPanelAssemblies,
       accountStatus: targetAccountStatus,
       accountState: targetAccountState,
+      actualAccountStatus,
+      actualDealStatus,
+      projectStatus,
+      lostDate,
+      wonDate,
+      statusDate,
+      actualAccountStatusDate: (isPoConvertedStage || isRejectedStage) ? nowIso : (sanitizedPayload.actualAccountStatusDate || existingLead?.actualAccountStatusDate || null),
+      actualDealStatusDate: (isPoConvertedStage || isRejectedStage) ? nowIso : (sanitizedPayload.actualDealStatusDate || existingLead?.actualDealStatusDate || null),
       projectName: sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.projectName || ''),
       dealName: sanitizedPayload.dealName !== undefined ? sanitizedPayload.dealName : (sanitizedPayload.projectName !== undefined ? sanitizedPayload.projectName : (existingLead?.dealName || existingLead?.projectName || '')),
       reasonForLost: resolvedReasonForLost,
@@ -584,6 +635,15 @@ const frontendDeleteLead = async (actor, leadId) => {
   return { id: existingLead.id }
 }
 
+const isHex24 = (val) => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val)
+const buildLeadIdMatchFilters = (id) => {
+  const num = Number(id)
+  return [
+    ...(Number.isInteger(num) ? [{ legacyId: num }, { id: num }, { id: String(num) }, { 'formData.id': num }] : [{ id: String(id) }]),
+    ...(isHex24(String(id)) ? [{ _id: String(id) }] : []),
+  ]
+}
+
 const updateLead = async (actor, leadId, payload) => {
   const existingLead = await getLeadById(actor, leadId, { includeGroupScope: false })
 
@@ -610,7 +670,7 @@ const updateLead = async (actor, leadId, payload) => {
     const Deal = getMongoModel('deals')
     if (Lead) {
       await Lead.updateMany(
-        { $or: [{ legacyId: normalizeLeadId(leadId) }, { id: String(leadId) }, { _id: String(leadId) }] },
+        { $or: buildLeadIdMatchFilters(leadId) },
         {
           $set: {
             email: nextEmail,
@@ -694,7 +754,7 @@ const updateLead = async (actor, leadId, payload) => {
 
     if (Lead) {
       await Lead.updateMany(
-        { $or: [{ legacyId: normalizeLeadId(leadId) }, { id: String(leadId) }, { _id: String(leadId) }] },
+        { $or: buildLeadIdMatchFilters(leadId) },
         {
           $set: {
             poValue: numericPoValue,
@@ -737,77 +797,192 @@ const updateLead = async (actor, leadId, payload) => {
   }
 
   if (isPoConversionTarget) {
+    const nowIso = new Date().toISOString()
     const { getMongoModel } = require('../models/mongoModels')
+    const Lead = getMongoModel('leads')
     const Deal = getMongoModel('deals')
     const Customer = getMongoModel('customers')
-    await Deal.updateMany(
-      { accountId: normalizeLeadId(leadId), frontendDeleted: { $ne: true } },
+
+    await Lead.updateMany(
+      { $or: buildLeadIdMatchFilters(leadId) },
       {
         $set: {
-          stage: 'convert_to_po',
           status: 'convert_to_po',
+          accountState: leadPayload.accountState || 'convert_to_po',
+          stage: 'convert_to_po',
           accountStatus: 'convert_to_po',
-          accountState: 'convert_to_po',
+          actualAccountStatus: 'Won',
+          actualDealStatus: 'Won',
+          projectStatus: 'Won',
+          wonDate: nowIso,
+          actualAccountStatusDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
           poValue: leadPayload.poValue,
+          dealValue: leadPayload.dealValue || leadPayload.poValue,
           statusAsPerOrderReceived: leadPayload.statusAsPerOrderReceived,
           statusAsPerQuotationGiven: leadPayload.statusAsPerQuotationGiven,
           gstin: leadPayload.gstin,
           jobNo: leadPayload.jobNo,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
+          'formData.status': 'convert_to_po',
+          'formData.accountState': leadPayload.accountState || 'convert_to_po',
+          'formData.stage': 'convert_to_po',
+          'formData.accountStatus': 'convert_to_po',
+          'formData.actualAccountStatus': 'Won',
+          'formData.actualDealStatus': 'Won',
+          'formData.projectStatus': 'Won',
+          'formData.wonDate': nowIso,
+          'formData.poValue': leadPayload.poValue,
+          'formData.dealValue': leadPayload.dealValue || leadPayload.poValue,
+          'formData.statusAsPerOrderReceived': leadPayload.statusAsPerOrderReceived,
+          'formData.statusAsPerQuotationGiven': leadPayload.statusAsPerQuotationGiven,
+          'formData.gstin': leadPayload.gstin,
+          'formData.jobNo': leadPayload.jobNo,
+          'data.poValue': leadPayload.poValue,
+          'data.dealValue': leadPayload.dealValue || leadPayload.poValue,
         },
       }
-    )
+    ).catch(() => {})
+
+    await Deal.updateMany(
+      { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
+      {
+        $set: {
+          stage: 'convert_to_po',
+          status: 'convert_to_po',
+          dealStage: 'convert_to_po',
+          accountStatus: 'convert_to_po',
+          accountState: leadPayload.accountState || 'convert_to_po',
+          actualDealStatus: 'Won',
+          projectStatus: 'Won',
+          wonDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
+          poValue: leadPayload.poValue,
+          dealValue: leadPayload.dealValue || leadPayload.poValue,
+          statusAsPerOrderReceived: leadPayload.statusAsPerOrderReceived,
+          statusAsPerQuotationGiven: leadPayload.statusAsPerQuotationGiven,
+          gstin: leadPayload.gstin,
+          jobNo: leadPayload.jobNo,
+          updatedAt: nowIso,
+          'data.stage': 'convert_to_po',
+          'data.status': 'convert_to_po',
+          'data.dealStage': 'convert_to_po',
+          'data.accountStatus': 'convert_to_po',
+          'data.accountState': leadPayload.accountState || 'convert_to_po',
+          'data.actualDealStatus': 'Won',
+          'data.projectStatus': 'Won',
+          'data.wonDate': nowIso,
+          'data.poValue': leadPayload.poValue,
+          'data.dealValue': leadPayload.dealValue || leadPayload.poValue,
+          'formData.stage': 'convert_to_po',
+          'formData.status': 'convert_to_po',
+          'formData.dealStage': 'convert_to_po',
+          'formData.accountStatus': 'convert_to_po',
+          'formData.accountState': leadPayload.accountState || 'convert_to_po',
+          'formData.actualDealStatus': 'Won',
+          'formData.projectStatus': 'Won',
+          'formData.wonDate': nowIso,
+          'formData.poValue': leadPayload.poValue,
+          'formData.dealValue': leadPayload.dealValue || leadPayload.poValue,
+        },
+      }
+    ).catch(() => {})
+
     await Customer.updateMany(
       { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }] },
       {
         $set: {
           customerStatus: 'convert_to_po',
           status: 'convert_to_po',
-          accountState: 'convert_to_po',
+          accountState: leadPayload.accountState || 'convert_to_po',
+          actualAccountStatus: 'Won',
+          projectStatus: 'Won',
+          wonDate: nowIso,
           poValue: leadPayload.poValue,
           gstin: leadPayload.gstin,
           jobNo: leadPayload.jobNo,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
+          'data.customerStatus': 'convert_to_po',
+          'data.status': 'convert_to_po',
+          'data.actualAccountStatus': 'Won',
+          'data.projectStatus': 'Won',
+          'data.poValue': leadPayload.poValue,
+          'data.gstin': leadPayload.gstin,
+          'data.jobNo': leadPayload.jobNo,
         },
       }
     ).catch(() => {})
   }
 
-  const isRejectedTarget = targetStage === 'rejected' || payload.stage === 'rejected' || payload.status === 'rejected' || Boolean(payload.reasonForLost) || Boolean(payload.reasonForLostOrder)
+  const isRejectedTarget = targetStage === 'rejected' || payload.stage === 'rejected' || payload.status === 'rejected' || payload.accountStatus === 'Rejected' || payload.accountStatus === 'rejected' || Boolean(payload.reasonForLost) || Boolean(payload.reasonForLostOrder)
   if (isRejectedTarget) {
+    const nowIso = new Date().toISOString()
     const { getMongoModel } = require('../models/mongoModels')
     const Lead = getMongoModel('leads')
     const Deal = getMongoModel('deals')
     const Customer = getMongoModel('customers')
     const reasonValue = payload.reasonForLost || payload.reasonForLostOrder || leadPayload.reasonForLost || ''
     
-    await Lead.updateOne(
-      { legacyId: normalizeLeadId(leadId) },
+    await Lead.updateMany(
+      { $or: buildLeadIdMatchFilters(leadId) },
       {
         $set: {
           stage: 'rejected',
+          status: 'rejected',
+          accountStatus: 'Rejected',
+          accountState: 'rejected',
+          actualAccountStatus: 'Lost',
+          actualDealStatus: 'Lost',
+          projectStatus: 'Lost',
+          lostDate: nowIso,
+          actualAccountStatusDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
           reasonForLost: reasonValue,
           reasonForLostOrder: reasonValue,
           'formData.stage': 'rejected',
+          'formData.status': 'rejected',
+          'formData.accountStatus': 'Rejected',
+          'formData.accountState': 'rejected',
+          'formData.actualAccountStatus': 'Lost',
+          'formData.actualDealStatus': 'Lost',
+          'formData.projectStatus': 'Lost',
+          'formData.lostDate': nowIso,
           'formData.reasonForLost': reasonValue,
           'formData.reasonForLostOrder': reasonValue,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
         },
       }
     ).catch(() => {})
 
     await Deal.updateMany(
-      { accountId: normalizeLeadId(leadId), frontendDeleted: { $ne: true } },
+      { $or: [{ accountId: normalizeLeadId(leadId) }, { accountId: String(leadId) }], frontendDeleted: { $ne: true } },
       {
         $set: {
           stage: 'rejected',
+          status: 'rejected',
+          actualDealStatus: 'Lost',
+          projectStatus: 'Lost',
+          lostDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
           reasonForLost: reasonValue,
           reasonForLostOrder: reasonValue,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
           'data.stage': 'rejected',
+          'data.status': 'rejected',
+          'data.actualDealStatus': 'Lost',
+          'data.projectStatus': 'Lost',
+          'data.lostDate': nowIso,
           'data.reasonForLost': reasonValue,
           'data.reasonForLostOrder': reasonValue,
           'formData.stage': 'rejected',
+          'formData.status': 'rejected',
+          'formData.actualDealStatus': 'Lost',
+          'formData.projectStatus': 'Lost',
+          'formData.lostDate': nowIso,
           'formData.reasonForLost': reasonValue,
           'formData.reasonForLostOrder': reasonValue,
         },
@@ -821,10 +996,16 @@ const updateLead = async (actor, leadId, payload) => {
           customerStatus: 'rejected',
           status: 'rejected',
           accountState: 'rejected',
+          actualAccountStatus: 'Lost',
+          projectStatus: 'Lost',
+          lostDate: nowIso,
           reasonForLost: reasonValue,
           reasonForLostOrder: reasonValue,
-          updatedAt: new Date().toISOString(),
+          updatedAt: nowIso,
           'data.customerStatus': 'rejected',
+          'data.status': 'rejected',
+          'data.actualAccountStatus': 'Lost',
+          'data.projectStatus': 'Lost',
           'data.reasonForLost': reasonValue,
           'formData.reasonForLost': reasonValue,
           'formData.reasonForLostOrder': reasonValue,
@@ -877,7 +1058,7 @@ const updateLead = async (actor, leadId, payload) => {
       const convertedAt = new Date().toISOString()
       const targetState = skipAutoConvert
         ? (updatedLead.status || updatedLead.stage || updatedLead.accountState || existingDeal.status || existingDeal.stage || 'new')
-        : ((updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : (updatedLead.status === 'staged' || updatedLead.stage === 'staged' ? 'staged' : (updatedLead.status || 'staged')))
+        : ((updatedLead.status === 'convert_to_po' || updatedLead.stage === 'convert_to_po' || updatedLead.accountStatus === 'PO Converted') ? 'convert_to_po' : ((updatedLead.stage === 'rejected' || updatedLead.status === 'rejected' || updatedLead.accountStatus === 'Rejected') ? 'rejected' : (updatedLead.status === 'staged' || updatedLead.stage === 'staged' ? 'staged' : (updatedLead.status || 'staged'))))
       await leadRepository.updateLead(normalizeLeadId(leadId), {
         isConverted: true,
         convertedAt,
@@ -1003,8 +1184,18 @@ const buildDealPayloadFromAccount = (account = {}, actor = {}) => {
     amount: account.dealValue || account.projectValue || account.value || account.amount || null,
     value: account.dealValue || account.projectValue || account.value || account.amount || null,
     currency: account.currency || 'INR',
-    stage: (account.stage === 'convert_to_po' || account.status === 'convert_to_po' || account.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
-    status: (account.stage === 'convert_to_po' || account.status === 'convert_to_po' || account.accountStatus === 'PO Converted') ? 'convert_to_po' : 'staged',
+    stage: (account.stage === 'convert_to_po' || account.status === 'convert_to_po' || account.accountStatus === 'PO Converted')
+      ? 'convert_to_po'
+      : ((account.stage === 'rejected' || account.status === 'rejected' || account.accountStatus === 'Rejected') ? 'rejected' : 'staged'),
+    status: (account.stage === 'convert_to_po' || account.status === 'convert_to_po' || account.accountStatus === 'PO Converted')
+      ? 'convert_to_po'
+      : ((account.stage === 'rejected' || account.status === 'rejected' || account.accountStatus === 'Rejected') ? 'rejected' : 'staged'),
+    actualDealStatus: account.actualDealStatus || ((account.stage === 'convert_to_po' || account.status === 'convert_to_po') ? 'Won' : ((account.stage === 'rejected' || account.status === 'rejected') ? 'Lost' : null)),
+    projectStatus: account.projectStatus || ((account.stage === 'convert_to_po' || account.status === 'convert_to_po') ? 'Won' : ((account.stage === 'rejected' || account.status === 'rejected') ? 'Lost' : null)),
+    lostDate: account.lostDate || null,
+    wonDate: account.wonDate || null,
+    reasonForLost: account.reasonForLost || account.reasonForLostOrder || '',
+    reasonForLostOrder: account.reasonForLostOrder || account.reasonForLost || '',
     assignedTo: ownerUserId,
     ownerUserId,
     ownerName,

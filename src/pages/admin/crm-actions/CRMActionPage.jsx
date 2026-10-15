@@ -25,7 +25,13 @@ import Button from '../../../components/common/Button'
 import { useAuth } from '../../../context/AuthContext'
 import { useData } from '../../../context/DataContext'
 import { getAccountsBoardData } from '../../../features/adminAccounts/selectors/getAccountsBoardData'
-import { ACCOUNT_CHANGE_STATUS_OPTIONS, getAccountChangeStatusOption } from '../../../features/adminAccounts/config/accountStages'
+import {
+  ACCOUNT_CHANGE_STATUS_OPTIONS,
+  ACCOUNT_ORDER_STATUS_OPTIONS,
+  ACCOUNT_QUOTATION_STATUS_OPTIONS,
+  getAccountChangeStatusOption,
+  shouldShowAccountPoDetails,
+} from '../../../features/adminAccounts/config/accountStages'
 import { getCrmOwnerDisplay } from '../../../features/users/crmUserDirectory'
 import { getCachedAccountOwnerOptions, loadAccountOwnerOptions } from '../../../features/adminAccounts/utils/accountOwnerOptions'
 import { authService } from '../../../services/authService'
@@ -458,6 +464,13 @@ const CRMActionPage = () => {
   const [statusForm, setStatusForm] = useState({
     status: '',
     note: '',
+    reasonForLost: '',
+    poValue: '',
+    orderReceivedStatus: '',
+    quotationGivenStatus: '',
+    gstin: '',
+    jobNo: '',
+    accountState: '',
   })
 
   const [quotationForm, setQuotationForm] = useState({
@@ -607,6 +620,13 @@ const CRMActionPage = () => {
     setStatusForm({
       status: selectedStatus.value,
       note: '',
+      reasonForLost: selectedDeal.reasonForLost || selectedDeal.reasonForLostOrder || '',
+      poValue: selectedDeal.poValue ?? selectedDeal.dealValue ?? '',
+      orderReceivedStatus: selectedDeal.statusAsPerOrderReceived || selectedDeal.orderCustomerStatus || '',
+      quotationGivenStatus: selectedDeal.statusAsPerQuotationGiven || selectedDeal.quotationCustomerStatus || '',
+      gstin: selectedDeal.gstin || '',
+      jobNo: selectedDeal.jobNo || '',
+      accountState: selectedDeal.accountState || '',
     })
   }, [actionKey, recordModule, selectedDeal])
 
@@ -833,28 +853,83 @@ const CRMActionPage = () => {
     const nextErrors = {}
     if (!selectedDeal?.id) nextErrors.record = 'Please select a deal.'
     if (!statusForm.status) nextErrors.status = 'Deal status is required.'
+
+    const isPoConversion = statusForm.status === 'convert_to_po' || shouldShowAccountPoDetails(statusForm.status)
+    if (isPoConversion && !String(statusForm.poValue ?? '').trim()) {
+      nextErrors.poValue = 'PO Value is required to convert deal to PO Converted status.'
+    }
+
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
 
     const statusOption = getAccountChangeStatusOption(statusForm.status)
     const statusLabel = statusOption.value === 'convert_to_po' ? 'PO Converted' : statusOption.label
-    const result = await updateDeal(selectedDeal.id, {
+    const targetStageKey = statusOption.stageKey || statusForm.status
+    const nowIso = new Date().toISOString()
+    const isRejected = targetStageKey === 'rejected' || statusOption.value === 'rejected'
+
+    let dealPayload = {
       status: statusOption.value,
       dealStatus: statusOption.value,
       statusLabel,
-      stage: statusOption.stageKey,
-      updatedAt: new Date().toISOString(),
+      stage: targetStageKey,
+      updatedAt: nowIso,
       statusChangeNote: statusForm.note.trim(),
       dealTimeline: [
         ...(Array.isArray(selectedDeal.dealTimeline) ? selectedDeal.dealTimeline : []),
         {
           type: 'status-changed',
           title: `Status changed to ${statusLabel}`,
-          dateTime: new Date().toISOString(),
+          dateTime: nowIso,
           remarks: statusForm.note.trim(),
         },
       ],
-    })
+    }
+
+    if (isRejected) {
+      const reasonVal = (statusForm.reasonForLost || '').trim()
+      dealPayload = {
+        ...dealPayload,
+        stage: 'rejected',
+        status: 'rejected',
+        dealStage: 'rejected',
+        accountStatus: 'Rejected',
+        accountState: 'rejected',
+        actualDealStatus: 'Lost',
+        actualAccountStatus: 'Lost',
+        projectStatus: 'Lost',
+        lostDate: nowIso,
+        actualDealStatusDate: nowIso,
+        actualAccountStatusDate: nowIso,
+        statusDate: nowIso,
+        reasonForLost: reasonVal,
+        reasonForLostOrder: reasonVal,
+      }
+    } else if (isPoConversion) {
+      dealPayload = {
+        ...dealPayload,
+        stage: 'convert_to_po',
+        status: 'convert_to_po',
+        dealStage: 'convert_to_po',
+        accountStatus: 'convert_to_po',
+        accountState: statusForm.accountState || 'convert_to_po',
+        actualDealStatus: 'Won',
+        actualAccountStatus: 'Won',
+        projectStatus: 'Won',
+        wonDate: nowIso,
+        actualDealStatusDate: nowIso,
+        actualAccountStatusDate: nowIso,
+        statusDate: nowIso,
+        poValue: statusForm.poValue === '' ? '' : Number(statusForm.poValue) || statusForm.poValue,
+        dealValue: statusForm.poValue === '' ? '' : Number(statusForm.poValue) || statusForm.poValue,
+        statusAsPerOrderReceived: (statusForm.orderReceivedStatus || '').trim(),
+        statusAsPerQuotationGiven: (statusForm.quotationGivenStatus || '').trim(),
+        gstin: (statusForm.gstin || '').trim(),
+        jobNo: (statusForm.jobNo || '').trim(),
+      }
+    }
+
+    const result = await updateDeal(selectedDeal.id, dealPayload)
 
     if (!result.success) {
       setErrors({ record: result.message || 'Unable to change deal status.' })
@@ -1072,43 +1147,145 @@ const CRMActionPage = () => {
     )
   }
 
-  const renderDealChangeStatus = () => (
-    <form className="crm-action-form" onSubmit={handleSaveDealStatus}>
-      {renderContext(true)}
+  const renderDealChangeStatus = () => {
+    const isPoConversion = statusForm.status === 'convert_to_po' || shouldShowAccountPoDetails(statusForm.status)
+    const isRejected = statusForm.status === 'rejected'
 
-      <section className="crm-action-section">
-        <h2>Change Status</h2>
-        <div className="crm-action-grid">
-          <SearchableSelect
-            value={statusForm.status}
-            onChange={(value) => setStatusForm({ ...statusForm, status: value })}
-            options={DEAL_CHANGE_STATUS_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-            placeholder="Select status"
-            error={errors.status}
-            required
-          />
-          <label className="crm-action-field crm-action-field-full">
-            <span>Status Note</span>
-            <textarea
-              className="crm-action-input crm-action-textarea"
-              value={statusForm.note}
-              onChange={(event) => setStatusForm({ ...statusForm, note: event.target.value })}
-              placeholder="Add status note"
-            />
-          </label>
+    return (
+      <form className="crm-action-form" onSubmit={handleSaveDealStatus}>
+        {renderContext(true)}
+
+        <section className="crm-action-section">
+          <h2>Change Status</h2>
+          <div className="crm-action-grid">
+            <label className="crm-action-field">
+              <span>Deal Status<em>*</em></span>
+              <select
+                className={`crm-action-input crm-action-select${errors.status ? ' crm-action-input-error' : ''}`}
+                value={statusForm.status}
+                onChange={(event) => setStatusForm({ ...statusForm, status: event.target.value })}
+              >
+                <option value="">Select Deal Status</option>
+                {DEAL_CHANGE_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value || option.label} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.status ? <small className="crm-action-error-text">{errors.status}</small> : null}
+            </label>
+
+            {isRejected ? (
+              <label className="crm-action-field">
+                <span>Reason For Lost</span>
+                <select
+                  className="crm-action-input crm-action-select"
+                  value={statusForm.reasonForLost}
+                  onChange={(event) => setStatusForm({ ...statusForm, reasonForLost: event.target.value })}
+                >
+                  <option value="">Choose Reason For Lost</option>
+                  {[
+                    'Intense Competition',
+                    'On Hold',
+                    'Payment Terms not matching',
+                    'Delivery not matching',
+                    'Budgetory Offer',
+                  ].map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {isPoConversion ? (
+              <>
+                <div className="crm-action-field crm-action-field-full" style={{ fontWeight: 600, fontSize: '0.95rem', color: '#1e293b', marginTop: '8px' }}>
+                  Please fill in the PO Converted details below
+                </div>
+                <label className="crm-action-field">
+                  <span>PO Value <em style={{ color: '#dc2626' }}>*</em></span>
+                  <input
+                    type="number"
+                    min="0"
+                    className={`crm-action-input${errors.poValue ? ' crm-action-input-error' : ''}`}
+                    value={statusForm.poValue}
+                    onChange={(event) => setStatusForm({ ...statusForm, poValue: event.target.value })}
+                    placeholder="Enter PO value"
+                  />
+                  {errors.poValue ? <span className="crm-action-error-text" style={{ color: '#dc2626', fontSize: '12px' }}>{errors.poValue}</span> : null}
+                </label>
+                <label className="crm-action-field">
+                  <span>Status Of Customer As Per Order Received</span>
+                  <select
+                    className="crm-action-input crm-action-select"
+                    value={statusForm.orderReceivedStatus}
+                    onChange={(event) => setStatusForm({ ...statusForm, orderReceivedStatus: event.target.value })}
+                  >
+                    <option value="">Select</option>
+                    {ACCOUNT_ORDER_STATUS_OPTIONS.map((entry) => (
+                      <option key={entry} value={entry}>{entry}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="crm-action-field">
+                  <span>Status Of Customer As Per Quotation Given</span>
+                  <select
+                    className="crm-action-input crm-action-select"
+                    value={statusForm.quotationGivenStatus}
+                    onChange={(event) => setStatusForm({ ...statusForm, quotationGivenStatus: event.target.value })}
+                  >
+                    <option value="">Select</option>
+                    {ACCOUNT_QUOTATION_STATUS_OPTIONS.map((entry) => (
+                      <option key={entry} value={entry}>{entry}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="crm-action-field">
+                  <span>GSTIN</span>
+                  <input
+                    type="text"
+                    className="crm-action-input"
+                    value={statusForm.gstin}
+                    onChange={(event) => setStatusForm({ ...statusForm, gstin: event.target.value })}
+                    placeholder="Enter GSTIN"
+                  />
+                </label>
+                <label className="crm-action-field">
+                  <span>Job No</span>
+                  <input
+                    type="text"
+                    className="crm-action-input"
+                    value={statusForm.jobNo}
+                    onChange={(event) => setStatusForm({ ...statusForm, jobNo: event.target.value })}
+                    placeholder="Enter Job No"
+                  />
+                </label>
+              </>
+            ) : null}
+
+            <label className="crm-action-field crm-action-field-full">
+              <span>Status Note</span>
+              <textarea
+                className="crm-action-input crm-action-textarea"
+                value={statusForm.note}
+                onChange={(event) => setStatusForm({ ...statusForm, note: event.target.value })}
+                placeholder="Add status note"
+              />
+            </label>
+          </div>
+        </section>
+
+        <div className="crm-action-reassign-footer">
+          <Button type="button" variant="outline" onClick={() => navigate(returnTo)}>
+            <FaTimes /> Close
+          </Button>
+          <Button type="submit">
+            <FaSave /> Save
+          </Button>
         </div>
-      </section>
-
-      <div className="crm-action-reassign-footer">
-        <Button type="button" variant="outline" onClick={() => navigate(returnTo)}>
-          <FaTimes /> Close
-        </Button>
-        <Button type="submit">
-          <FaSave /> Save
-        </Button>
-      </div>
-    </form>
-  )
+      </form>
+    )
+  }
 
   const renderEmailHeader = () => (
     <section className="crm-action-email-header">

@@ -42,7 +42,63 @@ import { ACCOUNT_REPORT_FIELD_OPTIONS } from '../../../features/adminReports/acc
 import { DEAL_REPORT_FIELD_OPTIONS } from '../../../features/adminReports/dealReportTemplateConfig'
 import { QUOTATION_REPORT_FIELD_OPTIONS } from '../../../features/adminReports/quotationReportTemplateConfig'
 import { CUSTOMER_REPORT_FIELD_OPTIONS } from '../../../features/adminReports/customerReportTemplateConfig'
+import userGroupApi from '../../../services/userGroupApi'
 import './CustomReportsPage.css'
+
+export const parseToStandardDateTimestamp = (value) => {
+  if (!value) return null
+  if (value instanceof Date) {
+    const t = value.getTime()
+    return isNaN(t) ? null : t
+  }
+  if (typeof value === 'number') {
+    return isNaN(value) ? null : value
+  }
+  const str = String(value).trim()
+  if (!str) return null
+
+  // 1. Check for YYYY-MM-DD or YYYY/MM/DD (with optional time)
+  const isoMatch = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
+  if (isoMatch) {
+    const y = parseInt(isoMatch[1], 10)
+    const m = parseInt(isoMatch[2], 10) - 1
+    const d = parseInt(isoMatch[3], 10)
+    const dateObj = new Date(y, m, d, 0, 0, 0, 0)
+    return isNaN(dateObj.getTime()) ? null : dateObj.getTime()
+  }
+
+  // 2. Check for DD-MM-YYYY or DD/MM/YYYY
+  const dmyMatch = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/)
+  if (dmyMatch) {
+    const d = parseInt(dmyMatch[1], 10)
+    const m = parseInt(dmyMatch[2], 10) - 1
+    const y = parseInt(dmyMatch[3], 10)
+    const dateObj = new Date(y, m, d, 0, 0, 0, 0)
+    return isNaN(dateObj.getTime()) ? null : dateObj.getTime()
+  }
+
+  // 3. Fallback standard parse
+  const parsed = new Date(str)
+  if (!isNaN(parsed.getTime())) {
+    const dateObj = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 0, 0, 0, 0)
+    return dateObj.getTime()
+  }
+
+  return null
+}
+
+export const isDateInRange = (dateVal, fromStr, toStr) => {
+  const fromTime = fromStr ? parseToStandardDateTimestamp(fromStr) : null
+  const toTime = toStr ? parseToStandardDateTimestamp(toStr) : null
+  if (!fromTime && !toTime) return true
+
+  const targetTime = parseToStandardDateTimestamp(dateVal)
+  if (targetTime === null) return false
+
+  if (fromTime !== null && targetTime < fromTime) return false
+  if (toTime !== null && targetTime > (toTime + 86399999)) return false
+  return true
+}
 
 const resolveLabel = (type, key) => {
   const customLabel = getCustomReportFieldLabel(type, key)
@@ -311,7 +367,7 @@ const getReportGroupBy = (report) => (
     : ''
 )
 
-const ReportCard = ({ report, onViewWeb, onExport, isKevalOrAdmin }) => {
+const ReportCard = ({ report, onViewWeb, onExport, onDelete, isKevalOrAdmin, canDeleteReport }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -334,6 +390,19 @@ const ReportCard = ({ report, onViewWeb, onExport, isKevalOrAdmin }) => {
         <div className="cr-list-actions" ref={menuRef} style={{ position: 'relative' }}>
           {getReportType(report) && <span className="cr-list-card-type">{getReportType(report)}</span>}
           <span className="cr-list-card-divider" style={{ color: '#d0d8e4', margin: '0 0.25rem' }}>|</span>
+          {canDeleteReport && report.isCustom && (
+            <button 
+              type="button" 
+              title="Delete Report" 
+              className="cr-settings-btn cr-delete-btn" 
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete && onDelete(report)
+              }}
+            >
+              <FaTrash />
+            </button>
+          )}
           {isKevalOrAdmin ? (
             <>
               <button 
@@ -540,6 +609,13 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           displayFields: Array.isArray(tpl.displayFields) ? tpl.displayFields : (Array.isArray(tpl.selectedFields) ? tpl.selectedFields : []),
           filters: Array.isArray(tpl.filters) ? tpl.filters : [],
           description: tpl.description || '',
+          userGroups: Array.isArray(tpl.userGroups) ? tpl.userGroups : (Array.isArray(tpl.selectedUserGroups) ? tpl.selectedUserGroups : []),
+          selectedUserGroups: Array.isArray(tpl.selectedUserGroups) ? tpl.selectedUserGroups : (Array.isArray(tpl.userGroups) ? tpl.userGroups : []),
+          userGroupMembers: Array.isArray(tpl.userGroupMembers) ? tpl.userGroupMembers : [],
+          accountOwner: tpl.accountOwner || tpl.owner || '',
+          accountOwnerEmail: tpl.accountOwnerEmail || '',
+          generatedFrom: tpl.generatedFrom || '',
+          generatedTo: tpl.generatedTo || '',
           createdBy: tpl.creatorName || tpl.createdBy || '-',
           creatorName: tpl.creatorName || tpl.createdBy || '-',
           createdOn: tpl.createdAt || tpl.createdOn,
@@ -570,6 +646,13 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           filters: Array.isArray(rpt.filters) ? rpt.filters : [],
           isGenerated: true,
           isBackend: true,
+          userGroups: Array.isArray(rpt.userGroups) ? rpt.userGroups : (Array.isArray(rpt.selectedUserGroups) ? rpt.selectedUserGroups : []),
+          selectedUserGroups: Array.isArray(rpt.selectedUserGroups) ? rpt.selectedUserGroups : (Array.isArray(rpt.userGroups) ? rpt.userGroups : []),
+          userGroupMembers: Array.isArray(rpt.userGroupMembers) ? rpt.userGroupMembers : [],
+          accountOwner: rpt.accountOwner || rpt.owner || '',
+          accountOwnerEmail: rpt.accountOwnerEmail || '',
+          generatedFrom: rpt.generatedFrom || '',
+          generatedTo: rpt.generatedTo || '',
           createdBy: rpt.creatorName || rpt.createdBy || '-',
           creatorName: rpt.creatorName || rpt.createdBy || '-',
           createdOn: rpt.createdAt || rpt.createdOn,
@@ -600,9 +683,20 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
   })), [])
 
   const customReports = useMemo(() => {
+    const backendNames = new Set(backendTemplates.map(t => String(t.reportName || t.name || '').trim().toLowerCase()))
+    const backendIds = new Set(backendTemplates.map(t => String(t.id || t._id || '').trim()))
+
+    const uniqueLocal = templates
+      .filter((report) => canUserViewReportTemplate(report, user))
+      .filter((report) => {
+        const id = String(report.id || '').trim()
+        const name = String(report.reportName || report.name || report.title || '').trim().toLowerCase()
+        return !backendIds.has(id) && !backendNames.has(name)
+      })
+
     const combined = [
-      ...templates.filter((report) => canUserViewReportTemplate(report, user)),
       ...backendTemplates,
+      ...uniqueLocal,
       ...generatedReports,
     ]
     return combined.map((report) => {
@@ -696,11 +790,26 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
     navigate(`${basePath}/custom/builder?id=${encodeURIComponent(report.id)}&duplicate=1`)
   }
 
-  const handleDelete = (report) => {
-    if (report.systemReport || !canUserEditReportTemplate(report, user)) return
-    if (!window.confirm(`Delete report "${report.reportName || report.title}"?`)) return
-    deleteAdminReportTemplate(report.id)
-    setTemplates(getAdminReportTemplates())
+  const handleDelete = async (report) => {
+    if (!canCreateReportTemplate) return
+    const reportName = report.reportName || report.title || report.name || 'this report'
+    if (!window.confirm(`Are you sure you want to delete report "${reportName}"?`)) return
+
+    try {
+      const reportId = report._id || report.id
+      if (report.isGenerated) {
+        await reportApi.deleteGeneratedReport(reportId)
+      } else {
+        await reportApi.deleteReportTemplate(reportId)
+      }
+      deleteAdminReportTemplate(report.id)
+      deleteAdminReportTemplate(report._id)
+      setTemplates(getAdminReportTemplates())
+      await loadBackendReportsData()
+    } catch (err) {
+      console.error('Failed to delete report:', err)
+      alert('Failed to delete report: ' + (err.response?.data?.error || err.message))
+    }
   }
 
   const handleViewWeb = useCallback(async (report) => {
@@ -1570,35 +1679,32 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
     }
 
     const reportOwner = String(report.accountOwner || report.owner || '').trim().toLowerCase()
-    const reportFrom = report.generatedFrom ? new Date(`${report.generatedFrom}T00:00:00`) : null
-    const reportTo = report.generatedTo ? new Date(`${report.generatedTo}T23:59:59`) : null
+    const reportOwnerEmail = String(report.accountOwnerEmail || '').trim().toLowerCase()
+    const reportUserGroups = Array.isArray(report.userGroups) ? report.userGroups : (Array.isArray(report.selectedUserGroups) ? report.selectedUserGroups : [])
+    const reportUserGroupMembers = Array.isArray(report.userGroupMembers) ? report.userGroupMembers : []
 
-    // Pre-calculate quotation matches within [reportFrom, reportTo]
-    const quotesInRange = (reportFrom || reportTo)
-      ? finalQuotations.filter((q) => {
-          const qDateStr = q.quotationDate || q.date || q.createdAt
-          if (!qDateStr) return false
-          const qDate = new Date(qDateStr)
-          if (isNaN(qDate.getTime())) return false
-          if (reportFrom && qDate < reportFrom) return false
-          if (reportTo && qDate > reportTo) return false
-          return true
-        })
-      : []
+    let liveGroupMembers = reportUserGroupMembers
+    if (reportUserGroups.length > 0 && liveGroupMembers.length === 0) {
+      try {
+        const fetched = await userGroupApi.listMembersByGroupIds(reportUserGroups)
+        if (Array.isArray(fetched) && fetched.length > 0) {
+          liveGroupMembers = fetched
+        }
+      } catch (err) {
+        console.error('Failed to live fetch group members for report:', err)
+      }
+    }
 
-    const quoteAccountKeys = new Set()
-    const quoteDealKeys = new Set()
-    quotesInRange.forEach((q) => {
-      if (q.accountId) quoteAccountKeys.add(String(q.accountId).toLowerCase())
-      if (q.accountNumber) quoteAccountKeys.add(String(q.accountNumber).toLowerCase())
-      if (q.accountNo) quoteAccountKeys.add(String(q.accountNo).toLowerCase())
-      if (q.accountName) quoteAccountKeys.add(String(q.accountName).toLowerCase().trim())
-      if (q.dealId) quoteDealKeys.add(String(q.dealId).toLowerCase())
-      if (q.dealName) quoteDealKeys.add(String(q.dealName).toLowerCase().trim())
-    })
+    const allowedGroupNames = new Set(reportUserGroups.map((g) => String(g).trim().toLowerCase()).filter(Boolean))
+    const allowedMemberNames = new Set(liveGroupMembers.map((m) => String(m.name || '').trim().toLowerCase()).filter(Boolean))
+    const allowedMemberEmails = new Set(liveGroupMembers.map((m) => String(m.email || '').trim().toLowerCase()).filter(Boolean))
+
+    const reportFromStr = String(report.generatedFrom || '').trim()
+    const reportToStr = String(report.generatedTo || '').trim()
+    const hasCustomDateRange = Boolean(reportFromStr || reportToStr)
 
     const applyReportScope = (items, type) => items.filter((item) => {
-      // 1. Owner Filter
+      // 1. Owner & User Group Scope Filter
       if (reportOwner && reportOwner !== 'all') {
         const itemOwners = [
           item.accountOwnerName,
@@ -1614,60 +1720,111 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
           item.customerOwner,
         ].filter(Boolean).map((o) => String(o).trim().toLowerCase())
 
-        const ownerMatched = itemOwners.some((o) => o === reportOwner || o.includes(reportOwner) || reportOwner.includes(o))
+        const itemEmails = [
+          item.accountOwnerEmail,
+          item.ownerEmail,
+          item.assignedUserEmail,
+          item.email,
+          item.userEmail,
+          item.raw?.ownerEmail,
+          item.raw?.email,
+          item.raw?.accountOwnerEmail,
+        ].filter(Boolean).map((e) => String(e).trim().toLowerCase())
+
+        const matchedMember = liveGroupMembers.find((m) =>
+          String(m.name || '').trim().toLowerCase() === reportOwner ||
+          String(m.email || '').trim().toLowerCase() === reportOwner
+        )
+        const targetEmail = matchedMember ? String(matchedMember.email).trim().toLowerCase() : reportOwnerEmail
+
+        const ownerMatched = itemOwners.some((o) => o === reportOwner || o.includes(reportOwner) || reportOwner.includes(o)) ||
+          (targetEmail && itemEmails.some((e) => e === targetEmail || e.includes(targetEmail)))
+
         if (!ownerMatched) return false
+      } else if (allowedMemberNames.size > 0 || allowedMemberEmails.size > 0 || allowedGroupNames.size > 0) {
+        const itemOwners = [
+          item.accountOwnerName,
+          item.accountOwner,
+          item.ownerName,
+          item.owner,
+          item.assignedToName,
+          item.assignedTo,
+          item.dealOwnerName,
+          item.dealOwner,
+          item.raw?.accountOwner,
+          item.ownerCode,
+          item.customerOwner,
+        ].filter(Boolean).map((o) => String(o).trim().toLowerCase())
+
+        const itemEmails = [
+          item.accountOwnerEmail,
+          item.ownerEmail,
+          item.assignedUserEmail,
+          item.email,
+          item.userEmail,
+          item.raw?.ownerEmail,
+          item.raw?.email,
+          item.raw?.accountOwnerEmail,
+        ].filter(Boolean).map((e) => String(e).trim().toLowerCase())
+
+        const itemGroups = [
+          item.userGroup,
+          item.raw?.userGroup,
+          item.assignedUserGroup,
+          item.raw?.assignedUserGroup,
+          item.formData?.['User Group'],
+          item.formData?.userGroup,
+        ].filter(Boolean).map((g) => String(g).trim().toLowerCase())
+
+        const matchesName = itemOwners.some((o) => allowedMemberNames.has(o))
+        const matchesEmail = itemEmails.some((e) => allowedMemberEmails.has(e))
+        const matchesGroup = itemGroups.some((g) => allowedGroupNames.has(g))
+
+        if (!matchesName && !matchesEmail && !matchesGroup) return false
       }
 
       // 2. Date Filter ("Quotes Generated Between" / Custom Range)
-      if (reportFrom || reportTo) {
+      if (hasCustomDateRange) {
         if (type === 'account') {
-          const itemAccId = String(item.id || item.accountNumber || item.accountNo || '').toLowerCase()
-          const itemAccName = String(item.name || item.accountName || item.customerName || '').toLowerCase().trim()
-          const hasQuoteInRange = quoteAccountKeys.has(itemAccId) || quoteAccountKeys.has(itemAccName)
-          if (hasQuoteInRange) return true
+          const dateCandidates = [
+            item.accountDate,
+            item.date,
+            item.createdAt,
+            item.formData?.accountDate,
+            item.formData?.date,
+          ].filter(Boolean)
 
-          const dVal = item.accountDate || item.date || item.createdAt || item.updatedAt
-          if (dVal) {
-            const d = new Date(dVal)
-            if (!isNaN(d.getTime())) {
-              if (reportFrom && d < reportFrom) return false
-              if (reportTo && d > reportTo) return false
-              return true
-            }
-          }
-          return false
+          const inRange = dateCandidates.some((d) => isDateInRange(d, reportFromStr, reportToStr))
+          if (!inRange) return false
         } else if (type === 'deal') {
-          const itemDealId = String(item.id || item.dealNumber || '').toLowerCase()
-          const itemDealName = String(item.name || item.dealName || item.title || '').toLowerCase().trim()
-          const hasQuoteInRange = quoteDealKeys.has(itemDealId) || quoteDealKeys.has(itemDealName)
-          if (hasQuoteInRange) return true
+          const dateCandidates = [
+            item.dealDate,
+            item.quotationDate,
+            item.addedOn,
+            item.createdAt,
+            item.formData?.dealDate,
+          ].filter(Boolean)
 
-          const dVal = item.dealDate || item.quotationDate || item.addedOn || item.createdAt
-          if (dVal) {
-            const d = new Date(dVal)
-            if (!isNaN(d.getTime())) {
-              if (reportFrom && d < reportFrom) return false
-              if (reportTo && d > reportTo) return false
-              return true
-            }
-          }
-          return false
+          const inRange = dateCandidates.some((d) => isDateInRange(d, reportFromStr, reportToStr))
+          if (!inRange) return false
         } else if (type === 'quotation') {
-          const dVal = item.quotationDate || item.date || item.createdAt
-          if (!dVal) return false
-          const d = new Date(dVal)
-          if (isNaN(d.getTime())) return false
-          if (reportFrom && d < reportFrom) return false
-          if (reportTo && d > reportTo) return false
-          return true
+          const dateCandidates = [
+            item.quotationDate,
+            item.date,
+            item.createdAt,
+          ].filter(Boolean)
+
+          const inRange = dateCandidates.some((d) => isDateInRange(d, reportFromStr, reportToStr))
+          if (!inRange) return false
         } else if (type === 'customer') {
-          const dVal = item.createdAt || item.addedDate || item.updatedAt
-          if (!dVal) return false
-          const d = new Date(dVal)
-          if (isNaN(d.getTime())) return false
-          if (reportFrom && d < reportFrom) return false
-          if (reportTo && d > reportTo) return false
-          return true
+          const dateCandidates = [
+            item.createdAt,
+            item.addedDate,
+            item.updatedAt,
+          ].filter(Boolean)
+
+          const inRange = dateCandidates.some((d) => isDateInRange(d, reportFromStr, reportToStr))
+          if (!inRange) return false
         }
       }
 
@@ -1862,7 +2019,9 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
                     report={report}
                     onViewWeb={handleViewWeb}
                     onExport={handleExport}
+                    onDelete={handleDelete}
                     isKevalOrAdmin={isKevalOrAdmin}
+                    canDeleteReport={canCreateReportTemplate}
                   />
                 ))}
               </div>

@@ -21,6 +21,10 @@ const listGroupMembers = async (groupId, companyId) => {
   return userGroupRepository.listGroupMembers(groupId, companyId)
 }
 
+const listMembersByGroupIds = async (groupIds, companyId) => {
+  return userGroupRepository.listMembersByGroupIds(groupIds, companyId)
+}
+
 const deleteGroup = async (groupId) => {
   await userGroupRepository.deleteGroup(groupId)
 }
@@ -29,5 +33,6 @@ module.exports = {
   createGroup,
   listGroups,
   listGroupMembers,
+  listMembersByGroupIds,
   deleteGroup
 }

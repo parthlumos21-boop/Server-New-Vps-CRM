@@ -93,6 +93,14 @@ const buildPayload = (body = {}, actor, existing) => {
     subsource: asTrimmedStringOrNull(pickFirstDefined(body.subsource, body.dealSubsource, existing?.subsource, existing?.dealSubsource)),
     projectName: asTrimmedStringOrNull(pickFirstDefined(body.projectName, body.dealName, existing?.projectName)),
     projectStatus: asTrimmedStringOrNull(pickFirstDefined(body.projectStatus, existing?.projectStatus)),
+    actualDealStatus: asTrimmedStringOrNull(pickFirstDefined(body.actualDealStatus, existing?.actualDealStatus)),
+    actualAccountStatus: asTrimmedStringOrNull(pickFirstDefined(body.actualAccountStatus, existing?.actualAccountStatus)),
+    accountState: asTrimmedStringOrNull(pickFirstDefined(body.accountState, existing?.accountState)),
+    lostDate: asTrimmedStringOrNull(pickFirstDefined(body.lostDate, existing?.lostDate)),
+    wonDate: asTrimmedStringOrNull(pickFirstDefined(body.wonDate, existing?.wonDate)),
+    statusDate: asTrimmedStringOrNull(pickFirstDefined(body.statusDate, existing?.statusDate)),
+    actualDealStatusDate: asTrimmedStringOrNull(pickFirstDefined(body.actualDealStatusDate, existing?.actualDealStatusDate)),
+    actualAccountStatusDate: asTrimmedStringOrNull(pickFirstDefined(body.actualAccountStatusDate, existing?.actualAccountStatusDate)),
     poValue: asOptionalNumber(pickFirstDefined(body.poValue, existing?.poValue)),
     jobNo: asTrimmedStringOrNull(pickFirstDefined(body.jobNo, existing?.jobNo)),
     city: asTrimmedStringOrNull(pickFirstDefined(body.city, body.location, existing?.city, existing?.location, existing?.data?.city, existing?.data?.location)),
@@ -110,8 +118,10 @@ const buildPayload = (body = {}, actor, existing) => {
     productCategory: asTrimmedStringOrNull(pickFirstDefined(body.productCategory, existing?.productCategory)),
     consultantName: asTrimmedStringOrNull(pickFirstDefined(body.consultantName, existing?.consultantName)),
     gstin: asTrimmedStringOrNull(pickFirstDefined(body.gstin, existing?.gstin)),
-    orderCustomerStatus: asTrimmedStringOrNull(pickFirstDefined(body.orderCustomerStatus, existing?.orderCustomerStatus)),
-    quotationCustomerStatus: asTrimmedStringOrNull(pickFirstDefined(body.quotationCustomerStatus, existing?.quotationCustomerStatus)),
+    statusAsPerOrderReceived: asTrimmedStringOrNull(pickFirstDefined(body.statusAsPerOrderReceived, body.orderCustomerStatus, existing?.statusAsPerOrderReceived, existing?.orderCustomerStatus)),
+    statusAsPerQuotationGiven: asTrimmedStringOrNull(pickFirstDefined(body.statusAsPerQuotationGiven, body.quotationCustomerStatus, existing?.statusAsPerQuotationGiven, existing?.quotationCustomerStatus)),
+    orderCustomerStatus: asTrimmedStringOrNull(pickFirstDefined(body.orderCustomerStatus, body.statusAsPerOrderReceived, existing?.orderCustomerStatus, existing?.statusAsPerOrderReceived)),
+    quotationCustomerStatus: asTrimmedStringOrNull(pickFirstDefined(body.quotationCustomerStatus, body.statusAsPerQuotationGiven, existing?.quotationCustomerStatus, existing?.statusAsPerQuotationGiven)),
     customerReferenceDate: asTrimmedStringOrNull(pickFirstDefined(body.customerReferenceDate, body.customerRefDate, existing?.customerReferenceDate, existing?.customerRefDate)),
     customerReferenceNumber: asTrimmedStringOrNull(pickFirstDefined(body.customerReferenceNumber, body.customerRefNo, existing?.customerReferenceNumber, existing?.customerRefNo)),
     reasonForLostOrder: asTrimmedStringOrNull(pickFirstDefined(body.reasonForLostOrder, body.reasonForLost, existing?.reasonForLostOrder, existing?.reasonForLost)),
@@ -391,6 +401,47 @@ module.exports = {
         // If sequence generation fails, continue without blocking update
       }
     }
+
+    const targetStage = enhancedBody.stage || enhancedBody.status || enhancedBody.dealStage || ''
+    const isPoConversionTarget = targetStage === 'convert_to_po' || enhancedBody.status === 'convert_to_po' || enhancedBody.dealStage === 'convert_to_po' || targetStage === 'po_converted' || targetStage === 'PO Converted'
+    const isRejectedTarget = targetStage === 'rejected' || enhancedBody.stage === 'rejected' || enhancedBody.status === 'rejected' || enhancedBody.dealStage === 'rejected' || Boolean(enhancedBody.reasonForLost) || Boolean(enhancedBody.reasonForLostOrder)
+
+    const nowIso = new Date().toISOString()
+    if (isPoConversionTarget) {
+      const resolvedPoValue = enhancedBody.poValue !== undefined ? enhancedBody.poValue : (existing.poValue !== undefined ? existing.poValue : (existing.data?.poValue !== undefined ? existing.data?.poValue : ''))
+      if (!String(resolvedPoValue).trim()) {
+        throw new AppError('PO Value is mandatory when converting deal to PO status.', 400)
+      }
+      enhancedBody.stage = 'convert_to_po'
+      enhancedBody.status = 'convert_to_po'
+      enhancedBody.dealStage = 'convert_to_po'
+      enhancedBody.accountStatus = 'convert_to_po'
+      enhancedBody.accountState = enhancedBody.accountState || 'convert_to_po'
+      enhancedBody.actualDealStatus = 'Won'
+      enhancedBody.actualAccountStatus = 'Won'
+      enhancedBody.projectStatus = 'Won'
+      enhancedBody.wonDate = enhancedBody.wonDate || nowIso
+      enhancedBody.actualDealStatusDate = enhancedBody.actualDealStatusDate || nowIso
+      enhancedBody.actualAccountStatusDate = enhancedBody.actualAccountStatusDate || nowIso
+      enhancedBody.statusDate = enhancedBody.statusDate || nowIso
+    } else if (isRejectedTarget) {
+      const reasonVal = enhancedBody.reasonForLost || enhancedBody.reasonForLostOrder || existing.reasonForLost || existing.reasonForLostOrder || ''
+      enhancedBody.stage = 'rejected'
+      enhancedBody.status = 'rejected'
+      enhancedBody.dealStage = 'rejected'
+      enhancedBody.accountStatus = 'Rejected'
+      enhancedBody.accountState = 'rejected'
+      enhancedBody.actualDealStatus = 'Lost'
+      enhancedBody.actualAccountStatus = 'Lost'
+      enhancedBody.projectStatus = 'Lost'
+      enhancedBody.lostDate = enhancedBody.lostDate || nowIso
+      enhancedBody.actualDealStatusDate = enhancedBody.actualDealStatusDate || nowIso
+      enhancedBody.actualAccountStatusDate = enhancedBody.actualAccountStatusDate || nowIso
+      enhancedBody.statusDate = enhancedBody.statusDate || nowIso
+      enhancedBody.reasonForLost = reasonVal
+      enhancedBody.reasonForLostOrder = reasonVal
+    }
+
     const updatedDeal = await baseService.update(actor, id, enhancedBody)
 
     const editedDealName = enhancedBody.dealName ?? enhancedBody.projectName ?? enhancedBody.name ?? enhancedBody.title
@@ -403,38 +454,327 @@ module.exports = {
       emitConvertedDealRealtime('updated', convertedDeal, actor)
     }
 
-    // Multi-Collection Sync to MongoDB customers collection
+    // Multi-Collection Sync to MongoDB leads, deals and customers collections
     try {
       const { getMongoModel } = require('../models/mongoModels')
+      const Lead = getMongoModel('leads')
+      const Deal = getMongoModel('deals')
       const Customer = getMongoModel('customers')
-      const custName = updatedDeal.customerName || updatedDeal.accountName || updatedDeal.title || ''
-      if (custName || updatedDeal.accountId) {
-        const targetCustStatus = updatedDeal.stage || updatedDeal.status || 'staged'
-        await Customer.updateMany(
-          {
-            $or: [
-              ...(updatedDeal.accountId ? [{ accountId: updatedDeal.accountId }, { accountId: String(updatedDeal.accountId) }] : []),
-              ...(custName ? [{ customerName: custName }, { name: custName }] : [])
-            ]
-          },
-          {
-            $set: {
-              customerStatus: targetCustStatus,
-              status: targetCustStatus,
-              poValue: updatedDeal.poValue || 0,
-              gstin: updatedDeal.gstin || '',
-              jobNo: updatedDeal.jobNo || '',
-              updatedAt: new Date().toISOString(),
-              'data.customerStatus': targetCustStatus,
-              'data.poValue': updatedDeal.poValue || 0,
-              'data.gstin': updatedDeal.gstin || '',
-              'data.jobNo': updatedDeal.jobNo || '',
+
+      const rawAccountId = updatedDeal.accountId || existing?.accountId || updatedDeal.data?.accountId || existing?.data?.accountId
+      const targetAccountIds = [rawAccountId, Number(rawAccountId)].filter((val) => val !== null && val !== undefined && val !== '')
+      const accountNumbers = [
+        updatedDeal.accountNumber,
+        existing?.accountNumber,
+        updatedDeal.data?.accountNumber,
+        existing?.data?.accountNumber,
+        updatedDeal.customerNumber,
+        existing?.customerNumber,
+      ].filter(Boolean)
+
+      const isHex24 = (val) => typeof val === 'string' && /^[0-9a-fA-F]{24}$/.test(val)
+      const buildIdFilters = (val) => {
+        const num = Number(val)
+        return [
+          ...(Number.isInteger(num) ? [{ legacyId: num }, { id: num }, { id: String(num) }, { 'formData.id': num }] : [{ id: String(val) }]),
+          ...(isHex24(String(val)) ? [{ _id: String(val) }] : []),
+        ]
+      }
+
+      const dealMatchFilters = buildIdFilters(updatedDeal.id)
+      const leadMatchFilters = [
+        ...targetAccountIds.flatMap((accId) => buildIdFilters(accId)),
+        ...accountNumbers.flatMap((num) => [
+          { accountNumber: num },
+          { accountNo: num },
+          { 'formData.accountNumber': num },
+          { 'formData.accountNo': num },
+        ]),
+      ]
+
+      const custName = updatedDeal.customerName || updatedDeal.accountName || updatedDeal.title || existing?.customerName || existing?.accountName || ''
+      const customerMatchFilters = [
+        ...targetAccountIds.flatMap((accId) => [
+          { accountId: Number(accId) || accId },
+          { accountId: String(accId) },
+        ]),
+        ...(custName ? [{ customerName: custName }, { name: custName }] : []),
+      ]
+
+      if (isPoConversionTarget) {
+        const poVal = updatedDeal.poValue ?? enhancedBody.poValue ?? existing?.poValue ?? 0
+        const orderStatus = updatedDeal.statusAsPerOrderReceived || enhancedBody.statusAsPerOrderReceived || ''
+        const quoteStatus = updatedDeal.statusAsPerQuotationGiven || enhancedBody.statusAsPerQuotationGiven || ''
+        const gstinVal = updatedDeal.gstin || enhancedBody.gstin || ''
+        const jobNoVal = updatedDeal.jobNo || enhancedBody.jobNo || ''
+        const accountStateVal = enhancedBody.accountState || 'convert_to_po'
+
+        // 1. Update current deal in deals collection
+        if (Deal && dealMatchFilters.length > 0) {
+          await Deal.updateMany(
+            { $or: dealMatchFilters },
+            {
+              $set: {
+                stage: 'convert_to_po',
+                status: 'convert_to_po',
+                dealStage: 'convert_to_po',
+                accountStatus: 'convert_to_po',
+                accountState: accountStateVal,
+                actualDealStatus: 'Won',
+                actualAccountStatus: 'Won',
+                projectStatus: 'Won',
+                wonDate: nowIso,
+                actualDealStatusDate: nowIso,
+                actualAccountStatusDate: nowIso,
+                statusDate: nowIso,
+                poValue: poVal,
+                dealValue: poVal,
+                statusAsPerOrderReceived: orderStatus,
+                statusAsPerQuotationGiven: quoteStatus,
+                gstin: gstinVal,
+                jobNo: jobNoVal,
+                updatedAt: nowIso,
+                'data.stage': 'convert_to_po',
+                'data.status': 'convert_to_po',
+                'data.dealStage': 'convert_to_po',
+                'data.accountStatus': 'convert_to_po',
+                'data.accountState': accountStateVal,
+                'data.actualDealStatus': 'Won',
+                'data.actualAccountStatus': 'Won',
+                'data.projectStatus': 'Won',
+                'data.wonDate': nowIso,
+                'data.poValue': poVal,
+                'data.dealValue': poVal,
+                'data.statusAsPerOrderReceived': orderStatus,
+                'data.statusAsPerQuotationGiven': quoteStatus,
+                'data.gstin': gstinVal,
+                'data.jobNo': jobNoVal,
+                'formData.stage': 'convert_to_po',
+                'formData.status': 'convert_to_po',
+                'formData.dealStage': 'convert_to_po',
+                'formData.accountStatus': 'convert_to_po',
+                'formData.accountState': accountStateVal,
+                'formData.actualDealStatus': 'Won',
+                'formData.actualAccountStatus': 'Won',
+                'formData.projectStatus': 'Won',
+                'formData.wonDate': nowIso,
+                'formData.poValue': poVal,
+                'formData.dealValue': poVal,
+              }
             }
-          }
-        ).catch(() => {})
+          ).catch(() => {})
+        }
+
+        // 2. Sync linked lead in leads collection
+        if (Lead && leadMatchFilters.length > 0) {
+          await Lead.updateMany(
+            { $or: leadMatchFilters },
+            {
+              $set: {
+                status: 'convert_to_po',
+                accountState: accountStateVal,
+                stage: 'convert_to_po',
+                accountStatus: 'convert_to_po',
+                actualAccountStatus: 'Won',
+                actualDealStatus: 'Won',
+                projectStatus: 'Won',
+                wonDate: nowIso,
+                actualAccountStatusDate: nowIso,
+                actualDealStatusDate: nowIso,
+                statusDate: nowIso,
+                poValue: poVal,
+                dealValue: poVal,
+                statusAsPerOrderReceived: orderStatus,
+                statusAsPerQuotationGiven: quoteStatus,
+                gstin: gstinVal,
+                jobNo: jobNoVal,
+                updatedAt: nowIso,
+                'formData.status': 'convert_to_po',
+                'formData.accountState': accountStateVal,
+                'formData.stage': 'convert_to_po',
+                'formData.accountStatus': 'convert_to_po',
+                'formData.actualAccountStatus': 'Won',
+                'formData.actualDealStatus': 'Won',
+                'formData.projectStatus': 'Won',
+                'formData.wonDate': nowIso,
+                'formData.poValue': poVal,
+                'formData.dealValue': poVal,
+                'formData.statusAsPerOrderReceived': orderStatus,
+                'formData.statusAsPerQuotationGiven': quoteStatus,
+                'formData.gstin': gstinVal,
+                'formData.jobNo': jobNoVal,
+                'data.poValue': poVal,
+                'data.dealValue': poVal,
+              }
+            }
+          ).catch(() => {})
+        }
+
+        // 3. Sync linked customer in customers collection
+        if (Customer && customerMatchFilters.length > 0) {
+          await Customer.updateMany(
+            { $or: customerMatchFilters },
+            {
+              $set: {
+                customerStatus: 'convert_to_po',
+                status: 'convert_to_po',
+                accountState: accountStateVal,
+                actualAccountStatus: 'Won',
+                projectStatus: 'Won',
+                wonDate: nowIso,
+                poValue: poVal,
+                gstin: gstinVal,
+                jobNo: jobNoVal,
+                updatedAt: nowIso,
+                'data.customerStatus': 'convert_to_po',
+                'data.status': 'convert_to_po',
+                'data.accountState': accountStateVal,
+                'data.actualAccountStatus': 'Won',
+                'data.projectStatus': 'Won',
+                'data.poValue': poVal,
+                'data.gstin': gstinVal,
+                'data.jobNo': jobNoVal,
+              }
+            }
+          ).catch(() => {})
+        }
+      } else if (isRejectedTarget) {
+        const reasonValue = enhancedBody.reasonForLost || enhancedBody.reasonForLostOrder || existing.reasonForLost || existing.reasonForLostOrder || ''
+
+        // 1. Update current deal in deals collection
+        if (Deal && dealMatchFilters.length > 0) {
+          await Deal.updateMany(
+            { $or: dealMatchFilters },
+            {
+              $set: {
+                stage: 'rejected',
+                status: 'rejected',
+                dealStage: 'rejected',
+                accountStatus: 'Rejected',
+                accountState: 'rejected',
+                actualDealStatus: 'Lost',
+                actualAccountStatus: 'Lost',
+                projectStatus: 'Lost',
+                lostDate: nowIso,
+                actualDealStatusDate: nowIso,
+                actualAccountStatusDate: nowIso,
+                statusDate: nowIso,
+                reasonForLost: reasonValue,
+                reasonForLostOrder: reasonValue,
+                updatedAt: nowIso,
+                'data.stage': 'rejected',
+                'data.status': 'rejected',
+                'data.dealStage': 'rejected',
+                'data.accountStatus': 'Rejected',
+                'data.accountState': 'rejected',
+                'data.actualDealStatus': 'Lost',
+                'data.actualAccountStatus': 'Lost',
+                'data.projectStatus': 'Lost',
+                'data.lostDate': nowIso,
+                'data.reasonForLost': reasonValue,
+                'data.reasonForLostOrder': reasonValue,
+                'formData.stage': 'rejected',
+                'formData.status': 'rejected',
+                'formData.dealStage': 'rejected',
+                'formData.accountStatus': 'Rejected',
+                'formData.accountState': 'rejected',
+                'formData.actualDealStatus': 'Lost',
+                'formData.actualAccountStatus': 'Lost',
+                'formData.projectStatus': 'Lost',
+                'formData.lostDate': nowIso,
+                'formData.reasonForLost': reasonValue,
+                'formData.reasonForLostOrder': reasonValue,
+              }
+            }
+          ).catch(() => {})
+        }
+
+        // 2. Sync linked lead in leads collection
+        if (Lead && leadMatchFilters.length > 0) {
+          await Lead.updateMany(
+            { $or: leadMatchFilters },
+            {
+              $set: {
+                stage: 'rejected',
+                status: 'rejected',
+                accountStatus: 'Rejected',
+                accountState: 'rejected',
+                actualAccountStatus: 'Lost',
+                actualDealStatus: 'Lost',
+                projectStatus: 'Lost',
+                lostDate: nowIso,
+                actualAccountStatusDate: nowIso,
+                actualDealStatusDate: nowIso,
+                statusDate: nowIso,
+                reasonForLost: reasonValue,
+                reasonForLostOrder: reasonValue,
+                updatedAt: nowIso,
+                'formData.stage': 'rejected',
+                'formData.status': 'rejected',
+                'formData.accountStatus': 'Rejected',
+                'formData.accountState': 'rejected',
+                'formData.actualAccountStatus': 'Lost',
+                'formData.actualDealStatus': 'Lost',
+                'formData.projectStatus': 'Lost',
+                'formData.lostDate': nowIso,
+                'formData.reasonForLost': reasonValue,
+                'formData.reasonForLostOrder': reasonValue,
+              }
+            }
+          ).catch(() => {})
+        }
+
+        // 3. Sync linked customer in customers collection
+        if (Customer && customerMatchFilters.length > 0) {
+          await Customer.updateMany(
+            { $or: customerMatchFilters },
+            {
+              $set: {
+                customerStatus: 'rejected',
+                status: 'rejected',
+                accountState: 'rejected',
+                actualAccountStatus: 'Lost',
+                projectStatus: 'Lost',
+                lostDate: nowIso,
+                reasonForLost: reasonValue,
+                reasonForLostOrder: reasonValue,
+                updatedAt: nowIso,
+                'data.customerStatus': 'rejected',
+                'data.status': 'rejected',
+                'data.accountState': 'rejected',
+                'data.actualAccountStatus': 'Lost',
+                'data.projectStatus': 'Lost',
+                'data.reasonForLost': reasonValue,
+                'data.reasonForLostOrder': reasonValue,
+              }
+            }
+          ).catch(() => {})
+        }
+      } else {
+        // Standard non-Won non-Lost update to Customer
+        if (Customer && customerMatchFilters.length > 0) {
+          const targetCustStatus = updatedDeal.stage || updatedDeal.status || 'staged'
+          await Customer.updateMany(
+            { $or: customerMatchFilters },
+            {
+              $set: {
+                customerStatus: targetCustStatus,
+                status: targetCustStatus,
+                poValue: updatedDeal.poValue || 0,
+                gstin: updatedDeal.gstin || '',
+                jobNo: updatedDeal.jobNo || '',
+                updatedAt: new Date().toISOString(),
+                'data.customerStatus': targetCustStatus,
+                'data.poValue': updatedDeal.poValue || 0,
+                'data.gstin': updatedDeal.gstin || '',
+                'data.jobNo': updatedDeal.jobNo || '',
+              }
+            }
+          ).catch(() => {})
+        }
       }
     } catch (err) {
-      console.warn('Customer sync warning on deal update:', err.message)
+      console.warn('Multi-collection sync warning on deal update:', err.message)
     }
 
     return updatedDeal

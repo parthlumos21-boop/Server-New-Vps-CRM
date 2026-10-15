@@ -54,6 +54,28 @@ const listGroupMembers = async (req, res, next) => {
   }
 }
 
+const listMembersByGroupIds = async (req, res, next) => {
+  try {
+    const role = String(req.user?.actualRole || req.user?.role || '').toLowerCase()
+    const isAdmin = ['admin', 'owner', 'super_admin'].includes(role)
+    const companyId = isAdmin ? null : (req.user.companyId || null)
+
+    const rawGroupIds = req.query.groupIds || req.body?.groupIds || ''
+    const groupIds = Array.isArray(rawGroupIds)
+      ? rawGroupIds
+      : String(rawGroupIds).split(',').map((s) => s.trim()).filter(Boolean)
+
+    const members = await userGroupService.listMembersByGroupIds(groupIds, companyId)
+
+    res.json({
+      success: true,
+      data: members,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 const deleteGroup = async (req, res, next) => {
   try {
     const { id } = req.params
@@ -71,5 +93,6 @@ module.exports = {
   createGroup,
   listGroups,
   listGroupMembers,
+  listMembersByGroupIds,
   deleteGroup
 }

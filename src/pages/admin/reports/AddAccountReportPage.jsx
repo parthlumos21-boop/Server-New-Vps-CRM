@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ACCOUNT_REPORT_AGGREGATE_OPTIONS,
@@ -16,6 +16,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { generateId } from '../../../utils/helpers'
 import apiClient from '../../../services/apiClient'
 import { userApi } from '../../../services/userApi'
+import { userGroupApi } from '../../../services/userGroupApi'
 import { saveAdminReportTemplate } from '../../../features/adminReports/reportTemplateStorage'
 import './AddAccountReportPage.css'
 
@@ -38,6 +39,8 @@ const initialFormState = {
   filters: [buildFilterRow()],
   selectedFields: [],
   accountOwner: '',
+  userGroups: [],
+  userGroupMembers: [],
   generatedFrom: '',
   generatedTo: '',
 }
@@ -52,17 +55,129 @@ const AddAccountReportPage = () => {
   const [selectedChosenField, setSelectedChosenField] = useState('')
   const [pageError, setPageError] = useState('')
   const [ownerOptions, setOwnerOptions] = useState([])
+  const [availableUserGroups, setAvailableUserGroups] = useState([])
+  const [selectedUserGroups, setSelectedUserGroups] = useState([])
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState([])
+  const [allDirectoryUsers, setAllDirectoryUsers] = useState([])
+  const [isGroupDropdownOpen, setIsGroupDropdownOpen] = useState(false)
+  const [groupSearchText, setGroupSearchText] = useState('')
+  const groupDropdownRef = useRef(null)
 
   const searchParams = new URLSearchParams(location.search)
   const contextParam = searchParams.get('context')
 
   useEffect(() => {
-    userApi.listDirectory()
-      .then((users) => setOwnerOptions((Array.isArray(users) ? users : [])
-        .map((entry) => ({ value: entry.name || entry.username || entry.ownerCode || entry.id, label: entry.name || entry.username || entry.ownerCode || entry.id }))
-        .filter((entry) => entry.value)))
-      .catch(() => setOwnerOptions([]))
+    userGroupApi.listGroups()
+      .then((res) => {
+        const groups = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : [])
+        setAvailableUserGroups(groups)
+      })
+      .catch((err) => {
+        console.error('Failed to load user groups:', err)
+        setAvailableUserGroups([])
+      })
   }, [])
+
+  useEffect(() => {
+    userApi.listDirectory()
+      .then((users) => {
+        const mapped = (Array.isArray(users) ? users : [])
+          .map((entry) => ({
+            value: entry.name || entry.username || entry.ownerCode || entry.id,
+            label: entry.name || entry.username || entry.ownerCode || entry.id,
+            name: entry.name || entry.username || '',
+            email: entry.email || '',
+            userId: entry.id || '',
+          }))
+          .filter((entry) => entry.value)
+        setAllDirectoryUsers(mapped)
+        setOwnerOptions(mapped)
+      })
+      .catch(() => {
+        setAllDirectoryUsers([])
+        setOwnerOptions([])
+      })
+  }, [])
+
+  useEffect(() => {
+    if (selectedUserGroups.length === 0) {
+      setSelectedGroupMembers([])
+      setOwnerOptions(allDirectoryUsers)
+      return
+    }
+
+    let isCurrent = true
+    userGroupApi.listMembersByGroupIds(selectedUserGroups)
+      .then((res) => {
+        if (!isCurrent) return
+        const members = Array.isArray(res) ? res : (Array.isArray(res?.data) ? res.data : [])
+        setSelectedGroupMembers(members)
+
+        const seen = new Set()
+        const dynamicOwners = []
+        members.forEach((m) => {
+          const cleanName = (m.name || '').trim()
+          if (!cleanName || seen.has(cleanName.toLowerCase())) return
+          seen.add(cleanName.toLowerCase())
+
+          dynamicOwners.push({
+            value: cleanName,
+            label: cleanName,
+            name: cleanName,
+            email: m.email || '',
+            userId: m.userId,
+            groupName: m.groupName,
+          })
+        })
+
+        setOwnerOptions(dynamicOwners)
+
+        setFormState((prev) => {
+          if (prev.accountOwner && !dynamicOwners.some((o) => o.value === prev.accountOwner)) {
+            return { ...prev, accountOwner: '' }
+          }
+          return prev
+        })
+      })
+      .catch((err) => {
+        console.error('Failed to load members for selected groups:', err)
+        if (isCurrent) {
+          setSelectedGroupMembers([])
+          setOwnerOptions([])
+        }
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [selectedUserGroups, allDirectoryUsers])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (groupDropdownRef.current && !groupDropdownRef.current.contains(event.target)) {
+        setIsGroupDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleToggleUserGroup = (groupIdOrName) => {
+    setSelectedUserGroups((prev) => {
+      if (prev.includes(groupIdOrName)) {
+        return prev.filter((g) => g !== groupIdOrName)
+      }
+      return [...prev, groupIdOrName]
+    })
+  }
+
+  const handleRemoveUserGroup = (groupIdOrName, e) => {
+    if (e) {
+      e.stopPropagation()
+      e.preventDefault()
+    }
+    setSelectedUserGroups((prev) => prev.filter((g) => g !== groupIdOrName))
+  }
 
   useEffect(() => {
     if (contextParam === 'deal') {
@@ -181,6 +296,16 @@ const AddAccountReportPage = () => {
       aggregate: formState.aggregate,
       owner: formState.accountOwner,
       accountOwner: formState.accountOwner,
+      accountOwnerEmail: selectedGroupMembers.find((m) => m.name === formState.accountOwner)?.email || '',
+      userGroups: selectedUserGroups,
+      selectedUserGroups: selectedUserGroups,
+      userGroupMembers: selectedGroupMembers.map((m) => ({
+        userId: m.userId,
+        name: m.name,
+        email: m.email,
+        groupName: m.groupName,
+        groupId: m.groupId,
+      })),
       generatedFrom: formState.generatedFrom,
       generatedTo: formState.generatedTo,
       filters: cleanedFilters,
@@ -324,12 +449,94 @@ const AddAccountReportPage = () => {
           </div>
         </section>
 
+        <section className="account-report-builder-section account-report-builder-user-group-section">
+          <div className="account-report-builder-section-title">User Group</div>
+          <div className="account-report-builder-section-body">
+            <div className="account-report-builder-field" ref={groupDropdownRef}>
+              <label>User Group</label>
+              <div className="account-report-builder-multiselect-container">
+                <div
+                  className="account-report-builder-multiselect-trigger"
+                  onClick={() => setIsGroupDropdownOpen((prev) => !prev)}
+                >
+                  <div className="account-report-builder-multiselect-chips">
+                    {selectedUserGroups.length === 0 ? (
+                      <span className="account-report-builder-placeholder">Select User Group(s)...</span>
+                    ) : (
+                      selectedUserGroups.map((g) => {
+                        const grpObj = availableUserGroups.find((item) => item.groupName === g || item.id === g || item._id === g)
+                        const displayName = grpObj?.groupName || g
+                        return (
+                          <span key={g} className="account-report-builder-chip">
+                            {displayName}
+                            <button
+                              type="button"
+                              onClick={(e) => handleRemoveUserGroup(g, e)}
+                              className="account-report-builder-chip-remove"
+                              title={`Remove ${displayName}`}
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        )
+                      })
+                    )}
+                  </div>
+                  <span className="account-report-builder-caret">▾</span>
+                </div>
+
+                {isGroupDropdownOpen ? (
+                  <div className="account-report-builder-multiselect-dropdown">
+                    <div className="account-report-builder-dropdown-search">
+                      <input
+                        type="text"
+                        placeholder="Search User Groups..."
+                        value={groupSearchText}
+                        onChange={(e) => setGroupSearchText(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="account-report-builder-dropdown-options">
+                      {availableUserGroups
+                        .filter((g) => !groupSearchText.trim() || (g.groupName || g.name || '').toLowerCase().includes(groupSearchText.toLowerCase()))
+                        .map((group) => {
+                          const val = group.groupName || group.id || group._id
+                          const isSelected = selectedUserGroups.includes(val) || selectedUserGroups.includes(group.id) || selectedUserGroups.includes(group._id)
+                          return (
+                            <label key={val} className="account-report-builder-option-item" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleUserGroup(val)}
+                              />
+                              <span>{group.groupName}</span>
+                            </label>
+                          )
+                        })}
+                      {availableUserGroups.length === 0 ? (
+                        <div className="account-report-builder-no-options">No user groups available</div>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="account-report-builder-panel account-report-builder-context-filters">
           <div className="account-report-builder-field">
             <label>Owner</label>
-            <select value={formState.accountOwner} onChange={(event) => setFormState((currentValue) => ({ ...currentValue, accountOwner: event.target.value }))}>
-              <option value="">All Owners</option>
-              {ownerOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            <select
+              value={formState.accountOwner}
+              onChange={(event) => setFormState((currentValue) => ({ ...currentValue, accountOwner: event.target.value }))}
+            >
+              <option value="">{selectedUserGroups.length > 0 ? 'All Group Members' : 'All Owners'}</option>
+              {ownerOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
           <div className="account-report-builder-field">

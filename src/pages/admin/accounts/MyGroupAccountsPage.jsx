@@ -33,6 +33,7 @@ import { dealApi } from '../../../services/dealApi'
 import { authService } from '../../../services/authService'
 import { getCityForUser } from '../../../features/adminAccounts/config/cityFilters'
 import { getCrmOwnerOptions } from '../../../features/users/crmUserDirectory';
+import { sanitizeCustomerType } from '../../../features/accounts/config/accountDropdownOptions';
 import { getCrmOwnerCode } from '../../../features/users/crmUserDirectory';
 import './MyGroupAccounts.css'
 import { matchesSectionSearch } from '../../../utils/sectionSearch'
@@ -368,7 +369,7 @@ const getConvertedAccountsFieldText = (row = {}, fieldKey = '') => {
     case 'email': return row.email || ''
     case 'alternatePhone': return row.alternatePhone || ''
     case 'alternateEmail': return row.alternateEmail || ''
-    case 'customerType': return row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || row.raw?.customerType || ''
+    case 'customerType': return sanitizeCustomerType(row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || row.raw?.customerType || '')
     case 'projectName': return row.projectName || ''
     case 'productCategory': return row.productCategory || ''
     case 'state': return row.state || ''

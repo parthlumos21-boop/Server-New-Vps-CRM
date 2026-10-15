@@ -6,6 +6,7 @@ const { requireAuth } = require('../middleware/authMiddleware')
 router.use(requireAuth)
 
 router.get('/', userGroupController.listGroups)
+router.get('/members/batch', userGroupController.listMembersByGroupIds)
 router.get('/:id/members', userGroupController.listGroupMembers)
 router.post('/', userGroupController.createGroup)
 router.delete('/:id', userGroupController.deleteGroup)

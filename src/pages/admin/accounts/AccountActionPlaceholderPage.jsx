@@ -13,7 +13,6 @@ import { ACCOUNT_ACTION_MAP, USER_ACCOUNT_ACTION_MAP } from '../../../features/a
 import {
   ACCOUNT_ORDER_STATUS_OPTIONS,
   ACCOUNT_QUOTATION_STATUS_OPTIONS,
-  ACCOUNT_STATE_OPTIONS,
   ACCOUNT_CHANGE_STATUS_OPTIONS,
   getAccountChangeStatusOption,
   shouldShowAccountPoDetails,
@@ -256,19 +255,46 @@ const AccountActionPlaceholderPage = () => {
       const selectedStatusLabel = selectedStatus?.label || stage
       const targetStageKey = selectedStatus?.stageKey || stage
       const isQuotationSent = targetStageKey === 'quotation_sent'
+      const nowIso = new Date().toISOString()
       updates = {
         stage: targetStageKey,
         status: isQuotationSent ? 'quotation_sent' : (isNotQuoted ? 'not_quoted' : selectedStatusLabel),
-        accountStatus: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : selectedStatusLabel),
-        accountState: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : (accountState || selectedStatusLabel)),
+        accountStatus: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : (targetStageKey === 'convert_to_po' ? 'convert_to_po' : selectedStatusLabel)),
+        accountState: isQuotationSent ? 'Quotation Sent' : (isNotQuoted ? 'not_quoted' : (targetStageKey === 'convert_to_po' ? 'convert_to_po' : (accountState || selectedStatusLabel))),
         latestRemark: statusNote.trim() || selectedAccount.latestRemark,
-        ...(stage === 'rejected' ? { reasonForLost: reasonForLost.trim(), reasonForLostOrder: reasonForLost.trim() } : {}),
+        ...(stage === 'rejected' ? {
+          stage: 'rejected',
+          status: 'rejected',
+          accountStatus: 'Rejected',
+          accountState: 'rejected',
+          actualAccountStatus: 'Lost',
+          actualDealStatus: 'Lost',
+          projectStatus: 'Lost',
+          lostDate: nowIso,
+          actualAccountStatusDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
+          reasonForLost: reasonForLost.trim(),
+          reasonForLostOrder: reasonForLost.trim(),
+        } : {}),
       }
 
       if (shouldShowAccountPoDetails(stage)) {
         updates = {
           ...updates,
+          stage: 'convert_to_po',
+          status: 'convert_to_po',
+          accountStatus: 'convert_to_po',
+          accountState: accountState || 'convert_to_po',
+          actualAccountStatus: 'Won',
+          actualDealStatus: 'Won',
+          projectStatus: 'Won',
+          wonDate: nowIso,
+          actualAccountStatusDate: nowIso,
+          actualDealStatusDate: nowIso,
+          statusDate: nowIso,
           poValue: poValue === '' ? '' : poValue,
+          dealValue: poValue === '' ? '' : poValue,
           statusAsPerOrderReceived: orderReceivedStatus,
           statusAsPerQuotationGiven: quotationGivenStatus,
           gstin: gstin.trim(),
@@ -527,16 +553,6 @@ const AccountActionPlaceholderPage = () => {
                 <label className="admin-accounts-bulk-field">
                   Job No
                   <input type="text" value={jobNo} onChange={(event) => setJobNo(event.target.value)} placeholder="Enter Job No" />
-                </label>
-              </div>
-
-              <div className="admin-accounts-action-form-grid admin-accounts-action-form-grid--section admin-accounts-action-form-grid--compact">
-                <label className="admin-accounts-bulk-field">
-                  Account State
-                  <select value={accountState} onChange={(event) => setAccountState(event.target.value)}>
-                    <option value="">Select</option>
-                    {ACCOUNT_STATE_OPTIONS.map((entry) => <option key={entry} value={entry}>{entry}</option>)}
-                  </select>
                 </label>
               </div>
             </>

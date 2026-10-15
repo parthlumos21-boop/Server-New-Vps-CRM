@@ -28,7 +28,7 @@ import { useData } from '../../../context/DataContext'
 import { buildAdminDealDetailUrl } from '../../../features/adminDeals/config/adminDealViews'
 import { useClickOutside } from '../../../hooks'
 import { ACCOUNT_ACTION_DROPDOWN_LABEL, ACCOUNT_DRAWER_ACTIONS } from '../../../features/adminAccounts/config/accountActions'
-import { ACCOUNT_CATEGORY_OPTIONS, ACCOUNT_SOURCE_OPTIONS, CUSTOMER_TYPE_OPTIONS, INDUSTRY_TYPE_OPTIONS, STATE_OPTIONS } from '../../../features/accounts/config/accountDropdownOptions'
+import { ACCOUNT_CATEGORY_OPTIONS, ACCOUNT_SOURCE_OPTIONS, CUSTOMER_TYPE_OPTIONS, INDUSTRY_TYPE_OPTIONS, STATE_OPTIONS, sanitizeCustomerType } from '../../../features/accounts/config/accountDropdownOptions'
 import { ACCOUNT_CHANGE_STATUS_OPTIONS, ACCOUNT_ORDER_STATUS_OPTIONS, ACCOUNT_QUOTATION_STATUS_OPTIONS, ACCOUNT_STATE_OPTIONS } from '../../../features/adminAccounts/config/accountStages'
 import { buildAdminAccountActionUrl } from '../../../features/adminAccounts/utils/accountNavigation'
 import { getAccountOwnerOptionLabel, getCachedAccountOwnerOptions, loadAccountOwnerOptions, filterAccountOwnerOptionsByVertical } from '../../../features/adminAccounts/utils/accountOwnerOptions'
@@ -189,6 +189,9 @@ const getDisplayFieldValue = (field, value) => {
     if (!cleanText || cleanText.toLowerCase() === 'null' || cleanText.toLowerCase() === 'undefined') return '-'
     return cleanText
   }
+  if (field.key === 'customerType') {
+    return sanitizeCustomerType(value) || '-'
+  }
   if (!value) return ''
   if (field.key === 'lastUpdated') return formatDetailDate(value, 'dd-MM-yyyy hh:mm a')
   if (field.type === 'date') return formatDetailDate(value)
@@ -229,7 +232,7 @@ const buildInitialForm = (account, deal = {}) => ({
   assignedUserId: account.raw?.assignedUserId || account.raw?.assignedTo || account.raw?.ownerId || '',
   contactPerson: account.contactPerson || '',
   designation: account.contactDesignation || account.designation || account.raw?.designation || '',
-  customerType: account.customerType || account.accountCategory || '',
+  customerType: sanitizeCustomerType(account.customerType) || '',
   mobile: account.contactMobile || account.phone || '',
   alternatePhone: account.alternatePhone || '',
   alternateEmail: account.alternateEmail || '',
@@ -1013,6 +1016,12 @@ const AccountDetailsDrawer = ({
         account={account}
         actionKey={activeActionKey}
         onClose={() => setActiveActionKey(null)}
+        onSaved={async () => {
+          if (typeof onRefresh === 'function') {
+            await onRefresh()
+          }
+          setActiveActionKey(null)
+        }}
       />
 
       {isHistoryModalOpen && (

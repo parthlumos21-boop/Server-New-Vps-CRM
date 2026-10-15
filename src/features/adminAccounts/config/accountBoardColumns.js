@@ -1,4 +1,5 @@
 import { format } from 'date-fns'
+import { sanitizeCustomerType } from '../../accounts/config/accountDropdownOptions'
 
 const emptyValue = '-'
 const isAccountNoCodeString = (val, row = {}) => {
@@ -138,6 +139,11 @@ const formatDealTypeDisplay = (value, row = {}) => {
   return '-'
 }
 
+const formatCustomerTypeDisplay = (value, row = {}) => {
+  const candidate = value || row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || row.raw?.customerType || ''
+  return sanitizeCustomerType(candidate) || emptyValue
+}
+
 const formatAccountStatusDisplay = (value, row = {}) => {
   const raw = String(value || row.status || row.accountStatus || row.accountState || row.raw?.status || row.raw?.accountStatus || '').trim()
   const lower = raw.toLowerCase().replace(/[\s-]+/g, '_')
@@ -186,7 +192,7 @@ export const GROUP_ACCOUNTS_COLUMNS = [
   { key: 'dealType', label: 'Deal Type', filterPlaceholder: 'Search Deal Type', width: '180px', searchable: true, exportable: true, cellFormatter: formatDealTypeDisplay, exportFormatter: formatDealTypeDisplay },
   { key: 'phone', label: 'Phone', filterPlaceholder: 'Search Phone', width: '155px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'email', label: 'Email', filterPlaceholder: 'Search Email', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
-  { key: 'customerType', label: 'Customer Type', filterPlaceholder: 'Search Customer Type', width: '160px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || emptyValue },
+  { key: 'customerType', label: 'Customer Type', filterPlaceholder: 'Search Customer Type', width: '160px', searchable: true, exportable: true, cellFormatter: formatCustomerTypeDisplay, exportFormatter: formatCustomerTypeDisplay },
   { key: 'contactPerson', label: 'Contact Person', filterPlaceholder: 'Search Contact Person', width: '165px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'projectName', label: 'Project Name', filterPlaceholder: 'Search Project Name', width: '210px', searchable: true, exportable: true, cellFormatter: formatProjectNameDisplay, exportFormatter: formatProjectNameDisplay },
   { key: 'consultantName', label: 'Consultant Name', filterPlaceholder: 'Search Consultant Name', width: '190px', searchable: true, exportable: true, cellFormatter: (value, row) => value || row.consultantName || row.formData?.['Consultant Name'] || row.formData?.consultantName || emptyValue },
@@ -324,7 +330,8 @@ export const ACCOUNT_LIST_BOARD_COLUMNS = [
     width: '160px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value, row) => value || row.customerType || row.formData?.['Customer Type'] || row.formData?.customerType || emptyValue,
+    cellFormatter: formatCustomerTypeDisplay,
+    exportFormatter: formatCustomerTypeDisplay,
   },
   {
     key: 'projectName',
@@ -897,7 +904,8 @@ export const SW_BARODA_MUM_COLUMNS = [
     width: '150px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => value || emptyValue,
+    cellFormatter: formatCustomerTypeDisplay,
+    exportFormatter: formatCustomerTypeDisplay,
   },
   { key: 'poValue', label: 'PO Value', filterPlaceholder: 'Search PO Value', width: '155px', searchable: true, exportable: true, cellFormatter: formatPoValueDisplay, exportFormatter: formatPoValueDisplay },
   {

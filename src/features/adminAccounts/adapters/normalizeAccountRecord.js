@@ -1,6 +1,7 @@
 import { format } from 'date-fns'
 import { ACCOUNT_STAGES, DEFAULT_ACCOUNT_STAGE } from '../config/accountStages'
 import { getCanonicalCrmUserName, getCrmOwnerCode } from '../../users/crmUserDirectory'
+import { sanitizeCustomerType } from '../../accounts/config/accountDropdownOptions'
 
 const stageLookup = ACCOUNT_STAGES.reduce((lookup, stage) => {
   lookup[stage.key] = stage
@@ -187,7 +188,7 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
   const parsedAccountCategory = rawAccountCategory.toLowerCase() === 'prospect' ? '' : rawAccountCategory
 
   const rawCustomerType = account.customerType || formData['Customer Type'] || formData.customerType || account.raw?.customerType || account.raw?.formData?.['Customer Type'] || account.raw?.formData?.customerType || ''
-  const parsedCustomerType = rawCustomerType.toLowerCase() === 'prospect' ? '' : rawCustomerType
+  const parsedCustomerType = sanitizeCustomerType(rawCustomerType)
 
   const data = (account.data || account.raw?.data || {})
   const accountNameCandidates = [
@@ -368,7 +369,7 @@ export const normalizeAccountRecord = (account = {}, index = 0, options = {}) =>
     {
       title: 'Other Details',
       fields: [
-        toDrawerField('Customer Type', normalized.customerType),
+        toDrawerField('Customer Type', normalized.customerType || '-'),
         toDrawerField('Project Name', normalized.projectName),
         toDrawerField('Project Code', normalized.projectCode),
         toDrawerField('Project Type', normalized.projectType),

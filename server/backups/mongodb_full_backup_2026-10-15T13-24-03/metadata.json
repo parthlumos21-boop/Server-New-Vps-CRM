@@ -1,0 +1,280 @@
+{
+  "backupTimestamp": "2026-10-15T13:24:03.775Z",
+  "databaseName": "crm",
+  "totalCollections": 68,
+  "totalDocuments": 62000,
+  "collections": {
+    "User": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "accounts": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "activity_timeline": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "app_settings": {
+      "documents": 3,
+      "sizeBytes": 14178
+    },
+    "attachments": {
+      "documents": 1,
+      "sizeBytes": 573
+    },
+    "audit_log": {
+      "documents": 60139,
+      "sizeBytes": 44539895
+    },
+    "audit_logs": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "bookmarks": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "calendar_events": {
+      "documents": 81,
+      "sizeBytes": 65022
+    },
+    "chart_configurations": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "chart_templates": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "communication_logs": {
+      "documents": 5,
+      "sizeBytes": 4839
+    },
+    "converted_deals": {
+      "documents": 33,
+      "sizeBytes": 79363
+    },
+    "counters": {
+      "documents": 27,
+      "sizeBytes": 1489
+    },
+    "custom_views": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "customers": {
+      "documents": 88,
+      "sizeBytes": 108953
+    },
+    "dashboard_tabs": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "deals": {
+      "documents": 69,
+      "sizeBytes": 268772
+    },
+    "email_logs": {
+      "documents": 5,
+      "sizeBytes": 462381
+    },
+    "email_settings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "email_templates": {
+      "documents": 1,
+      "sizeBytes": 455296
+    },
+    "import_batches": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "integrations": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "job_plannings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "leads": {
+      "documents": 140,
+      "sizeBytes": 630878
+    },
+    "messages": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "microsoft_tokens": {
+      "documents": 2,
+      "sizeBytes": 12145
+    },
+    "notifications": {
+      "documents": 599,
+      "sizeBytes": 267421
+    },
+    "outlook_integrations": {
+      "documents": 2,
+      "sizeBytes": 22632
+    },
+    "password_reset_audit_logs": {
+      "documents": 21,
+      "sizeBytes": 9330
+    },
+    "password_reset_requests": {
+      "documents": 6,
+      "sizeBytes": 4622
+    },
+    "products": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "productsettings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "projects": {
+      "documents": 1,
+      "sizeBytes": 754
+    },
+    "quotation_number_counters": {
+      "documents": 2,
+      "sizeBytes": 491
+    },
+    "quotations": {
+      "documents": 50,
+      "sizeBytes": 187590
+    },
+    "remark_reminders": {
+      "documents": 84,
+      "sizeBytes": 58924
+    },
+    "remarks": {
+      "documents": 26,
+      "sizeBytes": 30077
+    },
+    "reminders": {
+      "documents": 88,
+      "sizeBytes": 77486
+    },
+    "report_runs": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "reports": {
+      "documents": 20,
+      "sizeBytes": 10110
+    },
+    "reporttemplates": {
+      "documents": 11,
+      "sizeBytes": 9671
+    },
+    "role_mapping": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "settings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "support_groups": {
+      "documents": 1,
+      "sizeBytes": 237
+    },
+    "support_replies": {
+      "documents": 10,
+      "sizeBytes": 5191
+    },
+    "support_request_documents": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "support_requests": {
+      "documents": 12,
+      "sizeBytes": 30170
+    },
+    "support_users": {
+      "documents": 2,
+      "sizeBytes": 506
+    },
+    "system_updates": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "task_comments": {
+      "documents": 3,
+      "sizeBytes": 1292
+    },
+    "tasks": {
+      "documents": 5,
+      "sizeBytes": 13633
+    },
+    "tasks_timelog": {
+      "documents": 1,
+      "sizeBytes": 530
+    },
+    "team_workload_settings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "tickets": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "time_entries": {
+      "documents": 3,
+      "sizeBytes": 1421
+    },
+    "user_devices": {
+      "documents": 5,
+      "sizeBytes": 1765
+    },
+    "user_group_members": {
+      "documents": 18,
+      "sizeBytes": 8904
+    },
+    "user_groups": {
+      "documents": 4,
+      "sizeBytes": 1913
+    },
+    "user_sessions": {
+      "documents": 402,
+      "sizeBytes": 225812
+    },
+    "user_types": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "users": {
+      "documents": 30,
+      "sizeBytes": 26031
+    },
+    "whatsapp_chats": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "whatsapp_contacts": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "whatsapp_messages": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "whatsapp_settings": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "work_approvals": {
+      "documents": 0,
+      "sizeBytes": 0
+    },
+    "work_workflows": {
+      "documents": 0,
+      "sizeBytes": 0
+    }
+  }
+}

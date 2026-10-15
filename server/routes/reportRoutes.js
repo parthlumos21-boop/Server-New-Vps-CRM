@@ -141,12 +141,33 @@ router.get('/templates', requireAuth, async (req, res) => {
 
 router.delete('/templates/:id', requireAuth, async (req, res) => {
   try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Only administrators have authority to delete report templates' });
+    }
     const { id } = req.params;
-    await ReportTemplate.findByIdAndDelete(id);
-    res.json({ message: 'Report template deleted successfully' });
+    const deleted = await ReportTemplate.findOneAndDelete({
+      $or: [{ _id: id }, { id: id }, { name: id }, { reportName: id }],
+    });
+    res.json({ message: 'Report template deleted successfully', deleted });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Only administrators have authority to delete custom reports' });
+    }
+    const { id } = req.params;
+    const deleted = await Report.findOneAndDelete({
+      $or: [{ _id: id }, { id: id }, { reportName: id }, { name: id }],
+    });
+    res.json({ message: 'Report deleted successfully', deleted });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 module.exports = router;
+

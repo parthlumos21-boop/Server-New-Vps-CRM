@@ -58,6 +58,16 @@ export const reportApi = {
       return null
     }
   },
+
+  deleteGeneratedReport: async (id) => {
+    try {
+      const response = await apiClient.delete(`/reports/${encodeURIComponent(id)}`)
+      return response?.data ?? response
+    } catch (error) {
+      console.error('Failed to delete generated report:', error)
+      return null
+    }
+  },
 }
 
 export default reportApi
