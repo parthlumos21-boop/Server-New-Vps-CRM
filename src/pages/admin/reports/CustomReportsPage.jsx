@@ -781,17 +781,106 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
     const reportOwner = String(report.accountOwner || report.owner || '').trim().toLowerCase()
     const reportFrom = report.generatedFrom ? new Date(`${report.generatedFrom}T00:00:00`) : null
     const reportTo = report.generatedTo ? new Date(`${report.generatedTo}T23:59:59`) : null
+
+    // Pre-calculate quotation matches within [reportFrom, reportTo]
+    const quotesInRange = (reportFrom || reportTo)
+      ? finalQuotations.filter((q) => {
+          const qDateStr = q.quotationDate || q.date || q.createdAt
+          if (!qDateStr) return false
+          const qDate = new Date(qDateStr)
+          if (isNaN(qDate.getTime())) return false
+          if (reportFrom && qDate < reportFrom) return false
+          if (reportTo && qDate > reportTo) return false
+          return true
+        })
+      : []
+
+    const quoteAccountKeys = new Set()
+    const quoteDealKeys = new Set()
+    quotesInRange.forEach((q) => {
+      if (q.accountId) quoteAccountKeys.add(String(q.accountId).toLowerCase())
+      if (q.accountNumber) quoteAccountKeys.add(String(q.accountNumber).toLowerCase())
+      if (q.accountNo) quoteAccountKeys.add(String(q.accountNo).toLowerCase())
+      if (q.accountName) quoteAccountKeys.add(String(q.accountName).toLowerCase().trim())
+      if (q.dealId) quoteDealKeys.add(String(q.dealId).toLowerCase())
+      if (q.dealName) quoteDealKeys.add(String(q.dealName).toLowerCase().trim())
+    })
+
     const applyReportScope = (items, type) => items.filter((item) => {
-      const owner = type === 'account'
-        ? item.accountOwnerName || item.accountOwner || item.ownerName || item.owner
-        : type === 'deal'
-          ? item.dealOwnerName || item.dealOwner || item.ownerName || item.owner
-          : item.ownerName || item.owner || item.accountOwner || item.customerOwner
-      const dateValue = item.createdAt || item.updatedAt || item.accountDate || item.dealDate || item.quotationDate
-      const date = dateValue ? new Date(dateValue) : null
-      return (!reportOwner || String(owner || '').trim().toLowerCase() === reportOwner)
-        && (!reportFrom || (date && date >= reportFrom))
-        && (!reportTo || (date && date <= reportTo))
+      // 1. Owner Filter
+      if (reportOwner && reportOwner !== 'all') {
+        const itemOwners = [
+          item.accountOwnerName,
+          item.accountOwner,
+          item.ownerName,
+          item.owner,
+          item.assignedToName,
+          item.assignedTo,
+          item.dealOwnerName,
+          item.dealOwner,
+          item.raw?.accountOwner,
+          item.ownerCode,
+          item.customerOwner,
+        ].filter(Boolean).map((o) => String(o).trim().toLowerCase())
+
+        const ownerMatched = itemOwners.some((o) => o === reportOwner || o.includes(reportOwner) || reportOwner.includes(o))
+        if (!ownerMatched) return false
+      }
+
+      // 2. Date Filter ("Quotes Generated Between" / Custom Range)
+      if (reportFrom || reportTo) {
+        if (type === 'account') {
+          const itemAccId = String(item.id || item.accountNumber || item.accountNo || '').toLowerCase()
+          const itemAccName = String(item.name || item.accountName || item.customerName || '').toLowerCase().trim()
+          const hasQuoteInRange = quoteAccountKeys.has(itemAccId) || quoteAccountKeys.has(itemAccName)
+          if (hasQuoteInRange) return true
+
+          const dVal = item.accountDate || item.date || item.createdAt || item.updatedAt
+          if (dVal) {
+            const d = new Date(dVal)
+            if (!isNaN(d.getTime())) {
+              if (reportFrom && d < reportFrom) return false
+              if (reportTo && d > reportTo) return false
+              return true
+            }
+          }
+          return false
+        } else if (type === 'deal') {
+          const itemDealId = String(item.id || item.dealNumber || '').toLowerCase()
+          const itemDealName = String(item.name || item.dealName || item.title || '').toLowerCase().trim()
+          const hasQuoteInRange = quoteDealKeys.has(itemDealId) || quoteDealKeys.has(itemDealName)
+          if (hasQuoteInRange) return true
+
+          const dVal = item.dealDate || item.quotationDate || item.addedOn || item.createdAt
+          if (dVal) {
+            const d = new Date(dVal)
+            if (!isNaN(d.getTime())) {
+              if (reportFrom && d < reportFrom) return false
+              if (reportTo && d > reportTo) return false
+              return true
+            }
+          }
+          return false
+        } else if (type === 'quotation') {
+          const dVal = item.quotationDate || item.date || item.createdAt
+          if (!dVal) return false
+          const d = new Date(dVal)
+          if (isNaN(d.getTime())) return false
+          if (reportFrom && d < reportFrom) return false
+          if (reportTo && d > reportTo) return false
+          return true
+        } else if (type === 'customer') {
+          const dVal = item.createdAt || item.addedDate || item.updatedAt
+          if (!dVal) return false
+          const d = new Date(dVal)
+          if (isNaN(d.getTime())) return false
+          if (reportFrom && d < reportFrom) return false
+          if (reportTo && d > reportTo) return false
+          return true
+        }
+      }
+
+      return true
     })
 
     const scopedAccounts = applyReportScope(finalAccounts, 'account')
@@ -1480,6 +1569,116 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
       return mapped
     }
 
+    const reportOwner = String(report.accountOwner || report.owner || '').trim().toLowerCase()
+    const reportFrom = report.generatedFrom ? new Date(`${report.generatedFrom}T00:00:00`) : null
+    const reportTo = report.generatedTo ? new Date(`${report.generatedTo}T23:59:59`) : null
+
+    // Pre-calculate quotation matches within [reportFrom, reportTo]
+    const quotesInRange = (reportFrom || reportTo)
+      ? finalQuotations.filter((q) => {
+          const qDateStr = q.quotationDate || q.date || q.createdAt
+          if (!qDateStr) return false
+          const qDate = new Date(qDateStr)
+          if (isNaN(qDate.getTime())) return false
+          if (reportFrom && qDate < reportFrom) return false
+          if (reportTo && qDate > reportTo) return false
+          return true
+        })
+      : []
+
+    const quoteAccountKeys = new Set()
+    const quoteDealKeys = new Set()
+    quotesInRange.forEach((q) => {
+      if (q.accountId) quoteAccountKeys.add(String(q.accountId).toLowerCase())
+      if (q.accountNumber) quoteAccountKeys.add(String(q.accountNumber).toLowerCase())
+      if (q.accountNo) quoteAccountKeys.add(String(q.accountNo).toLowerCase())
+      if (q.accountName) quoteAccountKeys.add(String(q.accountName).toLowerCase().trim())
+      if (q.dealId) quoteDealKeys.add(String(q.dealId).toLowerCase())
+      if (q.dealName) quoteDealKeys.add(String(q.dealName).toLowerCase().trim())
+    })
+
+    const applyReportScope = (items, type) => items.filter((item) => {
+      // 1. Owner Filter
+      if (reportOwner && reportOwner !== 'all') {
+        const itemOwners = [
+          item.accountOwnerName,
+          item.accountOwner,
+          item.ownerName,
+          item.owner,
+          item.assignedToName,
+          item.assignedTo,
+          item.dealOwnerName,
+          item.dealOwner,
+          item.raw?.accountOwner,
+          item.ownerCode,
+          item.customerOwner,
+        ].filter(Boolean).map((o) => String(o).trim().toLowerCase())
+
+        const ownerMatched = itemOwners.some((o) => o === reportOwner || o.includes(reportOwner) || reportOwner.includes(o))
+        if (!ownerMatched) return false
+      }
+
+      // 2. Date Filter ("Quotes Generated Between" / Custom Range)
+      if (reportFrom || reportTo) {
+        if (type === 'account') {
+          const itemAccId = String(item.id || item.accountNumber || item.accountNo || '').toLowerCase()
+          const itemAccName = String(item.name || item.accountName || item.customerName || '').toLowerCase().trim()
+          const hasQuoteInRange = quoteAccountKeys.has(itemAccId) || quoteAccountKeys.has(itemAccName)
+          if (hasQuoteInRange) return true
+
+          const dVal = item.accountDate || item.date || item.createdAt || item.updatedAt
+          if (dVal) {
+            const d = new Date(dVal)
+            if (!isNaN(d.getTime())) {
+              if (reportFrom && d < reportFrom) return false
+              if (reportTo && d > reportTo) return false
+              return true
+            }
+          }
+          return false
+        } else if (type === 'deal') {
+          const itemDealId = String(item.id || item.dealNumber || '').toLowerCase()
+          const itemDealName = String(item.name || item.dealName || item.title || '').toLowerCase().trim()
+          const hasQuoteInRange = quoteDealKeys.has(itemDealId) || quoteDealKeys.has(itemDealName)
+          if (hasQuoteInRange) return true
+
+          const dVal = item.dealDate || item.quotationDate || item.addedOn || item.createdAt
+          if (dVal) {
+            const d = new Date(dVal)
+            if (!isNaN(d.getTime())) {
+              if (reportFrom && d < reportFrom) return false
+              if (reportTo && d > reportTo) return false
+              return true
+            }
+          }
+          return false
+        } else if (type === 'quotation') {
+          const dVal = item.quotationDate || item.date || item.createdAt
+          if (!dVal) return false
+          const d = new Date(dVal)
+          if (isNaN(d.getTime())) return false
+          if (reportFrom && d < reportFrom) return false
+          if (reportTo && d > reportTo) return false
+          return true
+        } else if (type === 'customer') {
+          const dVal = item.createdAt || item.addedDate || item.updatedAt
+          if (!dVal) return false
+          const d = new Date(dVal)
+          if (isNaN(d.getTime())) return false
+          if (reportFrom && d < reportFrom) return false
+          if (reportTo && d > reportTo) return false
+          return true
+        }
+      }
+
+      return true
+    })
+
+    const scopedAccounts = applyReportScope(finalAccounts, 'account')
+    const scopedDeals = applyReportScope(finalDeals, 'deal')
+    const scopedCustomers = applyReportScope(finalCustomers, 'customer')
+    const scopedQuotations = applyReportScope(finalQuotations, 'quotation')
+
     const processCategoryList = (list, type, dateField) => {
       let filtered = filterByDate(list, dateField)
       let mapped = filtered.map(item => ({...item, ...mapItem(item, type)}))
@@ -1489,19 +1688,19 @@ const CustomReportsPage = ({ basePath = '/admin/reports' }) => {
 
     if (targetCategory === 'all') {
       dataSets = [
-        ...processCategoryList(finalDeals, 'deal', 'addedOn').map(item => ({ 'Data Type': 'Deal', ...item })),
-        ...processCategoryList(finalAccounts, 'account', 'accountDate').map(item => ({ 'Data Type': 'Account', ...item })),
-        ...processCategoryList(finalCustomers, 'customer', 'createdAt').map(item => ({ 'Data Type': 'Customer', ...item })),
-        ...processCategoryList(finalQuotations, 'quotation', 'date').map(item => ({ 'Data Type': 'Quotation', ...item })),
+        ...processCategoryList(scopedDeals, 'deal', 'addedOn').map(item => ({ 'Data Type': 'Deal', ...item })),
+        ...processCategoryList(scopedAccounts, 'account', 'accountDate').map(item => ({ 'Data Type': 'Account', ...item })),
+        ...processCategoryList(scopedCustomers, 'customer', 'createdAt').map(item => ({ 'Data Type': 'Customer', ...item })),
+        ...processCategoryList(scopedQuotations, 'quotation', 'date').map(item => ({ 'Data Type': 'Quotation', ...item })),
       ]
     } else if (targetCategory === 'account') {
-      dataSets = processCategoryList(finalAccounts, 'account', 'accountDate')
+      dataSets = processCategoryList(scopedAccounts, 'account', 'accountDate')
     } else if (targetCategory === 'deal') {
-      dataSets = processCategoryList(finalDeals, 'deal', 'addedOn')
+      dataSets = processCategoryList(scopedDeals, 'deal', 'addedOn')
     } else if (targetCategory === 'customer') {
-      dataSets = processCategoryList(finalCustomers, 'customer', 'createdAt')
+      dataSets = processCategoryList(scopedCustomers, 'customer', 'createdAt')
     } else if (targetCategory === 'quotation') {
-      dataSets = processCategoryList(finalQuotations, 'quotation', 'date')
+      dataSets = processCategoryList(scopedQuotations, 'quotation', 'date')
     }
 
     const allKeys = new Set()

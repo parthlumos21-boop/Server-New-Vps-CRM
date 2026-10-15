@@ -590,7 +590,9 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
     periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
   } else if (period === 'custom' && customStart) {
     periodStart = new Date(customStart)
-    periodEnd = customEnd ? new Date(customEnd) : new Date()
+    periodStart.setHours(0, 0, 0, 0)
+    periodEnd = customEnd ? new Date(customEnd) : new Date(customStart)
+    periodEnd.setHours(23, 59, 59, 999)
   }
 
   const taskQuery = {
@@ -607,23 +609,51 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
 
   const isCompletedStatus = (status) => ['completed', 'closed'].includes(String(status || '').toLowerCase().trim())
 
-  // Completed in period
-  const completedTasksList = userTasks.filter((t) => {
-    if (!isCompletedStatus(t.status)) return false
+  // Dynamic filter function for tasks matching date period / custom range
+  const isTaskInPeriod = (t) => {
     if (!periodStart) return true
-    const compDate = t.completedAt ? new Date(t.completedAt) : (t.updatedAt ? new Date(t.updatedAt) : null)
-    if (!compDate) return true
-    return compDate >= periodStart && compDate <= periodEnd
-  })
 
-  const incompleteTasksList = userTasks.filter((t) => !isCompletedStatus(t.status))
+    if (t.dueDate) {
+      const d = new Date(t.dueDate)
+      if (d >= periodStart && d <= periodEnd) return true
+    }
+    if (t.completedAt) {
+      const c = new Date(t.completedAt)
+      if (c >= periodStart && c <= periodEnd) return true
+    }
+    if (t.createdAt) {
+      const cr = new Date(t.createdAt)
+      if (cr >= periodStart && cr <= periodEnd) return true
+    }
+    if (t.updatedAt) {
+      const u = new Date(t.updatedAt)
+      if (u >= periodStart && u <= periodEnd) return true
+    }
+    if (!isCompletedStatus(t.status)) {
+      const taskCreated = t.createdAt ? new Date(t.createdAt) : null
+      if (!taskCreated || taskCreated <= periodEnd) {
+        if (!t.dueDate) return true
+        const d = new Date(t.dueDate)
+        if (d >= periodStart) return true
+      }
+    }
+    return false
+  }
+
+  // Filter tasks for period when custom or period is active
+  const periodTasks = periodStart ? userTasks.filter(isTaskInPeriod) : userTasks
+
+  // Completed in period
+  const completedTasksList = periodTasks.filter((t) => isCompletedStatus(t.status))
+
+  const incompleteTasksList = periodTasks.filter((t) => !isCompletedStatus(t.status))
 
   const overdueTasksList = incompleteTasksList.filter((t) => {
     if (!t.dueDate) return false
     return new Date(t.dueDate) < now
   })
 
-  const totalTasksCount = userTasks.length
+  const totalTasksCount = periodTasks.length
   const completedTasksCount = completedTasksList.length
   const incompleteTasksCount = incompleteTasksList.length
   const overdueTasksCount = overdueTasksList.length
@@ -633,7 +663,7 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
   let mediumPriorityCount = 0
   let highPriorityCount = 0
 
-  userTasks.forEach((t) => {
+  periodTasks.forEach((t) => {
     const prio = String(t.priority || '').toLowerCase().trim()
     if (prio === 'low') lowPriorityCount++
     else if (prio === 'medium') mediumPriorityCount++
@@ -646,7 +676,7 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
   let onTrackCount = 0
   let delayedCount = 0
 
-  userTasks.forEach((t) => {
+  periodTasks.forEach((t) => {
     const completed = isCompletedStatus(t.status)
     const dueDate = t.dueDate ? new Date(t.dueDate) : null
     const compDate = t.completedAt ? new Date(t.completedAt) : (t.updatedAt ? new Date(t.updatedAt) : null)
@@ -724,7 +754,7 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
     incompleteTasksList.reduce((sum, t) => sum + ((Number(t.estimatedMinutes) || 120) / 60), 0)
   )
   const actualHours = Math.round(
-    userTasks.reduce((sum, t) => sum + ((Number(t.actualMinutes) || 0) / 60), 0)
+    periodTasks.reduce((sum, t) => sum + ((Number(t.actualMinutes) || 0) / 60), 0)
   )
   const utilizationPercent = Math.min(Math.round((estimatedHours / weeklyCapacityHours) * 100), 200)
   const remainingHours = Math.max(0, weeklyCapacityHours - estimatedHours)
@@ -732,7 +762,7 @@ const getUserWorkloadAnalytics = async (actor, targetUserEmail, period = 'month'
   const isOptimal = utilizationPercent >= 50 && utilizationPercent <= 100
   const utilizationStatus = isOverloaded ? 'overloaded' : isOptimal ? 'optimal' : 'available'
 
-  const formattedTasks = userTasks.map((t) => ({
+  const formattedTasks = (periodStart ? periodTasks : userTasks).map((t) => ({
     id: t.legacyId || t.id || t._id,
     _id: t._id,
     title: t.title || 'Untitled Task',

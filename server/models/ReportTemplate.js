@@ -13,10 +13,14 @@ const ReportTemplateSchema = new mongoose.Schema({
   aggregate: { type: String },
   visibility: { type: String, default: 'All' },
   runtimePeriodEnabled: { type: Boolean, default: false },
+  accountOwner: { type: String, default: '' },
+  owner: { type: String, default: '' },
+  generatedFrom: { type: String, default: '' },
+  generatedTo: { type: String, default: '' },
   createdBy: { type: String },
   creatorName: { type: String },
   creatorEmail: { type: String },
-}, { timestamps: true });
+}, { timestamps: true, strict: false });
 
 module.exports = mongoose.model('ReportTemplate', ReportTemplateSchema);
 

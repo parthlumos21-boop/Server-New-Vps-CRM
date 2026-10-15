@@ -98,7 +98,7 @@ export const MyWorkPage = () => {
   }
 
   return (
-    <TaskWorkspaceLayout activeTabKey="my-work">
+    <TaskWorkspaceLayout activeTabKey="dashboard">
       {/* Cockpit Greeting Banner */}
       <div
         style={{

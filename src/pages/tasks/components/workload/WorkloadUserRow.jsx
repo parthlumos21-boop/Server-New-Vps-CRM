@@ -124,7 +124,7 @@ export const WorkloadUserRow = ({
                 textTransform: 'capitalize',
               }}
             >
-              {role} &bull; {department}
+              {role}
             </div>
           </div>
         </div>

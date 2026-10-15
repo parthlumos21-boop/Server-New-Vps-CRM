@@ -75,11 +75,13 @@ export const WorkloadUserHeader = ({
               {name}
             </h2>
 
-            {/* SLA Compliant Badge with pure transparent background and no borders */}
-            <TaskStatusBadge
-              value={slaRate >= 90 ? 'compliant' : slaRate >= 75 ? 'at_risk' : 'breached'}
-              type="sla"
-            />
+            {/* SLA Badge with small subtext styling */}
+            <span style={{ fontSize: '0.72rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center' }}>
+              <TaskStatusBadge
+                value={slaRate >= 90 ? 'compliant' : slaRate >= 75 ? 'at_risk' : 'breached'}
+                type="sla"
+              />
+            </span>
           </div>
 
           <div
@@ -89,16 +91,18 @@ export const WorkloadUserHeader = ({
               color: '#64748b',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem',
+              gap: '0.45rem',
             }}
           >
             <span style={{ fontWeight: '700', textTransform: 'capitalize', color: '#334155' }}>
               {role}
             </span>
-            <span>&bull;</span>
-            <span>{department}</span>
-            <span>&bull;</span>
-            <span style={{ color: '#94a3b8' }}>{email}</span>
+            {email && (
+              <>
+                <span>&bull;</span>
+                <span style={{ color: '#64748b' }}>{email}</span>
+              </>
+            )}
           </div>
         </div>
       </div>

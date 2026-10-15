@@ -141,41 +141,16 @@ export const WorkloadUserList = ({
           />
         </div>
 
-        {/* Filters: Department & Utilization */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-          {departments.length > 0 && (
-            <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-              style={{
-                flex: 1,
-                fontSize: '0.7rem',
-                fontWeight: '600',
-                padding: '0.25rem 0.4rem',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                backgroundColor: '#ffffff',
-                color: '#475569',
-                outline: 'none',
-              }}
-            >
-              <option value="all">All Depts</option>
-              {departments.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          )}
-
+        {/* Filters: Utilization */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <select
             value={utilizationFilter}
             onChange={(e) => setUtilizationFilter(e.target.value)}
             style={{
-              flex: 1,
-              fontSize: '0.7rem',
+              width: '100%',
+              fontSize: '0.72rem',
               fontWeight: '600',
-              padding: '0.25rem 0.4rem',
+              padding: '0.3rem 0.5rem',
               border: '1px solid #e2e8f0',
               borderRadius: '6px',
               backgroundColor: '#ffffff',

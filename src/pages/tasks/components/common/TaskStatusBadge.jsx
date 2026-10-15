@@ -24,8 +24,8 @@ const BADGE_STYLES = {
   sla_compliant: { bg: 'transparent', text: '#166534', border: 'none', label: 'SLA Compliant' },
   at_risk: { bg: '#ffffff', text: '#d97706', border: '#fcd34d', label: 'SLA At Risk' },
   sla_at_risk: { bg: '#ffffff', text: '#d97706', border: '#fcd34d', label: 'SLA At Risk' },
-  breached: { bg: '#ffffff', text: '#dc2626', border: '#fca5a5', label: 'SLA Breached' },
-  sla_breached: { bg: '#ffffff', text: '#dc2626', border: '#fca5a5', label: 'SLA Breached' },
+  breached: { bg: 'transparent', text: '#dc2626', border: 'none', label: 'SLA Breached' },
+  sla_breached: { bg: 'transparent', text: '#dc2626', border: 'none', label: 'SLA Breached' },
 }
 
 export const TaskStatusBadge = ({ value, type = 'status', className = '' }) => {

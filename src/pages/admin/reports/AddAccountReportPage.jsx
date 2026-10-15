@@ -16,6 +16,7 @@ import { useAuth } from '../../../context/AuthContext'
 import { generateId } from '../../../utils/helpers'
 import apiClient from '../../../services/apiClient'
 import { userApi } from '../../../services/userApi'
+import { saveAdminReportTemplate } from '../../../features/adminReports/reportTemplateStorage'
 import './AddAccountReportPage.css'
 
 const buildFilterRow = () => ({
@@ -178,6 +179,7 @@ const AddAccountReportPage = () => {
       groupBy: formState.groupBy,
       orderBy: formState.orderBy,
       aggregate: formState.aggregate,
+      owner: formState.accountOwner,
       accountOwner: formState.accountOwner,
       generatedFrom: formState.generatedFrom,
       generatedTo: formState.generatedTo,
@@ -189,6 +191,9 @@ const AddAccountReportPage = () => {
     }
 
     try {
+      try {
+        saveAdminReportTemplate(payload)
+      } catch (_localErr) {}
       await apiClient.post('/reports/templates', payload)
       navigate(reportListPath)
     } catch (error) {

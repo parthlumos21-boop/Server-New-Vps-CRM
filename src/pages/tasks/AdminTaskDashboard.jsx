@@ -320,10 +320,37 @@ export const AdminTaskDashboard = () => {
                       />
                     </div>
 
-                    <div>
-                      <UserEmailBadge email={usr.email} name={usr.name} showEmail />
-                      <div style={{ marginTop: '0.25rem', fontSize: '0.72rem', color: '#64748b' }}>
-                        <span style={{ fontWeight: '700', textTransform: 'capitalize', color: '#1e293b' }}>{usr.role || 'User'}</span>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', marginTop: '0.15rem' }}>
+                      <div
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #c60016 0%, #990011 100%)',
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.78rem',
+                          fontWeight: '800',
+                          flexShrink: 0,
+                          boxShadow: '0 2px 6px rgba(198, 0, 22, 0.25)',
+                        }}
+                      >
+                        {(usr.name || usr.email || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '0.84rem', fontWeight: '800', color: '#1e293b' }}>
+                            {usr.name || usr.email?.split('@')[0]}
+                          </span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: '700', color: '#64748b', textTransform: 'capitalize' }}>
+                            {usr.role || 'User'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: '1px' }}>
+                          {usr.email}
+                        </div>
                       </div>
                     </div>
 

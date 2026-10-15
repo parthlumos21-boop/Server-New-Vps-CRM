@@ -116,7 +116,11 @@ export const TaskWorkspaceLayout = ({ children, activeTabKey, activeTab }) => {
           }}
         >
           {tabs.map((tab) => {
-            const isActive = currentActiveKey === tab.key || location.pathname === tab.route
+            const isActive =
+              currentActiveKey === tab.key ||
+              location.pathname === tab.route ||
+              ((currentActiveKey === 'my-work' || currentActiveKey === 'dashboard') && tab.key === 'dashboard') ||
+              ((location.pathname === '/admin/tasks/my-work' || location.pathname === '/tasks/my-work' || location.pathname === '/admin/my-work') && tab.key === 'dashboard')
             return (
               <button
                 key={tab.key}
