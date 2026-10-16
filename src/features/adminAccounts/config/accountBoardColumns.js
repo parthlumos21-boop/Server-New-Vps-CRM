@@ -122,7 +122,25 @@ const formatQuotationOwnerDisplay = (value, row = {}) => (
 )
 
 const formatLegacyBoardDate = (value, row = {}) => {
-  const dateVal = value || row.accountDate || row.accountDateDisplay || row.createdAt || row.created_at || row.raw?.accountDate || row.raw?.createdAt || row.raw?.created_at
+  const dateVal =
+    value
+    || row.accountDate
+    || row.accountDateDisplay
+    || row.addedDate
+    || row.formData?.['Added Date']
+    || row.formData?.addedDate
+    || row.formData?.['Account Date']
+    || row.formData?.accountDate
+    || row.createdAt
+    || row.created_at
+    || row.raw?.accountDate
+    || row.raw?.addedDate
+    || row.raw?.formData?.['Added Date']
+    || row.raw?.formData?.addedDate
+    || row.raw?.formData?.['Account Date']
+    || row.raw?.formData?.accountDate
+    || row.raw?.createdAt
+    || row.raw?.created_at
   if (!dateVal) return emptyValue
 
   const date = new Date(dateVal)
@@ -226,7 +244,7 @@ export const MY_ACCOUNTS_LIST_COLUMNS = GROUP_ACCOUNTS_COLUMNS
 
 export const VIEW_ALL_COLUMNS = [
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
-  { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value) => formatLegacyBoardDate(value), exportFormatter: (value) => formatLegacyBoardDate(value) },
+  { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value, row) => formatLegacyBoardDate(value, row), exportFormatter: (value, row) => formatLegacyBoardDate(value, row) },
   { key: 'name', label: 'Account Name', filterPlaceholder: 'Search Account Name', width: '220px', searchable: true, exportable: true, cellFormatter: formatAccountNameDisplay, exportFormatter: formatAccountNameDisplay },
   { key: 'accountOwner', label: 'Account Owner', filterPlaceholder: 'Search Account Owner', width: '180px', searchable: true, exportable: true, cellFormatter: formatAccountOwnerDisplay, exportFormatter: formatAccountOwnerDisplay },
   { key: 'accountCategory', label: 'Account Category', filterPlaceholder: 'Search Account Category', width: '180px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
@@ -244,7 +262,7 @@ export const NO_FOLLOW_LEAD_COLUMNS = [
   { key: 'latestRemark', label: 'Latest Remark', filterPlaceholder: 'Search Latest Remark', width: '210px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'accountNumber', label: 'Account No.', filterPlaceholder: 'Search Account No.', width: '150px', searchable: true, exportable: true, clickable: true },
   { key: 'name', label: 'Account Name', filterPlaceholder: 'Search Account Name', width: '220px', searchable: true, exportable: true, cellFormatter: formatAccountNameDisplay, exportFormatter: formatAccountNameDisplay },
-  { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value) => formatLegacyBoardDate(value), exportFormatter: (value) => formatLegacyBoardDate(value) },
+  { key: 'accountDate', label: 'Account Date', filterPlaceholder: 'Search Account Date', width: '150px', searchable: true, exportable: true, cellFormatter: (value, row) => formatLegacyBoardDate(value, row), exportFormatter: (value, row) => formatLegacyBoardDate(value, row) },
   { key: 'accountCategory', label: 'Account Category', filterPlaceholder: 'Search Account Category', width: '180px', searchable: true, exportable: true, cellFormatter: (value) => value || emptyValue },
   { key: 'status', label: 'Account Status', filterPlaceholder: 'Search Account Status', width: '150px', searchable: true, exportable: true, cellFormatter: formatAccountStatusDisplay, exportFormatter: formatAccountStatusDisplay },
   { key: 'accountSource', label: 'Account Source', filterPlaceholder: 'Search Account Source', width: '150px', searchable: true, exportable: true },
@@ -449,8 +467,8 @@ export const DEFAULT_ADMIN_BOARD_COLUMNS = [
     width: '150px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
   {
     key: 'accountOwner',
@@ -481,8 +499,8 @@ export const SEARCH_ACCOUNT_BOARD_COLUMNS = [
     width: '140px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
   {
     key: 'name',
@@ -681,8 +699,8 @@ export const MY_ACCOUNTS_BOARD_COLUMNS = [
     width: '150px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
 ]
 
@@ -753,8 +771,8 @@ export const WEEKLY_REPORTS_ALL_COLUMNS = [
     width: '145px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
   {
     key: 'accountOwner',
@@ -857,8 +875,8 @@ export const SW_BARODA_MUM_COLUMNS = [
     width: '145px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
   {
     key: 'status',
@@ -954,8 +972,8 @@ export const USER_WISE_LEADS_COLUMNS = [
     width: '150px',
     searchable: true,
     exportable: true,
-    cellFormatter: (value) => formatLegacyBoardDate(value),
-    exportFormatter: (value) => formatLegacyBoardDate(value),
+    cellFormatter: (value, row) => formatLegacyBoardDate(value, row),
+    exportFormatter: (value, row) => formatLegacyBoardDate(value, row),
   },
   {
     key: 'status',

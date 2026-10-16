@@ -133,6 +133,7 @@ const AccountBoardHeaderActions = ({
         if (
           rowStr.includes('account name') ||
           rowStr.includes('project name') ||
+          rowStr.includes('added date') ||
           rowStr.includes('account date') ||
           rowStr.includes('account category') ||
           rowStr.includes('contact person')
@@ -213,20 +214,32 @@ const AccountBoardHeaderActions = ({
 
         const parseExcelDateValue = (rawDate) => {
           if (!rawDate) return undefined
+          if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+            return rawDate.toISOString()
+          }
           const str = String(rawDate).trim()
-          if (!str) return undefined
+          if (!str || str.toLowerCase() === 'null' || str.toLowerCase() === 'undefined') return undefined
 
           if (/^\d{5}$/.test(str) || (typeof rawDate === 'number' && rawDate > 30000 && rawDate < 60000)) {
             const num = Number(rawDate)
             const jsDate = new Date(Math.round((num - 25569) * 86400 * 1000))
-            return jsDate.toISOString()
+            if (!isNaN(jsDate.getTime())) return jsDate.toISOString()
           }
 
-          const match = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/)
-          if (match) {
-            const [, day, month, year] = match
-            const jsDate = new Date(Number(year), Number(month) - 1, Number(day))
-            return jsDate.toISOString()
+          // DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY (with optional time)
+          const dmyMatch = str.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/)
+          if (dmyMatch) {
+            const [, day, month, year, h = 0, m = 0, s = 0] = dmyMatch
+            const jsDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(h), Number(m), Number(s)))
+            if (!isNaN(jsDate.getTime())) return jsDate.toISOString()
+          }
+
+          // YYYY-MM-DD or YYYY/MM/DD (with optional time)
+          const ymdMatch = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/)
+          if (ymdMatch) {
+            const [, year, month, day, h = 0, m = 0, s = 0] = ymdMatch
+            const jsDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(h), Number(m), Number(s)))
+            if (!isNaN(jsDate.getTime())) return jsDate.toISOString()
           }
 
           const parsed = new Date(str)
@@ -236,7 +249,7 @@ const AccountBoardHeaderActions = ({
         const rawAccNameCandidate = getVal('Account Name', 'AccountName', 'Customer Name', 'customerName', 'Company Name', 'companyName', 'Company', 'company', 'Client Name', 'clientName', 'Name', 'name', 'Account')
         const accountName = isCodePatternStr(rawAccNameCandidate) ? '' : rawAccNameCandidate
 
-        const rawDateInput = getVal('Account Date', 'Date', 'accountDate')
+        const rawDateInput = getVal('Added Date', 'addedDate', 'AddedDate', 'Added_Date', 'Account Date', 'Date', 'accountDate')
         const accountDate = parseExcelDateValue(rawDateInput) || rawDateInput || undefined
         const accountCategory = getVal('Account Category', 'AccountCategory', 'Category', 'accountCategory')
         const contactPerson = getVal('Contact Person', 'ContactPerson', 'Contact', 'contactPerson')
@@ -302,6 +315,8 @@ const AccountBoardHeaderActions = ({
           customerRefNo: customerRefNo || undefined,
           jobNo: jobNo || undefined,
           accountDate: accountDate || undefined,
+          addedDate: accountDate || undefined,
+          createdAt: accountDate || undefined,
           accountCategory: accountCategory || undefined,
           contactPerson: contactPerson || undefined,
           phone: phone || undefined,
@@ -324,6 +339,7 @@ const AccountBoardHeaderActions = ({
           formData: {
             'Account Name': displayName,
             'Account Date': accountDate,
+            'Added Date': accountDate,
             'Account Category': accountCategory,
             'Account Owner': loggedInUserName,
             'Contact Person': contactPerson,
@@ -344,6 +360,7 @@ const AccountBoardHeaderActions = ({
             'User Group': userGroup,
             accountName: displayName,
             accountDate,
+            addedDate: accountDate,
             accountCategory,
             accountOwner: loggedInUserName,
             ownerCode: loggedInOwnerCode,
